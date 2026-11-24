@@ -189,7 +189,7 @@ async function send<T extends GatewayResponse>(
 
 async function deadline(wire: Wire, ms: number, signal: AbortSignal): Promise<never> {
   await wire.sleep(ms, signal);
-  throw new Error('gateway request timeout');
+  throw new Error('게이트웨이 요청 시간 초과');
 }
 
 function refusal(result: { text: string; status: number }): GatewayResponse {
@@ -207,6 +207,6 @@ function refusal(result: { text: string; status: number }): GatewayResponse {
   return {
     refused: true,
     httpStatus: result.status,
-    error: reason ?? (detail ? `gateway ${result.status}: ${detail}` : `gateway ${result.status}`),
+    error: reason ?? (detail ? `게이트웨이 ${result.status}: ${detail}` : `게이트웨이 ${result.status}`),
   };
 }

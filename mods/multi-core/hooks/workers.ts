@@ -59,7 +59,7 @@ const issues =
  * does not become an issue, and it never files anything on the user's behalf.
  */
 function reportable(reason: string) {
-  return `${reason}\n\nIf this reads like a defect in the multi-cli plugin rather than a permission the user chose, tell them so and offer to open an issue at ${issues}, quoting the reason above.`;
+  return `${reason}\n\n사용자가 선택한 권한이 아니라 multi-cli 플러그인의 결함으로 보이면 그렇게 알리고, 위 사유를 인용해 ${issues}에 이슈를 열어 줄 것을 제안하세요.`;
 }
 
 type SpawnEvent = AgentSpawnInput;
@@ -219,11 +219,11 @@ async function providerSpawn(
   }
   if (!selection) {
     return {
-      deny: reportable(`The Multi gateway did not resolve the ${event.subagentType} model.`),
+      deny: reportable(`Multi 게이트웨이가 ${event.subagentType} 모델을 확인하지 못했습니다.`),
     };
   }
   if (selection.refused || !selection.model) {
-    return { deny: selection.error ?? `The ${event.subagentType} model was not resolved.` };
+    return { deny: selection.error ?? `${event.subagentType} 모델을 확인하지 못했습니다.` };
   }
   // The task keeps the model's own description: the agent list names the CLI itself.
   return { event: { ...event, model: selection.model }, selection };

@@ -21,9 +21,9 @@ const view: ClientModule<UsagePaneProps, State> = (props, surface) => {
   const { Box, Text, Button } = surface.elements;
   const state = surface.state ?? { selected: 'all', offset: 0 };
   const tabs = [
-    { id: 'all', name: 'All' },
+    { id: 'all', name: '전체' },
     ...props.providers,
-    { id: 'receipts', name: 'Receipts' },
+    { id: 'receipts', name: '영수증' },
   ];
   const width = Math.max(10, surface.columns || 80);
   const lines = viewLines(props, state.selected).flatMap((line) => wrapLine(line, width));
@@ -66,21 +66,21 @@ const view: ClientModule<UsagePaneProps, State> = (props, surface) => {
           }),
         ),
       }),
-      Text({ dimColor: true, children: `Account data checked ${props.updatedAt}` }),
+      Text({ dimColor: true, children: `계정 데이터 확인: ${props.updatedAt}` }),
       Button({
         key: 'quota-advice',
-        label: `Quota-aware model selection: ${props.quotaAdviceEnabled ? 'On' : 'Off'}`,
+        label: `할당량 고려 모델 선택: ${props.quotaAdviceEnabled ? '켜짐' : '꺼짐'}`,
         onPress: () => surface.post({ action: 'toggle-quota-advice' }),
       }),
       ...(props.error ? [Text({ color: 'yellow', children: props.error })] : []),
       ...lines.slice(offset, offset + height).map((line) => Text({ children: line })),
       Text({
         dimColor: true,
-        children: `${offset + 1}–${Math.min(lines.length, offset + height)} of ${lines.length} · ←/→ providers · ↑/↓ scroll · r refresh · Esc close`,
+        children: `${offset + 1}–${Math.min(lines.length, offset + height)} / ${lines.length} · ←/→ 공급자 · ↑/↓ 스크롤 · r 새로고침 · Esc 닫기`,
       }),
       Button({
         key: 'refresh',
-        label: 'Refresh',
+        label: '새로고침',
         onPress: () => surface.post({ action: refreshAction }),
       }),
     ],
@@ -91,7 +91,7 @@ function viewLines(props: UsagePaneProps, selected: string): string[] {
   if (selected === 'receipts') {
     return props.receiptLines?.length
       ? props.receiptLines
-      : ['No completed receipts in this session.'];
+      : ['이 세션에는 완료된 영수증이 없습니다.'];
   }
   const provider = props.providers.find((item) => item.id === selected);
   if (provider) {

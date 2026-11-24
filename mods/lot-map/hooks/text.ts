@@ -434,6 +434,62 @@ const pt: Strings = {
   hours: (h, m) => `${h} h ${m} min`,
 }
 
-const TABLES = new Map<unknown, Strings>([['en', en], ['ru', ru], ['es', es], ['fr', fr], ['de', de], ['it', it], ['pt', pt]])
+// 한국어.
+const ko: Strings = {
+  title: '작업 지도',
+  command: '채팅 옆에 작업 지도 열기',
+  opened: '작업 지도를 열었습니다.',
+  cannotOpen: reason => `지금 지도를 표시할 곳이 없습니다: ${reason}`,
+  zoomOut: '축소',
+  zoomIn: '확대',
+  hideMap: '지도 숨기기',
+  showMap: '지도 표시',
+  stations: {
+    you: '나',
+    model: '모델',
+    memory: '메모리',
+    files: '파일',
+    shell: '셸',
+    web: '네트워크',
+    browser: '브라우저',
+    agents: '에이전트',
+    skills: '스킬',
+    hooks: '훅',
+  },
+  newMessage: '새 메시지',
+  answerReady: '답변 준비 완료',
+  turnAborted: '턴 중단됨',
+  step: n => `${n}단계`,
+  subagent: '서브에이전트',
+  compacting: '컨텍스트 압축 중',
+  addedContext: when => `${when} 컨텍스트 추가`,
+  addedMemory: when => `${when} 메모리 추가`,
+  toMessage: '메시지에',
+  atStart: '세션 시작 시',
+  records: (n, shown) => `레코드 ${n}개: ${shown}`,
+  stopped: tool => `${tool} 중지됨`,
+  askedPermission: tool => `권한 요청: ${tool}`,
+  checkBefore: tool => `${tool} 전 확인`,
+  running: '실행 중',
+  nothingYet: '아직 없습니다.',
+  noCounts: '아직 집계가 없습니다.',
+  noPictureHere: '3.7.8 이전 iTerm2에서는 이미지가 표시되지 않습니다. 모든 프레임을 메모리에 보관합니다. README를 참조하세요.',
+  idle: '실행 중인 작업이 없습니다.',
+  context: '컨텍스트',
+  andMore: n => ` 외 ${n}개`,
+  webSearch: '웹 검색',
+  artifact: '아티팩트',
+  workflow: '워크플로',
+  skill: '스킬',
+  loadingTools: '도구 로딩 중',
+  questionForYou: '내게 보낸 질문',
+  fileForYou: '내게 보낸 파일',
+  ms: n => `${n}ms`,
+  seconds: s => `${s}초`,
+  minutes: (m, s) => `${m}분 ${s}초`,
+  hours: (h, m) => `${h}시간 ${m}분`,
+}
+
+const TABLES = new Map<unknown, Strings>([['en', en], ['ru', ru], ['es', es], ['fr', fr], ['de', de], ['it', it], ['pt', pt], ['ko', ko]])
 
 export const stringsFor = (language: unknown): Strings => TABLES.get(language) ?? en

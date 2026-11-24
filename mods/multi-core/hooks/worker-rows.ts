@@ -75,7 +75,7 @@ function listBody(
   const counted = !row.isHarness && agent.tokenCount > 0;
   const right = [
     duration(row.now - agent.startTime),
-    ...(counted ? [`↓ ${tokens(agent.tokenCount)} tokens`] : []),
+    ...(counted ? [`↓ 토큰 ${tokens(agent.tokenCount)}`] : []),
   ].join(' · ');
   const left = `${name}${agent.description}${step}`;
   const gap = Math.max(2, (agent.columns ?? 0) - left.length - right.length);

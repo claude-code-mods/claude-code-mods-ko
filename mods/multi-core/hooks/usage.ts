@@ -58,12 +58,12 @@ export const register = (on: Parameters<Register>[0], _options?: Parameters<Regi
   });
   on('command.run', { command: 'multi-usage' }, async ($, event) => {
     if (event.args.trim()) {
-      return { text: 'Use /multi-usage without arguments.' };
+      return { text: '/multi-usage는 인자 없이 사용하세요.' };
     }
     const session = await $.session.id();
     const response = dashboard(accepted(await fetchUsage($, session)));
     if (!response) {
-      return { text: 'Multi usage is unavailable. Launch this session with claude-multi.' };
+      return { text: 'Multi 사용량을 확인할 수 없습니다. claude-multi로 이 세션을 시작하세요.' };
     }
     const quotaAdviceEnabled = (await read($, advisorySessions)).includes(session);
     // The pane draws from this state: writing it redraws an open pane without an invalidate.
@@ -81,7 +81,7 @@ export const register = (on: Parameters<Register>[0], _options?: Parameters<Regi
     try {
       const opened = await $.ui.open({
         id: 'multi-usage',
-        title: 'Multi usage',
+        title: 'Multi 사용량',
         focus: true,
         closeOnEscape: true,
         rows: 20,
@@ -90,7 +90,7 @@ export const register = (on: Parameters<Register>[0], _options?: Parameters<Regi
         return {};
       }
       // The pane waits undrawn (a surface that places no panes): say so, and show the numbers.
-      $.ui.toast(`Multi usage: ${opened.reason}`);
+      $.ui.toast(`Multi 사용량: ${opened.reason}`);
       return { text: summary };
     } catch {
       return { text: summary };
@@ -192,10 +192,10 @@ function updatePane(previous: UsagePaneProps, action: string, response: unknown)
             ? {}
             : { quotaAdviceEnabled: previous.quotaAdviceEnabled }),
         }
-      : { ...previous, error: 'Refresh failed. Showing the previous values.' };
+      : { ...previous, error: '새로고침에 실패했습니다. 이전 값을 표시합니다.', };
   }
   if (!record(response) || !Array.isArray(response.receipts)) {
-    return { ...previous, error: 'Could not load receipts.' };
+    return { ...previous, error: '영수증을 불러오지 못했습니다.', };
   }
   return {
     ...kept,
@@ -206,9 +206,9 @@ function receiptLines(value: unknown): string[] {
   if (!record(value) || !record(value.usage)) {
     return [];
   }
-  const owner = typeof value.agentId === 'string' ? value.agentId : 'Main turn';
+  const owner = typeof value.agentId === 'string' ? value.agentId : '주 턴';
   return [
-    `${owner} · ${String(value.outcome)}${value.incomplete ? ' (incomplete)' : ''} · ${String(value.time)}`,
+    `${owner} · ${String(value.outcome)}${value.incomplete ? ' (미완료)' : ''} · ${String(value.time)}`,
     `  ${receiptUsage(value.usage, value.requests, value.context)}`,
     ...(Array.isArray(value.entries) ? value.entries.flatMap(receiptEntry) : []),
   ];
@@ -219,23 +219,23 @@ function receiptLines(value: unknown): string[] {
  */
 function receiptUsage(usage: Record<string, unknown>, requests: unknown, context: unknown) {
   const count = (value: unknown) =>
-    typeof value === 'number' ? value.toLocaleString('en-US') : '0';
+    typeof value === 'number' ? value.toLocaleString('ko-KR') : '0';
   const calls =
-    typeof usage.model_calls === 'number' ? ` · ${count(usage.model_calls)} model calls` : '';
+    typeof usage.model_calls === 'number' ? ` · 모델 호출 ${count(usage.model_calls)}회` : '';
   const window = record(context)
-    ? `context ${count(
+    ? `컨텍스트 ${count(
         [context.input_tokens, context.cache_read_input_tokens, context.cache_creation_input_tokens]
           .filter((item) => typeof item === 'number')
           .reduce((sum, item) => sum + item, 0),
       )} · `
     : '';
-  return `${String(requests)} requests${calls} · ${window}consumed ${count(usage.input_tokens)} input · cached ${count(usage.cache_read_input_tokens)} · ${count(usage.output_tokens)} output`;
+  return `요청 ${String(requests)}회${calls} · ${window}입력 ${count(usage.input_tokens)} 소비 · 캐시 ${count(usage.cache_read_input_tokens)} · 출력 ${count(usage.output_tokens)}`;
 }
 function receiptEntry(value: unknown): string[] {
   if (!record(value)) {
     return [];
   }
   return [
-    `  ${String(value.provider)} · ${String(value.model ?? 'model unreported')} · effort ${String(value.effort ?? 'unreported')} · ${String(value.endpoint ?? 'endpoint unreported')} · ${String(value.source)}`,
+    `  ${String(value.provider)} · ${String(value.model ?? '모델 미보고')} · 노력 ${String(value.effort ?? '미보고')} · ${String(value.endpoint ?? '엔드포인트 미보고')} · ${String(value.source)}`,
   ];
 }

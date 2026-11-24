@@ -43,7 +43,7 @@ function text(input: Input, key: string): string {
 }
 
 function count(value: number, unit: string): Part[] {
-  return [{ bold: String(value) }, ` ${unit}${value === 1 ? '' : 's'}`];
+  return [{ bold: String(value) }, ` ${unit}`];
 }
 
 function oneLine(value: string) {
@@ -65,9 +65,9 @@ function readRange(input: Input) {
   const limit = typeof input.limit === 'number' ? input.limit : undefined;
   if (limit !== undefined) {
     const start = offset ?? 1;
-    return ` · lines ${start}-${start + limit - 1}`;
+    return ` · ${start}~${start + limit - 1}줄`;
   }
-  return offset === undefined ? '' : ` · from line ${offset}`;
+  return offset === undefined ? '' : ` · ${offset}줄부터`;
 }
 
 function quoted(input: Input, keys: readonly string[], cwd: string) {
@@ -154,7 +154,7 @@ function sentence({ Text }: Tags, parts: readonly Part[]): RenderElement {
 }
 
 function more({ Text }: Tags, hidden: number): RenderElement[] {
-  return hidden > 0 ? [Text({ dimColor: true, children: `… +${hidden} lines` })] : [];
+  return hidden > 0 ? [Text({ dimColor: true, children: `… +${hidden}줄` })] : [];
 }
 
 /** A text's lines, without the empty one after a final newline. */
@@ -196,9 +196,9 @@ function writeBody(tags: Tags, input: Input, cwd: string): RenderElement[] {
   const shown = lines.slice(0, previewLines);
   return [
     sentence(tags, [
-      'Wrote ',
-      ...count(lines.length, 'line'),
-      ' to ',
+      '줄 작성: ',
+      ...count(lines.length, '줄'),
+       ' → ',
       { bold: shownPath(text(input, 'file_path'), cwd) },
     ]),
     ...shown.map((line, index) => numbered(tags, String(index + 1).padStart(width), line)),
@@ -276,9 +276,9 @@ function diffRow(tags: Tags, line: DiffLine, width: number): RenderElement {
 }
 
 function editSummary(added: number, removed: number): Part[] {
-  const parts: Part[] = added ? ['Added ', ...count(added, 'line')] : [];
+  const parts: Part[] = added ? ['추가됨: ', ...count(added, '줄')] : [];
   if (removed) {
-    parts.push(added ? ', removed ' : 'Removed ', ...count(removed, 'line'));
+    parts.push(added ? ', 삭제됨: ' : '삭제됨: ', ...count(removed, '줄'));
   }
   return parts;
 }
@@ -332,13 +332,13 @@ export function resultBody(
 ): RenderElement[] | undefined {
   switch (mirroredKind(input)) {
     case 'Read':
-      return [sentence(tags, ['Read ', ...count(readCount(output), 'line')])];
+      return [sentence(tags, ['읽음: ', ...count(readCount(output), '줄')])];
     case 'Grep':
-      return [sentence(tags, ['Found ', ...count(foundCount(output), searchUnit(output))])];
+      return [sentence(tags, ['찾음: ', ...count(foundCount(output), searchUnit(output) === 'line' ? '줄' : '파일')])];
     case 'Glob':
-      return [sentence(tags, ['Found ', ...count(foundCount(output), 'file')])];
+      return [sentence(tags, ['찾음: ', ...count(foundCount(output), '파일')])];
     case 'LS':
-      return [sentence(tags, ['Listed ', ...count(foundCount(output), 'path')])];
+      return [sentence(tags, ['나열됨: ', ...count(foundCount(output), '경로')])];
     case 'Write':
       return text(input, 'content') ? writeBody(tags, input, cwd) : undefined;
     case 'Edit':
@@ -350,7 +350,7 @@ export function resultBody(
 
 /** A failed action's result: `Error: ...` in the theme's error colour, as the built-ins. */
 export function errorBody(tags: Tags, output: string): RenderElement[] {
-  const lines = textLines(/^error\b/i.test(output) ? output : `Error: ${output}`);
+  const lines = textLines(/^error\b/i.test(output) ? output : `오류: ${output}`);
   const shown = lines.slice(0, errorLines);
   return [
     ...shown.map((line) => tags.Text({ color: 'error', children: line })),
@@ -363,8 +363,8 @@ export function errorBody(tags: Tags, output: string): RenderElement[] {
  * it is drawn in the theme's `inactive` tone and says so.
  */
 export function unconfirmedBody(tags: Tags, output: string): RenderElement[] {
-  const detail = output.trim() || 'the native run reported no completion for this action.';
-  const lines = textLines(`Unconfirmed: ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`);
+  const detail = output.trim() || '네이티브 실행이 이 작업의 완료를 보고하지 않았습니다.';
+  const lines = textLines(`확인되지 않음: ${detail}`);
   const shown = lines.slice(0, errorLines);
   return [
     ...shown.map((line) => tags.Text({ color: 'inactive', children: line })),

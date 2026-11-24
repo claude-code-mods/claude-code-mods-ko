@@ -281,7 +281,7 @@ function statusText(status: Status, agentId: string | undefined) {
   const name = workerName(status.model) ?? status.model;
   // A failed or refused run names its reason, so the line says why, not only that.
   const tail = status.error ?? stepText(status.detail);
-  return [name, agentId ? 'worker' : '', `${status.state} ${elapsed}s`, tail]
+  return [name, agentId ? '작업자' : '', `${status.state} ${elapsed}초`, tail]
     .filter(Boolean)
     .join(' · ');
 }

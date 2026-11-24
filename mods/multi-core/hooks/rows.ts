@@ -37,11 +37,11 @@ const maximumTools = 160;
 const maximumRemembered = 512;
 const reminder = /<system-reminder>[\s\S]*?<\/system-reminder>/g;
 const description =
-  'Display row for a native Cursor, Antigravity or Grok action. Only the Multi gateway ' +
-  'originates it; it is not a tool a model can call.';
+  '네이티브 Cursor, Antigravity, Grok 작업의 표시 행입니다. Multi 게이트웨이만 ' +
+  '생성하며 모델이 호출할 수 있는 도구가 아닙니다.';
 const refusal =
-  'This is a display row for a native harness action. Only the Multi gateway originates it; ' +
-  'it is not a tool a model can call.';
+  '네이티브 하니스 작업의 표시 행입니다. Multi 게이트웨이만 생성하며 ' +
+  '모델이 호출할 수 있는 도구가 아닙니다.';
 
 type On = Parameters<Register>[0];
 type Row = { output: string; isError: boolean };
@@ -104,7 +104,7 @@ export const register = (on: On) => {
     }
     const row = await issuedRow(rowGateway($), event.input, event.tool_use_id);
     return row
-      ? { decision: 'allow' as const, reason: 'A row the Multi gateway issued for this call.' }
+      ? { decision: 'allow' as const, reason: 'Multi 게이트웨이가 이 호출에 대해 내보낸 행입니다.' }
       : { decision: 'deny' as const, reason: refusal };
   });
   on('ui.render', { component: 'ToolUse' }, async ($, event, next) => {
@@ -127,7 +127,7 @@ export const register = (on: On) => {
     const input = inputs.get(event.props.tool_use_id) ?? {};
     const output = outputText(event.props.output);
     if (event.props.isErrored || input.failed === true) {
-      return response(tags, errorBody(tags, output || 'failed'));
+      return response(tags, errorBody(tags, output || '실패'));
     }
     if (input.unconfirmed === true) {
       return response(tags, unconfirmedBody(tags, output));
@@ -138,7 +138,7 @@ export const register = (on: On) => {
     }
     // The built-in shows the output itself: the engine draws it, a few lines
     // and `… +N lines` in the compact view, all of it under ctrl+o.
-    const shown = [{ type: 'text', text: output || '(No output)' }];
+    const shown = [{ type: 'text', text: output || '(출력 없음)' }];
     return next({ ...event, props: { ...event.props, output: shown } });
   });
 };

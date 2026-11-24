@@ -36,18 +36,18 @@ function sessionLines(snapshot: UsageSnapshot, provider: UsageProvider): string[
     totals.requests += entry.requests;
     totals.calls += entry.usage.model_calls ?? 0;
   }
-  const count = (value: number) => value.toLocaleString('en-US');
+  const count = (value: number) => value.toLocaleString('ko-KR');
   const context = snapshot.contexts?.[provider];
   const window = context
-    ? `context ${count(context.input_tokens + context.cache_read_input_tokens + context.cache_creation_input_tokens)} · `
+    ? `컨텍스트 ${count(context.input_tokens + context.cache_read_input_tokens + context.cache_creation_input_tokens)} · `
     : '';
-  const calls = totals.calls ? ` · ${count(totals.calls)} model calls` : '';
+  const calls = totals.calls ? ` · 모델 호출 ${count(totals.calls)}회` : '';
   return [
-    `This session: ${count(totals.requests)} completed requests${calls}`,
-    `Tokens: ${window}consumed ${count(totals.input)} input · cached ${count(totals.read)} read`,
-    `Output: ${count(totals.output)} · cache written ${count(totals.write)}`,
+    `이 세션: 완료된 요청 ${count(totals.requests)}건${calls}`,
+    `토큰: ${window}입력 ${count(totals.input)} 소비 · 캐시 읽기 ${count(totals.read)}`,
+    `출력: ${count(totals.output)} · 캐시 기록 ${count(totals.write)}`,
     ...(entries.some((entry) => entry.source !== 'provider')
-      ? ['Includes estimated or unavailable counts; see session receipts for provenance.']
+      ? ['추정치 또는 확인할 수 없는 수치가 포함되어 있습니다. 출처는 세션 영수증을 참조하세요.']
       : []),
   ];
 }
@@ -77,7 +77,7 @@ export class ProviderUsageDashboard {
       return this.withSession(saved.view, snapshot);
     }
     if (this.pending.size >= 32) {
-      throw new Error('Too many simultaneous usage queries');
+      throw new Error('동시 사용량 조회가 너무 많습니다');
     }
     const request = this.collect(session);
     this.pending.set(session, request);
@@ -104,14 +104,14 @@ export class ProviderUsageDashboard {
           name: usage.name,
           ...(usage.url ? { url: usage.url } : {}),
           status: 'unavailable',
-          summary: 'Account usage unavailable',
+          summary: '계정 사용량을 확인할 수 없습니다',
           details: usage.unavailable,
         };
         if (!this.options.enabled.includes(name)) {
           return {
             ...row,
             status: 'disabled',
-            summary: 'Not enabled in this launcher',
+            summary: '이 실행 프로그램에서는 활성화되지 않음',
             details: [],
           };
         }
@@ -126,8 +126,8 @@ export class ProviderUsageDashboard {
           return {
             ...row,
             status: 'error',
-            summary: 'Could not refresh provider usage',
-            details: ['Check the provider login or connection, then refresh.', ...row.details],
+            summary: '공급자 사용량을 새로고침하지 못했습니다',
+            details: ['공급자 로그인 또는 연결을 확인한 뒤 새로고침하세요.', ...row.details],
           };
         }
       }),

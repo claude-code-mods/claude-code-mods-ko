@@ -37,7 +37,7 @@ export const register = (on: Parameters<Register>[0], _options: Parameters<Regis
     const sessionId = await $.session.id();
     const mode = accepted(await getJson(wire($), '/multi/mod/mode', { sessionId }));
     if (typeof mode?.generation !== 'number') {
-      return { skip: 'Multi compaction policy generation is unavailable.' };
+      return { skip: 'Multi 압축 정책 버전을 확인할 수 없습니다.' };
     }
     const payload = {
       sessionId,
@@ -49,7 +49,7 @@ export const register = (on: Parameters<Register>[0], _options: Parameters<Regis
     };
     if (event.trigger === 'precompute') {
       await precompute($, payload);
-      return { skip: 'Multi summary preparation runs outside the hook budget.' };
+      return { skip: 'Multi 요약 준비는 훅 제한 시간 밖에서 실행됩니다.' };
     }
     const result = accepted(await postJson(wire($), '/multi/mod/compact/authorize', payload));
     if (result?.messages) {
@@ -67,7 +67,7 @@ export const register = (on: Parameters<Register>[0], _options: Parameters<Regis
       }),
     );
     if (!fallback?.allow) {
-      return { skip: 'Multi tool-free compaction authorization was not acknowledged.' };
+      return { skip: 'Multi 도구 없는 압축 승인을 확인하지 못했습니다.' };
     }
     return next(event);
   });
