@@ -63,39 +63,39 @@ export function createHostAdapter(
   return {
     state: durableState,
     async list_sessions(cursor: string | null): Promise<Inventory> {
-      if (cursor !== null) throw new Error('ListAgents has no pagination cursor')
+      if (cursor !== null) throw new Error('ListAgents에는 페이지네이션 커서가 없습니다')
       const response = await $.tool.call({ tool: 'ListAgents' })
-      if (response.deny || response.isError || !response.result) throw new Error('ListAgents unavailable')
+      if (response.deny || response.isError || !response.result) throw new Error('ListAgents를 사용할 수 없습니다')
       const listing = response.result
       const self = await $.session.id()
       const manifest = await snapshotProvider.inventory(listing, self, response.ref)
       const gaps = [...manifest.gaps]
-      if (!listing.sections) gaps.push('ListAgents structured coverage missing')
+      if (!listing.sections) gaps.push('ListAgents 구조화된 범위 정보가 없습니다')
       for (const section of listing.sections ?? []) {
-        if (section.total !== section.rows.length) gaps.push('ListAgents section coverage incomplete')
+        if (section.total !== section.rows.length) gaps.push('ListAgents 섹션 범위가 불완전합니다')
       }
-      if (listing.notes?.length) gaps.push('ListAgents notes require source coverage reconciliation')
+      if (listing.notes?.length) gaps.push('ListAgents 메모의 소스 범위를 조정해야 합니다')
       if (!nonempty(manifest.enumerationId) || manifest.nextCursor !== null ||
           manifest.total !== manifest.sessions.length || new Set(manifest.sessions).size !== manifest.sessions.length ||
-          manifest.sessions.some(id => !nonempty(id) || id === self)) gaps.push('Invalid scoped inventory')
+          manifest.sessions.some(id => !nonempty(id) || id === self)) gaps.push('범위가 지정된 목록이 유효하지 않습니다')
       return { ...manifest, complete: manifest.complete === true && gaps.length === 0, gaps }
     },
     async read_snapshot(sessionId: string): Promise<JsonRecord> {
-      if (sessionId === await $.session.id()) throw new Error('Supervisor cannot target itself')
+      if (sessionId === await $.session.id()) throw new Error('감독 세션은 자신을 대상으로 할 수 없습니다')
       return snapshotProvider.readSnapshot(sessionId)
     },
     async judge(snapshot: JsonRecord, instructions: string): Promise<JsonRecord> {
       const binding = await snapshotProvider.binding(snapshot)
       for (const key of ['sessionId', 'generation', 'contractHash', 'evidenceSetHash', 'transcriptIdentity']) {
-        if (binding[key] !== snapshot[key]) throw new Error('Coordinator binding mismatch')
+        if (binding[key] !== snapshot[key]) throw new Error('코디네이터 바인딩이 일치하지 않습니다')
       }
-      if (!nonempty(binding.snapshotHash)) throw new Error('Coordinator content hash missing')
+      if (!nonempty(binding.snapshotHash)) throw new Error('코디네이터 콘텐츠 해시가 없습니다')
       const model = await $.session.model()
       const result = await $.model.complete({ model, system: instructions,
         prompt: JSON.stringify({ snapshot, binding }), maxTokens, timeoutMs: 60000 })
-      if (!result.isAnswered) throw new Error(`Judge unanswered: ${result.reason}`)
+      if (!result.isAnswered) throw new Error(`판정 응답 없음: ${result.reason}`)
       const parsed: unknown = JSON.parse(result.text)
-      if (!object(parsed)) throw new Error('Judge returned no JSON object')
+      if (!object(parsed)) throw new Error('판정이 JSON 객체를 반환하지 않았습니다')
       // Runtime-reported usage/provenance supersede model-authored telemetry.
       return { ...parsed, usage: { ...result.usage },
         // Local native-call correlation is not a provider request ID.
@@ -105,13 +105,13 @@ export function createHostAdapter(
       if (sessionId === await $.session.id() || action.ownerSessionId !== sessionId ||
           action.kind !== 'continue' || !nonempty(action.text) || !nonempty(idempotencyKey) ||
           expected.sessionId !== sessionId || typeof expected.expiresAt !== 'number' ||
-          !Number.isFinite(expected.expiresAt) || expected.expiresAt <= Date.now() / 1000) throw new Error('Invalid nudge target, action or deadline')
+          !Number.isFinite(expected.expiresAt) || expected.expiresAt <= Date.now() / 1000) throw new Error('알림 대상, 동작 또는 기한이 유효하지 않습니다')
       let calls = 0
       let outcome: SessionSendResult | undefined
       const allowed = await snapshotProvider.checkAndEnqueue(
         { sessionId, action, expected, idempotencyKey }, async () => {
-          if (++calls !== 1) throw new Error('Duplicate enqueue callback refused')
-          if ((expected.expiresAt as number) <= Date.now() / 1000) throw new Error('Nudge expired before enqueue')
+          if (++calls !== 1) throw new Error('중복 큐 추가 콜백은 거부됩니다')
+          if ((expected.expiresAt as number) <= Date.now() / 1000) throw new Error('큐에 추가하기 전에 알림이 만료되었습니다')
           outcome = await $.session.send({ to: { sessionId }, text: action.text as string })
           return outcome
         })

@@ -121,13 +121,13 @@ async function pollForDecision($: EngineInterface, p: Prompt, session: string | 
   if (q) {
     const e = q.entry
     const attempts = e.attempts ?? 0
-    const note = attempts > 0 ? `queued for retry: ${e.lastError ?? 'Jev did not answer'} (attempt ${attempts})${e.nextAttemptAt ? `; next try ${hhmm(e.nextAttemptAt)}` : ''}` : `queued (${q.before} older turn${q.before === 1 ? '' : 's'} before it)`
+    const note = attempts > 0 ? `재시도 대기 중: ${e.lastError ?? 'Jev가 응답하지 않음'} (시도 ${attempts}회)${e.nextAttemptAt ? `; 다음 시도 ${hhmm(e.nextAttemptAt)}` : ''}` : `대기 중 (앞에 이전 턴 ${q.before}개)`
     await update($, S_SAVING, () => 'queued')
     await update($, S_SAVING_NOTE, () => note)
   } else {
     const failure = failureAfter(await readText($, LOG), p.at)
     await update($, S_SAVING, () => (failure ? 'failed' : 'unknown'))
-    await update($, S_SAVING_NOTE, () => (failure ? `failed: ${failure}` : 'not decided yet: nothing in the log for this turn (the daemon may still be working through older turns)'))
+    await update($, S_SAVING_NOTE, () => (failure ? `실패: ${failure}` : '아직 결정되지 않음: 이 턴의 기록이 로그에 없습니다 (데몬이 이전 턴을 처리 중일 수 있습니다)'))
   }
   redraw($)
 }
@@ -137,23 +137,23 @@ async function note($: EngineInterface, where: Where, text: string): Promise<voi
   redraw($)
 }
 async function doWhy($: EngineInterface, idOrHash: string, where: Where): Promise<void> {
-  if (!isId(idOrHash) && !isHash(idOrHash)) return note($, where, 'not a memory id')
+  if (!isId(idOrHash) && !isHash(idOrHash)) return note($, where, '메모리 ID가 아닙니다')
   const cli = await read($, S_CLI)
   if (!cli) return note($, where, NOT_FOUND)
   const r = await runCli($, cli, ['why', idOrHash])
-  await update($, S_PENDING, (): Pending => ({ kind: 'output', where, title: `jevmem why ${idOrHash}${r.ok ? '' : ' (failed)'}`, text: r.text }))
+  await update($, S_PENDING, (): Pending => ({ kind: 'output', where, title: `jevmem why ${idOrHash}${r.ok ? '' : ' (실패)'}`, text: r.text }))
   redraw($)
 }
 async function doRetire($: EngineInterface, action: 'forget' | 'wrong', id: string, kind: string | null, where: Where): Promise<void> {
-  if (!isId(id)) return note($, where, 'not a memory id')
-  if (kind === 'constraint') return note($, where, action === 'forget' ? `a rule is retired in a terminal: jevmem forget ${id}` : `a rule is retired in a terminal: jevmem wrong ${id} --should-be none`)
+  if (!isId(id)) return note($, where, '메모리 ID가 아닙니다')
+  if (kind === 'constraint') return note($, where, action === 'forget' ? `규칙은 터미널에서 폐기해야 합니다: jevmem forget ${id}` : `규칙은 터미널에서 폐기해야 합니다: jevmem wrong ${id} --should-be none`)
   await update($, S_PENDING, (): Pending => ({ kind: 'confirm', where, action, id }))
   redraw($)
 }
 /** 0.7.6: a skipped turn's `missed` button: a confirm, then `jevmem missed "<the prompt as typed>"`, which labels the turn and adds the line. */
 async function doMissed($: EngineInterface, where: Where): Promise<void> {
   const p = await read($, S_PROMPT)
-  if (!p || !p.text.trim()) return note($, where, 'no prompt text for this turn')
+  if (!p || !p.text.trim()) return note($, where, '이 턴의 프롬프트 텍스트가 없습니다')
   await update($, S_PENDING, (): Pending => ({ kind: 'confirm', where, action: 'missed', id: '', text: p.text }))
   redraw($)
 }
@@ -169,14 +169,14 @@ async function doConfirm($: EngineInterface, yes: boolean): Promise<void> {
   if (!cli) return note($, p.where, NOT_FOUND)
   const args = p.action === 'forget' ? ['forget', p.id] : p.action === 'wrong' ? ['wrong', p.id, '--should-be', 'none'] : ['missed', p.text ?? '']
   const r = await runCli($, cli, args)
-  await update($, S_PENDING, (): Pending => ({ kind: 'output', where: p.where, title: `jevmem ${p.action === 'missed' ? 'missed "…"' : args.join(' ')}${r.ok ? '' : ' (failed)'}`, text: r.text }))
+  await update($, S_PENDING, (): Pending => ({ kind: 'output', where: p.where, title: `jevmem ${p.action === 'missed' ? 'missed "…"' : args.join(' ')}${r.ok ? '' : ' (실패)'}`, text: r.text }))
   redraw($)
 }
 async function doGuardLog($: EngineInterface): Promise<void> {
   const cli = await read($, S_CLI)
   if (!cli) return note($, 'guard', NOT_FOUND)
   const r = await runCli($, cli, ['guard', 'log', '-n', '5'])
-  await update($, S_PENDING, (): Pending => ({ kind: 'output', where: 'guard', title: `jevmem guard log -n 5${r.ok ? '' : ' (failed)'}`, text: r.text }))
+  await update($, S_PENDING, (): Pending => ({ kind: 'output', where: 'guard', title: `jevmem guard log -n 5${r.ok ? '' : ' (실패)'}`, text: r.text }))
   redraw($)
 }
 async function doClose($: EngineInterface): Promise<void> {
@@ -198,7 +198,7 @@ async function openOnce($: EngineInterface): Promise<void> {
 
 export const register: Register = (on) => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'jevmem', description: 'Open or close the jevmem pane: what was recalled for this prompt, what the guard decided, what the last turn saved' })
+    await $.command.register({ name: 'jevmem', description: 'jevmem 패널 열기 또는 닫기: 이 프롬프트에서 회상한 내용, 가드의 결정, 마지막 턴에 저장한 내용' })
     const isOn = await projectOn($)
     await update($, S_ON, () => isOn)
     await update($, S_OPENED, () => false)
@@ -217,14 +217,14 @@ export const register: Register = (on) => {
   })
 
   on('command.run', { command: 'jevmem' }, async ($) => {
-    if (!(await read($, S_ON))) return { text: 'jevmem is not turned on in this project: run jevmem setup here, then start a new session.' }
+    if (!(await read($, S_ON))) return { text: '이 프로젝트에서 jevmem이 켜져 있지 않습니다. 여기서 jevmem setup을 실행한 뒤 새 세션을 시작하세요.' }
     const placed = (await $.ui.panes()).some((p) => p.id === PANE && p.isPlaced)
     if (placed) {
       await $.ui.close({ id: PANE })
-      return { text: 'jevmem pane closed.' }
+      return { text: 'jevmem 패널을 닫았습니다.' }
     }
     const opened = await $.ui.open({ id: PANE, title: 'jevmem', focus: true, columns: 48, rows: 14 })
-    return { text: opened.isPlaced ? 'jevmem pane opened.' : `jevmem pane opened, waiting to be placed: ${opened.reason}` }
+    return { text: opened.isPlaced ? 'jevmem 패널을 열었습니다.' : `jevmem 패널을 열었지만 아직 배치되지 않았습니다: ${opened.reason}` }
   })
 
   on('prompt.submit', async ($, e, next) => {

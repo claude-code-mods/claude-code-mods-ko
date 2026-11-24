@@ -44,7 +44,7 @@ export function truncate(text: string, limit: number): string {
 function abridge(text: string, head: number, tail: number): string {
   if (text.length <= head + tail + 40) return text;
   const omitted = text.length - head - tail;
-  return `${text.slice(0, head)}\n[… ${omitted} chars omitted …]\n${text.slice(-tail)}`;
+  return `${text.slice(0, head)}\n[… ${omitted}자 생략 …]\n${text.slice(-tail)}`;
 }
 
 export function isPinned(
@@ -103,7 +103,7 @@ function inputText(input: Record<string, unknown>, limit: number): string {
 }
 
 function resultNote(call: ToolCall): string {
-  return `${call.isError ? 'error' : 'ok'}, ${call.resultChars} chars (omitted)`;
+  return `${call.isError ? '오류' : '정상'}, ${call.resultChars}자 (생략)`;
 }
 
 /** One call as a single line, for when the structured form is too costly. */
@@ -115,8 +115,8 @@ function compactCall(call: ToolCall): string {
     })
     .join(' ');
   return `${call.id} ${call.tool} ${truncate(input, INPUT_CHARS[2])} → ${
-    call.isError ? 'error' : 'ok'
-  } ${call.resultChars}ch`;
+    call.isError ? '오류' : '정상'
+  } ${call.resultChars}자`;
 }
 
 /**
@@ -251,7 +251,7 @@ export function fitState(
     shrink(index, (e) => {
       e.text = abridge(e.text, TEXT_HEAD, TEXT_TAIL);
     });
-    if (fits()) return fitted(history, tokens, 'texts abridged');
+    if (fits()) return fitted(history, tokens, '텍스트 축약');
   }
 
   for (const index of order) {
@@ -259,9 +259,9 @@ export function fitState(
     if (pinned(entry) || entry.text.length === 0) continue;
     const original = messages[entry.i]?.text.length ?? entry.text.length;
     shrink(index, (e) => {
-      e.text = `[… ${original} chars omitted …]`;
+      e.text = `[… ${original}자 생략 …]`;
     });
-    if (fits()) return fitted(history, tokens, 'old messages collapsed');
+    if (fits()) return fitted(history, tokens, '이전 메시지 축약');
   }
 
   const byMessage = callsByMessage(calls);
@@ -272,7 +272,7 @@ export function fitState(
     shrink(index, (e) => {
       e.tool_calls = own.map(compactCall);
     });
-    if (fits()) return fitted(history, tokens, 'old calls compacted');
+    if (fits()) return fitted(history, tokens, '이전 호출 압축');
   }
 
   const left = new Set<number>();
@@ -285,7 +285,7 @@ export function fitState(
       return fitted(
         history.filter((_, i) => !left.has(i)),
         tokens,
-        'old messages left out',
+        '이전 메시지 제외',
       );
     }
   }
@@ -296,9 +296,9 @@ export function fitState(
   );
   perEntry = history.map(entryTokens);
   tokens = baseTokens + perEntry.reduce((sum, n) => sum + n, 0);
-  if (fits()) return fitted(history, tokens, 'old calls merged');
+  if (fits()) return fitted(history, tokens, '이전 호출 병합');
 
   throw new Error(
-    `history too large for Jev (~${tokens} tokens after truncation, limit ${options.maxStateTokens})`,
+    `Jev에 전달할 기록이 너무 큽니다 (축약 후 약 ${tokens}토큰, 한도 ${options.maxStateTokens})`,
   );
 }

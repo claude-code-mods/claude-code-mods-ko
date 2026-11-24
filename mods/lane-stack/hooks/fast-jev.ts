@@ -177,7 +177,7 @@ export async function compactSession(
   config: HookConfig,
   fetchFn: HookFetch,
 ): Promise<SessionCompaction> {
-  if (!config.apiKey) throw new Error('no Jev key: set OPENLUX_API_KEY or TYPESAFE_API_KEY');
+  if (!config.apiKey) throw new Error('Jev 키가 없습니다. OPENLUX_API_KEY 또는 TYPESAFE_API_KEY를 설정하세요');
   const asker = jevAsker(fetchFn, config.apiKey, config.model, config.provider);
   const result = await compact(messages, asker, config);
   return { result, messages: toSessionMessages(messages, result.messages) };
@@ -190,14 +190,14 @@ function percent(ratio: number): string {
 export function summarize(result: CompactResult): string {
   const { stats } = result;
   const parts = [
-    stats.kept > 0 ? `${stats.kept} kept` : '',
-    stats.resultsDropped > 0 ? `${stats.resultsDropped} results truncated` : '',
-    stats.callsDropped > 0 ? `${stats.callsDropped} call_dropped` : '',
-    stats.pinned > 0 ? `${stats.pinned} pinned` : '',
+    stats.kept > 0 ? `유지 ${stats.kept}개` : '',
+    stats.resultsDropped > 0 ? `결과 잘림 ${stats.resultsDropped}개` : '',
+    stats.callsDropped > 0 ? `호출 삭제 ${stats.callsDropped}개` : '',
+    stats.pinned > 0 ? `고정 ${stats.pinned}개` : '',
   ].filter(Boolean);
-  return `${percent(reductionRatio(result))} reduction; ${
+  return `감소율 ${percent(reductionRatio(result))}; ${
     parts.join(', ') || '도구 호출 없음'
-  }; state ~${stats.stateTokens} tokens (${stats.stateStage}) in ${stats.requests} request(s)`;
+  }; 상태 약 ${stats.stateTokens}토큰 (${stats.stateStage}), 요청 ${stats.requests}회`;
 }
 
 const UI_LOG_MAX_CHARS = 4096;
@@ -296,19 +296,19 @@ export const register: Register = (on: On, options: PluginOptions) => {
       if (reductionRatio(result) < config.minReductionRatio) {
         notify(
           $,
-          `fallback to built-in summary (below ${percent(config.minReductionRatio)} minimum: ${summarize(result)})`,
+          `기본 요약으로 전환 (최소 ${percent(config.minReductionRatio)} 미만: ${summarize(result)})`,
         );
         return next(event);
       }
       notify(
         $,
-        `kept ${messages.length}/${event.messages.length} messages, no summary (${summarize(result)})`,
+        `메시지 ${messages.length}/${event.messages.length}개 유지, 요약 없음 (${summarize(result)})`,
       );
       return { messages };
     } catch (error) {
       notify(
         $,
-        `fallback to built-in summary (${error instanceof Error ? error.message : String(error)})`,
+        `기본 요약으로 전환 (${error instanceof Error ? error.message : String(error)})`,
       );
       return next(event);
     }
@@ -323,7 +323,7 @@ export const register: Register = (on: On, options: PluginOptions) => {
       await $.session.compact();
     } catch (error) {
       $.ui.log(
-        `auto-compact skipped (${error instanceof Error ? error.message : String(error)})`,
+        `자동 압축을 건너뛰었습니다 (${error instanceof Error ? error.message : String(error)})`,
       );
     } finally {
       compacting = false;

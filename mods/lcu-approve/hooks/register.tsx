@@ -13,8 +13,8 @@ import type { Approval, AppsState } from './views'
 const SERVER = 'lcu'
 const REQUEST_TOOL = 'approval_request'
 const CHOICE_TOOL = 'approval_choice'
-const ASK_HEADER = 'Computer use'
-const APPROVAL_TITLE = 'Computer use approval'
+const ASK_HEADER = '컴퓨터 사용'
+const APPROVAL_TITLE = '컴퓨터 사용 승인'
 const APPS_COMMAND = 'computer-use-apps'
 const APPS_PANE = 'lcu-approved-apps'
 
@@ -79,7 +79,7 @@ export const register: Register = on => {
     // (auto mode's classifier refuses it). Waiting on `$` does not spend the hook's budget.
     if (surfaces.includes('desktop') || (inApp && !surfaces.includes('terminal'))) {
       await askAndRecord($, approval)
-      return { block: 'Answered by the lcu-approve mod' }
+      return { block: 'lcu-approve 모드가 응답했습니다' }
     }
 
     // The icon is made here, in an event hook: a render closure cannot run a process.
@@ -93,7 +93,7 @@ export const register: Register = on => {
       // A narrow terminal seats no pane: the question dialog asks, within this hook as on the desktop.
       await askAndRecord($, approval)
     }
-    return { block: 'Answered by the lcu-approve mod' }
+    return { block: 'lcu-approve 모드가 응답했습니다' }
   })
 
   on('ui.render', { component: 'Pane' }, async ($, e, next) => {
@@ -133,7 +133,7 @@ export const register: Register = on => {
     const name = e.value.trim()
     if (e.kind === 'submit' && name) {
       await update($, apps, state => ({ ...state, nonce: state.nonce + 1 }))
-      await runLcu($, ['allow', name], `Allowing ${name}. Confirm with Touch ID or your password...`)
+      await runLcu($, ['allow', name], `${name}을(를) 허용합니다. Touch ID 또는 비밀번호로 확인하세요...`)
     }
     return { element: e.element, value: e.value }
   })
@@ -144,7 +144,7 @@ export const register: Register = on => {
     if (entry && e.origin.kind === 'person') {
       shown.delete(e.id)
       await record($, entry.approval.id, 'cancel')
-      $.ui.toast(`Approval for ${entry.approval.label} dismissed`)
+      $.ui.toast(`${entry.approval.label}에 대한 승인 요청을 취소했습니다`)
     }
     return next(e)
   })
@@ -154,7 +154,7 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: APPS_COMMAND,
-      description: 'Show the apps Computer use may control, and allow or revoke them',
+      description: '컴퓨터 사용 기능이 제어할 수 있는 앱을 보고 허용하거나 취소합니다',
     })
     const result = await next(e)
     // An update notice from the cache `lcu update --notice` keeps: the person gets one toast. The model never
@@ -198,7 +198,7 @@ export const register: Register = on => {
   on('command.run', { command: APPS_COMMAND }, async $ => {
     await refresh($)
     await openApps($)
-    return { text: 'Approved apps panel opened.' }
+    return { text: '승인된 앱 패널을 열었습니다.' }
   })
 
   // The approval tools are for this mod alone: the model gets a refusal,
@@ -207,13 +207,13 @@ export const register: Register = on => {
     const tool = `mcp__${SERVER}__${name}`
     on('tool.call', { tool }, async ($, e, next) => {
       if (next.origin.plugin !== $.plugin.name) {
-        return { deny: `${name} is a host-only LCU tool.` }
+        return { deny: `${name}은 호스트 전용 LCU 도구입니다.` }
       }
       return next(e)
     })
     on('tool.check', { tool }, async ($, e, next) => {
       if (next.origin.plugin !== $.plugin.name) return next(e)
-      return { decision: 'allow', reason: 'LCU approval mod' }
+      return { decision: 'allow', reason: 'LCU 승인 모드' }
     })
   }
 }
@@ -315,12 +315,12 @@ async function sessionGrants($: any): Promise<SessionRow[]> {
 
 export async function loadApps($: any, lcu: string): Promise<AppsData> {
   const run = await $.process.run([lcu, 'apps', '--json'], { timeoutMs: 20000 })
-  if (!ok(run)) throw new Error(firstLine(run.stderr) || `lcu apps exited ${run.exitCode}`)
+  if (!ok(run)) throw new Error(firstLine(run.stderr) || `lcu apps가 종료 코드 ${run.exitCode}로 종료되었습니다`)
   let always: AppRow[]
   try {
     always = JSON.parse(run.stdout).apps
   } catch {
-    throw new Error('lcu apps --json printed something unreadable')
+    throw new Error('lcu apps --json이 읽을 수 없는 내용을 출력했습니다')
   }
   return { always, session: await sessionGrants($).catch(() => []) }
 }
@@ -381,7 +381,7 @@ async function openApps($: any): Promise<void> {
   const state = await read($, apps)
   await $.ui.open({
     id: APPS_PANE,
-    title: 'Approved apps',
+    title: '승인된 앱',
     focus: true,
     closeOnEscape: true,
     rows: appsRows(state),
@@ -395,7 +395,7 @@ async function refresh($: any): Promise<void> {
     const where = tried.length ? tried.join(' or ') : '~/.local/share/lcu/current/bin/lcu'
     await update($, apps, state => ({
       ...state, isLoaded: true, always: [], session: [],
-      unavailable: `The lcu command was not found at ${where}. Run lcu setup --agent claude-code again.`,
+      unavailable: `${where}에서 lcu 명령을 찾을 수 없습니다. lcu setup --agent claude-code를 다시 실행하세요.`,
     }))
     return
   }
@@ -403,7 +403,7 @@ async function refresh($: any): Promise<void> {
     const data = await loadApps($, path)
     await update($, apps, state => ({ ...state, ...data, isLoaded: true, unavailable: undefined }))
   } catch (error) {
-    const text = `Could not list the apps: ${(error as Error).message}`
+    const text = `앱 목록을 가져올 수 없습니다: ${(error as Error).message}`
     await update($, apps, state => ({
       ...state, isLoaded: true, unavailable: state.always.length || state.session.length ? undefined : text,
       notice: { tone: 'error', text },
@@ -419,7 +419,7 @@ async function pressApps($: any, action: string): Promise<void> {
   }
   if (action.startsWith('revoke:')) {
     const bundleId = action.slice('revoke:'.length)
-    await runLcu($, ['revoke', bundleId], `Revoking ${bundleId}. Confirm with Touch ID or your password...`)
+    await runLcu($, ['revoke', bundleId], `${bundleId}의 허용을 취소합니다. Touch ID 또는 비밀번호로 확인하세요...`)
   }
 }
 
@@ -436,10 +436,10 @@ async function runLcu($: any, args: string[], working: string): Promise<void> {
   try {
     const run = await $.process.run([path, 'apps', ...args], { timeoutMs: 180000 })
     notice = run.exitCode === 0
-      ? { tone: 'ok', text: firstLine(run.stdout) || 'Done.' }
-      : { tone: 'error', text: firstLine(run.stderr).replace(/^lcu apps: /, '') || `lcu apps exited ${run.exitCode}` }
+      ? { tone: 'ok', text: firstLine(run.stdout) || '완료.' }
+      : { tone: 'error', text: firstLine(run.stderr).replace(/^lcu apps: /, '') || `lcu apps가 종료 코드 ${run.exitCode}로 종료되었습니다` }
   } catch (error) {
-    notice = { tone: 'error', text: `Could not run lcu: ${(error as Error).message}` }
+    notice = { tone: 'error', text: `lcu를 실행할 수 없습니다: ${(error as Error).message}` }
   }
   $.ui.toast(notice.text)
   await update($, apps, (state: AppsState) => ({ ...state, busy: undefined, notice }))
@@ -452,9 +452,9 @@ async function record($: any, id: string, choice: Choice): Promise<boolean> {
   try {
     const reply = (await $.mcp.call(SERVER, CHOICE_TOOL, { id, choice })) as McpResult
     if (!reply.isError) return true
-    report($, `LCU refused the choice: ${textOf(reply)}`)
+    report($, `LCU가 선택을 거부했습니다: ${textOf(reply)}`)
   } catch (error) {
-    report($, `could not send the choice to LCU: ${String(error)}`)
+    report($, `선택을 LCU로 전송할 수 없습니다: ${String(error)}`)
   }
   return false
 }
@@ -462,14 +462,14 @@ async function record($: any, id: string, choice: Choice): Promise<boolean> {
 // A failure the person should see, and the debug log keeps.
 function report($: any, text: string): void {
   $.ui.log(`lcu-approve: ${text}`, { to: 'debug' })
-  $.ui.toast(`Computer use approval: ${text}`)
+  $.ui.toast(`컴퓨터 사용 승인: ${text}`)
 }
 
 const CONFIRMATION: Record<Choice, (name: string) => string> = {
-  session: name => `${name} allowed for this conversation`,
-  always: name => `${name} always allowed`,
-  deny: name => `${name} denied`,
-  cancel: name => `Approval for ${name} dismissed`,
+  session: name => `${name}을(를) 이 대화에서 허용했습니다`,
+  always: name => `${name}을(를) 항상 허용합니다`,
+  deny: name => `${name}을(를) 거부했습니다`,
+  cancel: name => `${name}에 대한 승인 요청을 취소했습니다`,
 }
 
 // Record the person's choice, confirm it, then take the pane down. A refused record means the request ended.
@@ -523,10 +523,10 @@ const DISMISSED = '[User dismissed'
 
 // The question: the app, the risk when high. The desktop app draws only this text and the option labels.
 function askQuestion(approval: Approval): string {
-  const sentence = `Computer use will be able to see and control ${approval.label} (${approval.app}).`
-  if (approval.riskLevel !== 'high') return `${sentence} Allow it?`
+  const sentence = `컴퓨터 사용 기능이 ${approval.label} (${approval.app})을(를) 보고 제어할 수 있습니다.`
+  if (approval.riskLevel !== 'high') return `${sentence} 허용하시겠습니까?`
   const warning = approval.warning ? ` ${plainWarning(approval.warning)}` : ''
-  return `\u26a0\ufe0f High risk \u2014 ${sentence}${warning} Allow it?`
+  return `\u26a0\ufe0f 높은 위험 \u2014 ${sentence}${warning} 허용하시겠습니까?`
 }
 
 // The engine's question dialog: the desktop app's card, and a terminal where no pane is seated.

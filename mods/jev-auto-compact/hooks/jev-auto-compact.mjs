@@ -22,6 +22,7 @@ import { redactText, redactToolInput } from './redact.mjs';
 // Constants
 // ---------------------------------------------------------------------------
 
+const UI = '[jev-auto-compact]';
 const MIN_REDUCTION_RATIO = 0.15;
 /** Context-window percent at which turn.complete triggers a compaction. */
 const COMPACT_AT_PERCENT = 60;
@@ -207,7 +208,7 @@ function buildHistoryEntry(msg, idx, callsByMsg, inputLimit, abridge, collapse, 
   // Collapse non-pinned messages without tool calls
   if (collapse && !pinnedIndices.has(idx) && !callsByMsg.has(idx)) {
     if (!text.trim()) return null;
-    return { i: idx, role, text: `[... ${text.length} chars omitted ...]` };
+    return { i: idx, role, text: `[... ${text.length}자 생략 ...]` };
   }
 
   // Abridge long non-pinned text
@@ -227,7 +228,7 @@ function buildHistoryEntry(msg, idx, callsByMsg, inputLimit, abridge, collapse, 
       id: c.seqId,
       tool: c.tool,
       input: c.input.substring(0, inputLimit),
-      result: `${c.isError ? 'error' : 'ok'}, ${c.resultChars} chars (omitted)`,
+      result: `${c.isError ? '오류' : '정상'}, ${c.resultChars}자 (생략)`,
     }));
   }
 
@@ -327,7 +328,7 @@ function questionsFor(call) {
     [`result_${seqId}`]: {
       type: 'noul',
       instructions: {
-        question: `The full output of tool call ${seqId} (${tool}, ${resultChars} chars) should stay verbatim: the assistant still needs its contents and re-running the tool would not reproduce it.`,
+        question: `도구 호출 ${seqId}(${tool}, ${resultChars}자)의 전체 출력은 그대로 유지해야 합니다. 어시스턴트가 내용을 계속 사용하며 도구를 다시 실행해도 같은 결과를 얻을 수 없습니다.`,
         criteria: {
           true: 'The result contains information not available elsewhere: error details, file contents being modified, test output. Re-running would not reproduce it.',
           false: 'The result is a simple acknowledgment, a file listing available from later reads, or output reproducible by re-running.',
@@ -382,7 +383,7 @@ async function callJev(fetchFn, apiKey, state, questions, timeoutMs = JEV_TIMEOU
   const payload = { model: JEV_MODEL, state, questions };
   let timer;
   const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error('Jev request timed out')), timeoutMs);
+    timer = setTimeout(() => reject(new Error('Jev 요청 시간이 초과되었습니다')), timeoutMs);
   });
   let response;
   try {
@@ -408,7 +409,7 @@ async function callJev(fetchFn, apiKey, state, questions, timeoutMs = JEV_TIMEOU
   }
 
   const data = JSON.parse(response.text);
-  if (!data.answers) throw new Error('Jev response missing answers');
+  if (!data.answers) throw new Error('Jev 응답에 answers가 없습니다');
   return data;
 }
 
@@ -483,7 +484,7 @@ function applyDecisions(messages, decisions, calls) {
             filtered.push({
               ...tr,
               text: text.substring(0, TRUNCATE_HEAD_CHARS) +
-                `\n[jev-compact truncated ${truncated} chars; re-run the tool if needed]`,
+                `\n[jev-compact에서 ${truncated}자 생략; 필요한 경우 도구를 다시 실행하세요]`,
             });
             changed = true;
           } else {
@@ -552,7 +553,7 @@ export async function compact(fetchFn, apiKey, messages, log = () => {}, { timeo
   // Batch questions to fit Jev limits
   const batches = batchCalls(candidates, stateTokens);
   if (batches === null) {
-    log(`[jev-auto-compact] ${candidates.length} tool calls with a ${stateTokens}-token state do not fit in ${MAX_REQUESTS_PER_COMPACTION} Jev requests`);
+    log(`${UI} 도구 호출 ${candidates.length}개와 ${stateTokens}토큰 상태를 Jev 요청 ${MAX_REQUESTS_PER_COMPACTION}개에 담을 수 없습니다`);
     return {
       messages,
       decisions,
@@ -606,7 +607,7 @@ export async function compact(fetchFn, apiKey, messages, log = () => {}, { timeo
       errorBatches++;
       if (errorBatches === 1) {
         const status = typeof err?.status === 'number' ? `HTTP ${err.status}` : (err?.name || 'error');
-        log(`[jev-auto-compact] Jev batch failed (${status}); keeping its ${batch.length} calls`);
+        log(`${UI} Jev 배치 실패 (${status}); 해당 호출 ${batch.length}개를 유지합니다`);
       }
       for (const c of batch) {
         decisions[c.seqId] = { action: 'keep', reason: 'jev_error' };
@@ -687,7 +688,7 @@ async function appendEvidence($, record) {
     await $.store.set(EVIDENCE_KEY, events);
   } catch (error) {
     // Evidence is best-effort; never let it break compaction. Say why once.
-    $.ui.log(`[jev-auto-compact] evidence not recorded (${error instanceof Error ? error.message : String(error)})`);
+    $.ui.log(`${UI} 증거를 기록하지 못했습니다 (${error instanceof Error ? error.message : String(error)})`);
   }
 }
 
@@ -755,7 +756,7 @@ export const register = (on, options) => {
         ((await $.settings.read())?.env || {})['TYPESAFE_API_KEY'];
 
       if (!apiKey) {
-        $.ui.log('[jev-auto-compact] no TYPESAFE_API_KEY, falling back to built-in');
+        $.ui.log(`${UI} TYPESAFE_API_KEY가 없어 기본 요약으로 전환합니다`);
         await appendEvidence($, { ...base, engine: 'builtin', note: 'no api key' });
         return next(event);
       }
@@ -794,9 +795,9 @@ export const register = (on, options) => {
           // Leave the conversation as it is: never hand a self-triggered
           // compaction to the built-in summarizer (minutes of LLM time).
           const reason = stats.overBudget
-            ? 'too large for one Jev pass'
-            : `nothing to prune (${pct(stats.ratio)} < ${pct(MIN_REDUCTION_RATIO)} min)`;
-          $.ui.log(`[jev-auto-compact] skipped: ${reason}`);
+            ? '한 번의 Jev 처리에 너무 큼'
+            : `정리할 내용 없음 (${pct(stats.ratio)} < 최소 ${pct(MIN_REDUCTION_RATIO)})`;
+          $.ui.log(`${UI} 건너뜀: ${reason}`);
           await appendEvidence($, { ...base, ...statsRecord, engine: 'skipped', note: reason });
           skippedAt = { messages: event.messages.length, percent: usage.percent };
           return { skip: `jev-auto-compact: ${reason}` };
@@ -804,22 +805,22 @@ export const register = (on, options) => {
         // The engine or the user needs this compaction; Jev alone is not
         // enough, so the built-in summarizer runs.
         const reason = stats.overBudget
-          ? 'too large for one Jev pass'
-          : `${pct(stats.ratio)} < ${pct(MIN_REDUCTION_RATIO)} min`;
-        $.ui.log(`[jev-auto-compact] fallback to built-in (${reason})`);
+          ? '한 번의 Jev 처리에 너무 큼'
+          : `${pct(stats.ratio)} < 최소 ${pct(MIN_REDUCTION_RATIO)}`;
+        $.ui.log(`${UI} 기본 요약으로 전환 (${reason})`);
         await appendEvidence($, { ...base, ...statsRecord, engine: 'builtin', note: reason });
         return next(event);
       }
 
       $.ui.log(
-        `[jev-auto-compact] ${result.messages.length}/${event.messages.length} msgs, ` +
-        `${pct(stats.ratio)} reduction, ` +
-        `${stats.droppedCall} dropped, ${stats.droppedResult} truncated, ` +
-        `${stats.pinned} pinned, ${stats.prefiltered} prefiltered ` +
-        `(${stats.latencyMs}ms, ${stats.jevJudged} Jev-judged, ${stats.jevCalls} API calls` +
-        (stats.errorBatches ? `, ${stats.errorBatches} failed` : '') +
-        `, redactions: ${stats.redactions ?? 0}` +
-        (usage.tokens ? `, ctx ${usage.tokens} tokens before)` : ')')
+        `${UI} 메시지 ${result.messages.length}/${event.messages.length}개, ` +
+        `감소율 ${pct(stats.ratio)}, ` +
+        `삭제 ${stats.droppedCall}개, 잘림 ${stats.droppedResult}개, ` +
+        `고정 ${stats.pinned}개, 사전 필터링 ${stats.prefiltered}개 ` +
+        `(${stats.latencyMs}ms, Jev 판정 ${stats.jevJudged}개, API 호출 ${stats.jevCalls}회` +
+        (stats.errorBatches ? `, 실패 ${stats.errorBatches}회` : '') +
+        `, 가림 처리: ${stats.redactions ?? 0}` +
+        (usage.tokens ? `, 이전 컨텍스트 ${usage.tokens}토큰)` : ')')
       );
       await appendEvidence($, { ...base, ...statsRecord, engine: 'jev' });
       skippedAt = null;
@@ -829,7 +830,7 @@ export const register = (on, options) => {
       return compacted;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      $.ui.log(`[jev-auto-compact] fallback to built-in (${message})`);
+      $.ui.log(`${UI} 기본 요약으로 전환 (${message})`);
       await appendEvidence($, { ...base, engine: 'error', note: message.substring(0, 200) });
       return next(event);
     }
@@ -867,11 +868,11 @@ export const register = (on, options) => {
         const roseBy = typeof skippedAt.percent === 'number' ? usage.percent - skippedAt.percent : Infinity;
         if (grewBy < SKIP_RETRY_MIN_NEW_MESSAGES && roseBy < SKIP_RETRY_MIN_PERCENT) return next(event);
       }
-      $.ui.log(`[jev-auto-compact] context at ${usage.percent.toFixed(0)}% >= ${COMPACT_AT_PERCENT}%, compacting`);
+      $.ui.log(`${UI} 컨텍스트 ${usage.percent.toFixed(0)}% >= ${COMPACT_AT_PERCENT}% — 압축을 시작합니다`);
       await $.session.compact();
     } catch (error) {
       $.ui.log(
-        `[jev-auto-compact] auto-compact skipped (${error instanceof Error ? error.message : String(error)})`
+        `${UI} 자동 압축을 건너뛰었습니다 (${error instanceof Error ? error.message : String(error)})`
       );
     } finally {
       compacting = false;

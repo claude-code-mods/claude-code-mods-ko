@@ -25,16 +25,16 @@ export async function runFleetOnce($: EngineInterface, config: FleetRuntimeConfi
   if (!config.enabled) return { status: 'disabled' }
   if (![config.jobsRoot, config.projectRoot, config.stateRoot].every(p => p.startsWith('/')) ||
       !config.jobIds.length || !Object.keys(config.sessions).length) {
-    return { status: 'uncertain', gaps: ['Explicit source/state roots and session mapping required'] }
+    return { status: 'uncertain', gaps: ['명시적인 소스/상태 경로와 세션 매핑이 필요합니다'] }
   }
   const cli = async (action: string, input: JsonRecord = {}): Promise<any> => {
     const result = await $.process.run(['python3', '-I', `${$.plugin.root}/hooks/fleet-source.py`],
       { timeoutMs: 10000, stdin: JSON.stringify({ action, config, ...input }) })
     if (result.exitCode !== 0 || result.isStdoutTruncated || result.isStderrTruncated) {
-      throw new Error('Named source CLI refused or returned incomplete output')
+      throw new Error('지정된 소스 CLI가 요청을 거부했거나 출력을 완전히 반환하지 않았습니다')
     }
     const reply = JSON.parse(result.stdout)
-    if (reply.ok !== true) throw new Error('Named source CLI diagnosis required')
+    if (reply.ok !== true) throw new Error('지정된 소스 CLI 진단이 필요합니다')
     return reply.result
   }
   const state: DurableState = {
@@ -50,7 +50,7 @@ export async function runFleetOnce($: EngineInterface, config: FleetRuntimeConfi
         const address = row.name && row.ref ? `${row.name} [${row.ref}]` : row.name
         const sid = (address && config.sessions[address]) || (row.id && config.sessions[row.id])
         if (sid === self) continue
-        if (!sid) { gaps.push('Native row has no explicit scoped session mapping'); continue }
+        if (!sid) { gaps.push('네이티브 행에 명시적인 범위 세션 매핑이 없습니다'); continue }
         sessions.push(sid)
       }
       return { enumerationId: crypto.randomUUID(), sessions, total: sessions.length,
@@ -98,7 +98,7 @@ export async function runFleetOnce($: EngineInterface, config: FleetRuntimeConfi
               allowance = true; break
             }
           }
-          if (!allowance) throw new Error('Explicit durable judge allowance exhausted')
+          if (!allowance) throw new Error('명시적으로 지정된 판정 허용량을 모두 사용했습니다')
           if (!await state.reserve(key, { status: 'reserved', binding })) {
             rows.push({ sessionId: sid, status: 'reserved', verdict: 'ONZEKER' }); continue
           }
@@ -109,16 +109,16 @@ export async function runFleetOnce($: EngineInterface, config: FleetRuntimeConfi
             await state.put(key, record)
           } catch {
             await state.put(key, { status: 'unknown', binding })
-            throw new Error('Judge result unavailable or invalid; reservation retained')
+            throw new Error('판정 결과를 사용할 수 없거나 유효하지 않습니다. 예약은 유지됩니다')
           }
         }
-        if (record.status !== 'judged') throw new Error('Prior judge reservation unresolved')
+        if (record.status !== 'judged') throw new Error('이전 판정 예약이 해결되지 않았습니다')
         const judgment = record.judgment as JsonRecord
         await cli('validate-judgment', { snapshot, judgment })
         const fresh = await host.read_snapshot(sid)
         await cli('validate-snapshot', { snapshot: fresh })
         if (JSON.stringify(await provider.binding(fresh)) !== JSON.stringify(binding)) {
-          throw new Error('Snapshot changed after judgment')
+          throw new Error('판정 후 스냅샷이 변경되었습니다')
         }
         if (inventory.complete && (judgment.verdict === 'HIATEN' || judgment.verdict === 'ONZEKER') &&
             (await cli('eligible', { snapshot: fresh })).eligible) {
@@ -132,20 +132,20 @@ export async function runFleetOnce($: EngineInterface, config: FleetRuntimeConfi
               rows.push({ sessionId: sid, status: receipt.status, judgment, receipt })
             } catch {
               await state.put(sendKey, { status: 'unknown' })
-              throw new Error('Advisory queue outcome unknown; no automatic replay')
+              throw new Error('권고 큐 결과를 알 수 없습니다. 자동 재실행은 하지 않습니다')
             }
           } else rows.push({ sessionId: sid, status: 'deduplicated', judgment })
         } else {
           rows.push({ sessionId: sid, status: 'reviewed-no-authority', judgment })
-          if (judgment.verdict !== 'ADEQUAAT') gaps.push('No proven safe advisory eligibility')
+          if (judgment.verdict !== 'ADEQUAAT') gaps.push('안전한 권고 자격이 입증되지 않았습니다')
         }
       } catch (error) {
         rows.push({ sessionId: sid, status: 'uncertain', verdict: 'ONZEKER' })
-        gaps.push(error instanceof Error ? error.message : 'Source inspection failed')
+        gaps.push(error instanceof Error ? error.message : '소스 검사에 실패했습니다')
       }
     }
   } catch (error) {
-    gaps.push(error instanceof Error ? error.message : 'Fleet inspection failed')
+    gaps.push(error instanceof Error ? error.message : 'Fleet 검사에 실패했습니다')
   }
   if (gaps.length) report.status = 'uncertain'
   return report

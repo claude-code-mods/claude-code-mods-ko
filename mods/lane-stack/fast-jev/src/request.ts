@@ -77,14 +77,14 @@ export function boundState(state: JevState, maxTokens = MAX_STATE_TOKENS): JevSt
   }
   const tokens = estimateTokens(JSON.stringify(copy));
   if (tokens <= maxTokens) return copy as JevState;
-  throw new Error(`Jev state exceeds ${maxTokens} tokens (${tokens})`);
+  throw new Error(`Jev 상태가 ${maxTokens}토큰 한도를 초과했습니다 (${tokens})`);
 }
 
 function abridge(text: string, keepRatio: number): string {
   const keep = Math.max(400, Math.floor(text.length * keepRatio));
   if (keep >= text.length) return text;
   const head = Math.floor(keep * 0.7);
-  return `${text.slice(0, head)}\n[… ${text.length - keep} chars omitted …]\n${text.slice(text.length - (keep - head))}`;
+  return `${text.slice(0, head)}\n[… ${text.length - keep}자 생략 …]\n${text.slice(text.length - (keep - head))}`;
 }
 
 export interface JevRequest {
@@ -138,7 +138,7 @@ export function parseJevResponse(
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new Error('Jev returned malformed JSON');
+    throw new Error('Jev가 잘못된 JSON을 반환했습니다');
   }
   if (
     parsed === null ||
@@ -147,7 +147,7 @@ export function parseJevResponse(
     parsed.answers === null ||
     typeof parsed.answers !== 'object'
   ) {
-    throw new Error('Jev response is missing answers');
+    throw new Error('Jev 응답에 answers가 없습니다');
   }
   return parsed as JevResponse;
 }

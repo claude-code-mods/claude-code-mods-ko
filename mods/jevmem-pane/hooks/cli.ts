@@ -44,7 +44,7 @@ function cmpVersion(a: string, b: string): number {
   return 0
 }
 
-export const NOT_FOUND = 'the jevmem command was not found on this computer: npm install -g jevmem, then start a new session'
+export const NOT_FOUND = '이 컴퓨터에서 jevmem 명령을 찾을 수 없습니다. npm install -g jevmem을 실행한 뒤 새 세션을 시작하세요'
 
 /** Runs `jevmem <args>` in the session's folder and returns what it printed; stderr follows stdout, an exit code other than 0 is an error. */
 export async function runCli($: EngineInterface, cli: Cli, args: readonly string[]): Promise<{ ok: boolean; text: string }> {
@@ -52,8 +52,8 @@ export async function runCli($: EngineInterface, cli: Cli, args: readonly string
   try {
     const r = await $.process.run([...cli.argv, ...args], { timeoutMs: 15_000 })
     const text = [r.stdout.trim(), r.stderr.trim()].filter(Boolean).join('\n')
-    return { ok: r.exitCode === 0, text: text || (r.exitCode === 0 ? 'done' : `jevmem exited with ${r.exitCode}`) }
+    return { ok: r.exitCode === 0, text: text || (r.exitCode === 0 ? '완료' : `jevmem이 종료 코드 ${r.exitCode}로 종료되었습니다`) }
   } catch (err) {
-    return { ok: false, text: `jevmem could not run: ${err instanceof Error ? err.message : String(err)}` }
+    return { ok: false, text: `jevmem을 실행할 수 없습니다: ${err instanceof Error ? err.message : String(err)}` }
   }
 }

@@ -22,27 +22,27 @@ export const ROUTE_TIMEOUT_MS = 2500
 export const ROUTE_QUESTIONS = {
   tier: {
     type: 'choice' as const,
-    instructions: 'Classify the coding task.',
+    instructions: '코딩 작업을 분류하세요.',
     criteria: {
-      mechanical: 'rename, format, typo, boilerplate, one-line fix',
-      standard: 'normal feature or bug with local scope',
-      hard: 'architecture, concurrency, security, wide blast radius',
+      mechanical: '이름 변경, 형식 지정, 오타, 보일러플레이트, 한 줄 수정',
+      standard: '범위가 지역적인 일반적인 기능 또는 버그',
+      hard: '아키텍처, 동시성, 보안, 영향 범위가 넓은 작업',
     },
   },
   effort: {
     type: 'choice' as const,
-    instructions: 'Reasoning effort this turn needs. Pick the cheapest that still solves the task.',
+    instructions: '이 턴에 필요한 추론 수준입니다. 작업을 해결할 수 있는 가장 낮은 수준을 선택하세요.',
     criteria: {
-      low: 'obvious, mechanical, follow an existing pattern; extra thinking is waste',
-      medium: 'normal implementation with local scope',
-      high: 'must think carefully; many tradeoffs or failure modes',
-      xhigh: 'deep architecture, concurrency, security, or wide blast radius; cheaper effort will miss it',
+      low: '명백하거나 기계적이거나 기존 패턴을 따르는 작업이며, 추가 추론은 낭비입니다',
+      medium: '범위가 지역적인 일반적인 구현',
+      high: '신중한 고려가 필요하며 절충점이나 실패 가능성이 많습니다',
+      xhigh: '심층 아키텍처, 동시성, 보안, 영향 범위가 넓은 작업이며 낮은 수준으로는 놓칩니다',
     },
   },
   risk: {
     type: 'noul' as const,
     instructions:
-      'Probability this change can cause data loss, a security issue, or a production outage.',
+      '이 변경으로 데이터 손실, 보안 문제 또는 운영 장애가 발생할 가능성.',
   },
 }
 

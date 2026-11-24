@@ -26,9 +26,9 @@ async function fleetRunOnce($: EngineInterface, st: FleetState) {
   try {
     const reply = await $.process.run(['python3', '-I', `${$.plugin.root}/hooks/fleet-source.py`],
       { timeoutMs: 10000, stdin: JSON.stringify({ action: 'load-config', path: st.path }) })
-    if (reply.exitCode !== 0 || reply.isStdoutTruncated || reply.isStderrTruncated) throw new Error('config refused')
+    if (reply.exitCode !== 0 || reply.isStdoutTruncated || reply.isStderrTruncated) throw new Error('구성을 거부했습니다')
     const parsed = JSON.parse(reply.stdout)
-    if (parsed.ok !== true) throw new Error('config invalid')
+    if (parsed.ok !== true) throw new Error('구성이 유효하지 않습니다')
     const config = parsed.result as FleetRuntimeConfig
     if (config.enabled !== true || config.maxJudgeCalls === 0) {
       stopTimer(st)
@@ -38,7 +38,7 @@ async function fleetRunOnce($: EngineInterface, st: FleetState) {
     return await runFleetOnce($, config)
   } catch {
     stopTimer(st)
-    return { status: 'uncertain', gaps: ['Fleet configuration/source diagnosis required'] }
+    return { status: 'uncertain', gaps: ['Fleet 구성/소스 진단이 필요합니다'] }
   }
 }
 
@@ -47,7 +47,7 @@ async function fleetInspect($: EngineInterface, st: FleetState) {
   st.running = true
   try {
     const report = await fleetRunOnce($, st)
-    if (report.status !== 'disabled') await $.ui.status(`Fleet guard: ${report.status}`)
+    if (report.status !== 'disabled') await $.ui.status(`Fleet 가드: ${report.status}`)
   } finally { st.running = false }
 }
 

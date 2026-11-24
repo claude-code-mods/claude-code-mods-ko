@@ -58,7 +58,7 @@ export function describeMeta(tool: string, meta: Meta): string {
   const k = (n: number | undefined) =>
     n === undefined ? '?' : n >= 10_000 ? `${Math.round(n / 1000)}k` : n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
   const key = meta.key === undefined ? '' : `; winnow_recall ${meta.key}`
-  return `winnow: hid ${meta.hidden ?? '?'} of ${meta.blocks ?? '?'} blocks of ${tool} (${k(meta.before)} to ${k(meta.after)} chars${key})`
+  return `winnow: ${tool} 블록 ${meta.blocks ?? '?'}개 중 ${meta.hidden ?? '?'}개를 숨김 (${k(meta.before)} → ${k(meta.after)}자${key})`
 }
 
 async function post(
@@ -74,11 +74,11 @@ async function post(
       body: JSON.stringify(payload),
     })
   } catch (err) {
-    $.ui.log(`winnow: sidecar not answering at ${url}: ${String(err)}`, { to: 'debug' })
+    $.ui.log(`winnow: ${url}의 사이드카가 응답하지 않습니다: ${String(err)}`, { to: 'debug' })
     return undefined
   }
   if (!res.ok) {
-    $.ui.log(`winnow: sidecar answered ${res.status} at ${url}`, { to: 'debug' })
+    $.ui.log(`winnow: ${url}의 사이드카가 상태 ${res.status}로 응답했습니다`, { to: 'debug' })
     return undefined
   }
   let meta: Meta | undefined
@@ -94,7 +94,7 @@ async function post(
   try {
     return { output: JSON.parse(res.text) as HookOutput, meta }
   } catch {
-    $.ui.log('winnow: sidecar sent something that is not JSON', { to: 'debug' })
+    $.ui.log('winnow: 사이드카가 JSON이 아닌 내용을 보냈습니다', { to: 'debug' })
     return undefined
   }
 }

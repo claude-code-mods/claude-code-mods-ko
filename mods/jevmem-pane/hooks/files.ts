@@ -55,14 +55,14 @@ export function findGuardEntry(entries: readonly GuardEntry[], toolUseId: string
 
 /** The route of a checked call, in plain words. */
 export const routeWords: Record<string, string> = {
-  'no-rules': 'no rule',
-  'no-candidate': 'no rule matched',
+  'no-rules': '규칙 없음',
+  'no-candidate': '일치하는 규칙 없음',
   cache: '캐시됨',
   jev: 'Jev',
-  'jev-failed': 'Jev did not answer',
-  'no-key': 'no key',
-  'no-time': 'no time',
-  error: 'error',
+  'jev-failed': 'Jev가 응답하지 않음',
+  'no-key': '키 없음',
+  'no-time': '시간 없음',
+  error: '오류',
 }
 
 export type QueueEntry = { hash?: string; enqueuedAt?: string; attempts?: number; nextAttemptAt?: string; lastError?: string }
@@ -84,7 +84,7 @@ export function failureAfter(text: string | null, sinceMs: number): string | nul
     const e = items[i]!
     if (!e.ts || Date.parse(e.ts) < sinceMs) continue
     if (e.label === 'hook' && e.ok === false && e.error) return e.error
-    if (e.label === 'queue' && e.event === 'dropped' && e.detail) return `the turn was dropped: ${e.detail}`
+    if (e.label === 'queue' && e.event === 'dropped' && e.detail) return `턴이 삭제되었습니다: ${e.detail}`
   }
   return null
 }
@@ -136,20 +136,20 @@ export function plainDecision(d: Decision): string {
   const r = `${d.reason ?? ''} ${d.detail ?? ''}`
   if (d.action === 'deferred') {
     const n = /(\d+) background subagent/.exec(r)?.[1]
-    return n ? `Waiting: ${n} background subagent${n === '1' ? ' has' : 's have'} not reported back` : 'Waiting: the turn is still running'
+    return n ? `대기 중: 백그라운드 서브에이전트 ${n}개가 보고하지 않았습니다` : '대기 중: 턴이 아직 실행 중입니다'
   }
-  if (d.action === 'error') return `Failed: ${short(d.detail || d.reason || 'the decision ended in an error')}`
+  if (d.action === 'error') return `실패: ${short(d.detail || d.reason || '결정 처리 중 오류가 발생했습니다')}`
   if (d.action !== 'skipped') return `${d.action}: ${short(d.reason ?? d.detail ?? '')}`
-  if (/^empty turn/.test(d.reason ?? d.detail ?? '')) return 'Not saved: an empty turn'
+  if (/^empty turn/.test(d.reason ?? d.detail ?? '')) return '저장되지 않음: 빈 턴입니다'
   const dup = d.duplicate_of ?? /duplicate of ([a-z0-9]{6})/.exec(r)?.[1]
-  if (dup) return `Not saved: already in memory as ${dup}`
-  if (/injection=|instructions aimed at an AI/.test(r)) return 'Not saved: it read as instructions aimed at an AI'
-  if (/chit_chat/.test(r)) return 'Not saved: small talk'
-  if (/source=assistant_reply|assistant_meta|may come from the assistant/.test(r)) return "Not saved: only a bug, an architecture note or a dead end is taken from Claude's reply"
-  if (/status \w+: nothing decided|turn was stopped/.test(r)) return 'Not saved: the turn was stopped'
-  if (/kind=none/.test(r)) return 'Not saved: nothing worth keeping'
-  if (/content=[\d.]+<[\d.]+/.test(r)) return 'Not saved: too little of a fact in it'
-  if (/importance=\w+<\w+/.test(r)) return 'Not saved: not important enough'
-  return 'Not saved'
+  if (dup) return `저장되지 않음: ${dup}로 이미 메모리에 있습니다`
+  if (/injection=|instructions aimed at an AI/.test(r)) return '저장되지 않음: AI를 대상으로 한 지시로 읽혔습니다'
+  if (/chit_chat/.test(r)) return '저장되지 않음: 잡담입니다'
+  if (/source=assistant_reply|assistant_meta|may come from the assistant/.test(r)) return '저장되지 않음: Claude의 답변에서는 버그, 아키텍처 메모, 막다른 길만 저장합니다'
+  if (/status \w+: nothing decided|turn was stopped/.test(r)) return '저장되지 않음: 턴이 중지되었습니다'
+  if (/kind=none/.test(r)) return '저장되지 않음: 보관할 가치가 없습니다'
+  if (/content=[\d.]+<[\d.]+/.test(r)) return '저장되지 않음: 사실적인 내용이 너무 적습니다'
+  if (/importance=\w+<\w+/.test(r)) return '저장되지 않음: 중요도가 충분하지 않습니다'
+  return '저장되지 않음'
 }
 const short = (s: string) => (s.length > 120 ? `${s.slice(0, 119)}…` : s)
