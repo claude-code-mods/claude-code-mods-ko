@@ -60,7 +60,7 @@ export function reduce(state, o) {
       return clearIntervention(clearIntervention(clearIntervention(s, 'input'), 'suspected-stall'), 'policy-denied')
     case 'turn.complete':
       s = { ...s, runtime: { value: 'idle', since: o.at, turnId: null, tool: null } }
-      return o.awaitsInput ? setIntervention(s, 'input', o.at, o.detail ?? 'turn ended with a question', 'info') : s
+      return o.awaitsInput ? setIntervention(s, 'input', o.at, o.detail ?? '질문이 있는 상태로 턴 종료', 'info') : s
     case 'tool.start': {
       const op = { requested: o.requested, tool: o.tool, startedAt: o.at, outcome: 'running' }
       s = { ...s, ops: capOps({ ...s.ops, [o.id]: op }), runtime: { ...s.runtime, value: 'tool-running', since: o.at, tool: o.tool } }
@@ -124,7 +124,7 @@ export function evaluateStall(s, now, idleMs = IDLE_STALL_MS) {
   const idle = now - s.lastEventAt
   const bgInFlight = Object.values(s.background).some((b) => b.status === 'started' || b.status === 'in-flight')
   if (idle >= idleMs && !anyToolRunning(s) && !bgInFlight && s.runtime.value !== 'ended') {
-    return setIntervention(s, 'suspected-stall', now, { idleMs: idle, basis: 'no turn or tool event', confirmed: false }, 'info')
+    return setIntervention(s, 'suspected-stall', now, { idleMs: idle, basis: '턴 또는 도구 이벤트 없음', confirmed: false }, 'info')
   }
   return clearIntervention(s, 'suspected-stall')
 }

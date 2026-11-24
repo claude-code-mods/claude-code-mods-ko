@@ -44,7 +44,7 @@ export function truncate(text: string, limit: number): string {
 function abridge(text: string, head: number, tail: number): string {
   if (text.length <= head + tail + 40) return text;
   const omitted = text.length - head - tail;
-  return `${text.slice(0, head)}\n[… ${omitted} chars omitted …]\n${text.slice(-tail)}`;
+  return `${text.slice(0, head)}\n[… ${omitted}자 생략 …]\n${text.slice(-tail)}`;
 }
 
 export function isPinned(
@@ -97,13 +97,13 @@ function inputText(input: Record<string, unknown>, limit: number): string {
   try {
     json = JSON.stringify(input);
   } catch {
-    json = '[unserializable input]';
+    json = '[직렬화할 수 없는 입력]';
   }
   return truncate(json, limit);
 }
 
 function resultNote(call: ToolCall): string {
-  return `${call.isError ? 'error' : 'ok'}, ${call.resultChars} chars (omitted)`;
+  return `${call.isError ? '오류' : '정상'}, ${call.resultChars}자 (생략)`;
 }
 
 /** One call as a single line, for when the structured form is too costly. */
@@ -115,8 +115,8 @@ function compactCall(call: ToolCall): string {
     })
     .join(' ');
   return `${call.id} ${call.tool} ${truncate(input, INPUT_CHARS[2])} → ${
-    call.isError ? 'error' : 'ok'
-  } ${call.resultChars}ch`;
+    call.isError ? '오류' : '정상'
+  } ${call.resultChars}자`;
 }
 
 /**
@@ -230,7 +230,7 @@ export function fitState(
   };
 
   rebuild(INPUT_CHARS[0]);
-  if (fits()) return fitted(history, tokens, 'full');
+  if (fits()) return fitted(history, tokens, '전체');
 
   for (const limit of INPUT_CHARS.slice(1)) {
     rebuild(limit);
@@ -251,7 +251,7 @@ export function fitState(
     shrink(index, (e) => {
       e.text = abridge(e.text, TEXT_HEAD, TEXT_TAIL);
     });
-    if (fits()) return fitted(history, tokens, 'texts abridged');
+    if (fits()) return fitted(history, tokens, '텍스트 요약');
   }
 
   for (const index of order) {
@@ -259,9 +259,9 @@ export function fitState(
     if (pinned(entry) || entry.text.length === 0) continue;
     const original = messages[entry.i]?.text.length ?? entry.text.length;
     shrink(index, (e) => {
-      e.text = `[… ${original} chars omitted …]`;
+      e.text = `[… ${original}자 생략 …]`;
     });
-    if (fits()) return fitted(history, tokens, 'old messages collapsed');
+    if (fits()) return fitted(history, tokens, '오래된 메시지 압축');
   }
 
   const byMessage = callsByMessage(calls);
@@ -272,7 +272,7 @@ export function fitState(
     shrink(index, (e) => {
       e.tool_calls = own.map(compactCall);
     });
-    if (fits()) return fitted(history, tokens, 'old calls compacted');
+    if (fits()) return fitted(history, tokens, '오래된 호출 압축');
   }
 
   const left = new Set<number>();
@@ -285,7 +285,7 @@ export function fitState(
       return fitted(
         history.filter((_, i) => !left.has(i)),
         tokens,
-        'old messages left out',
+        '오래된 메시지 제외',
       );
     }
   }
@@ -296,9 +296,9 @@ export function fitState(
   );
   perEntry = history.map(entryTokens);
   tokens = baseTokens + perEntry.reduce((sum, n) => sum + n, 0);
-  if (fits()) return fitted(history, tokens, 'old calls merged');
+  if (fits()) return fitted(history, tokens, '오래된 호출 병합');
 
   throw new Error(
-    `history too large for Jev (~${tokens} tokens after truncation, limit ${options.maxStateTokens})`,
+    `기록이 Jev에 비해 너무 큽니다 (잘라낸 후 약 ${tokens}토큰, 한도 ${options.maxStateTokens})`,
   );
 }

@@ -23,9 +23,9 @@ const KEY_ACKED = 'acked'
 // stamps at turn.complete: the same moment, matched within this. Request times differ by the response's own length.
 const ACK_SLACK_MS = 60 * 1000
 const KEY_ALWAYS = 'always'
-const KEEP_LABEL = "보내지 않음"
-const MOVED_TEXT = 'cache-tax: the conversation changed while the question was open, so this was not sent. Send it again.'
-const SEND_LABEL = 'Send anyway'
+const KEEP_LABEL = '전송 안 함'
+const MOVED_TEXT = 'cache-tax: 질문이 열려 있는 동안 대화가 변경되어 전송하지 않았습니다. 다시 보내세요.'
+const SEND_LABEL = '그래도 전송'
 
 // Prompts no person sent, so nobody could send them again after a refusal. Every
 // other origin, including sdk, unclassified and the owner's own Slack or channel
@@ -196,7 +196,7 @@ function fmtTok(n: number): string {
 function tellUnpriced($: EngineInterface, s: State) {
   if (!s.lastModel || s.unpricedTold === s.lastModel || priceOf(s.lastModel, s.ctx)) return
   s.unpricedTold = s.lastModel
-  $.ui.log(`cache-tax: no price row for ${s.lastModel} yet, so dollar figures show n/a. Token counts are unaffected.`)
+  $.ui.log(`cache-tax: ${s.lastModel}에 아직 가격 정보가 없어 금액은 n/a로 표시됩니다. 토큰 수에는 영향이 없습니다.`)
 }
 
 function coldUsd(s: State): number | null {
@@ -231,26 +231,26 @@ function isCold(s: State, now: number): boolean {
 
 function costText(s: State): string {
   const price = priceOf(s.lastModel, s.ctx)
-  const rate = price ? `$${price[1]}/MTok` : 'the cache-write rate'
+  const rate = price ? `$${price[1]}/MTok` : '캐시 쓰기 요금'
   const warm = warmUsd(s)
-  return `Sending this re-writes up to ${s.ctx.toLocaleString('en-US')} tokens at ${rate} = ${fmtUsd(coldUsd(s))}` +
-    (warm == null ? '' : ` (a warm turn would have cost ${fmtUsd(warm)})`) + '.'
+  return `이 메시지를 보내면 최대 ${s.ctx.toLocaleString('en-US')}개 토큰을 ${rate}로 다시 씁니다 = ${fmtUsd(coldUsd(s))}` +
+    (warm == null ? '' : ` (캐시가 유지됐다면 ${fmtUsd(warm)})`) + '.'
 }
 
 function guardText(s: State, now: number): string {
-  return `the prompt cache went cold ${fmtDuration(now - s.lastRequestAt - TTL_MS)} ago. ${costText(s)}`
+  return `프롬프트 캐시가 ${fmtDuration(now - s.lastRequestAt - TTL_MS)} 전에 만료되었습니다. ${costText(s)}`
 }
 
 /** What each answer saves. The dialog's options are bare labels, so the question carries it. */
 function saveText(s: State, now: number): string {
   const cold = coldUsd(s)
   const warm = warmUsd(s)
-  if (!holds(s, now)) return `${KEEP_LABEL} ${cold == null ? 'pays nothing' : `saves ${fmtUsd(cold)}`}; after ${SEND_LABEL}, keepwarm stays off (/keepwarm to arm it).`
-  if (pingFloor > 0) return `${KEEP_LABEL} ${cold == null ? 'pays nothing' : `saves ${fmtUsd(cold)}`}; after ${SEND_LABEL}, keepwarm is armed for up to ${fmtDuration(holdMs(s, now))}.` +
-    (warm == null ? '' : ` The cache read alone is about ${fmtUsd(warm)} per ping.`) + (cold == null ? '' : ' Pings may stop sooner at the idle spending limit, leaving the cache to go cold.')
-  if (cold == null || warm == null) return `${KEEP_LABEL} pays nothing; after ${SEND_LABEL}, keepwarm holds the cache for ${fmtDuration(holdMs(s, now))}.`
-  return `${KEEP_LABEL} saves ${fmtUsd(cold)}; after ${SEND_LABEL}, keepwarm holds the cache for ${fmtDuration(holdMs(s, now))} ` +
-    `at about ${fmtUsd(warm)} a ping, so the next break does not cost ${fmtUsd(cold)} again.`
+  if (!holds(s, now)) return `${KEEP_LABEL}: ${cold == null ? '비용이 발생하지 않습니다' : `${fmtUsd(cold)} 절약`}. ${SEND_LABEL}을(를) 선택해도 캐시 유지는 꺼진 상태입니다 (/keepwarm으로 켜기).`
+  if (pingFloor > 0) return `${KEEP_LABEL}: ${cold == null ? '비용이 발생하지 않습니다' : `${fmtUsd(cold)} 절약`}. ${SEND_LABEL}을(를) 선택하면 최대 ${fmtDuration(holdMs(s, now))} 동안 캐시 유지가 설정됩니다.` +
+    (warm == null ? '' : ` 캐시 읽기만 해도 ping당 약 ${fmtUsd(warm)}입니다.`) + (cold == null ? '' : ' 유휴 지출 한도에 도달하면 ping이 일찍 중단되어 캐시가 만료될 수 있습니다.')
+  if (cold == null || warm == null) return `${KEEP_LABEL}은(는) 비용이 없습니다. ${SEND_LABEL}을(를) 선택하면 ${fmtDuration(holdMs(s, now))} 동안 캐시를 유지합니다.`
+  return `${KEEP_LABEL}을(를) 선택하면 ${fmtUsd(cold)}을 절약합니다. ${SEND_LABEL}을(를) 선택하면 ping당 약 ${fmtUsd(warm)}로 ${fmtDuration(holdMs(s, now))} 동안 캐시를 유지해 ` +
+    `다음 휴식 때 ${fmtUsd(cold)}를 다시 지불하지 않아도 됩니다.`
 }
 
 function sendLabel(s: State): string {
@@ -261,7 +261,7 @@ function sendLabel(s: State): string {
 /** Asks in the engine's own dialog, Send anyway first; null when it is dismissed or no one can be asked. */
 async function ask($: EngineInterface, question: string, send: string): Promise<string | null> {
   try {
-    return await $.ui.ask(question, { header: 'Cache Tax', options: [send, KEEP_LABEL] })
+    return await $.ui.ask(question, { header: '캐시 비용', options: [send, KEEP_LABEL] })
   } catch {
     return null
   }
@@ -318,7 +318,7 @@ export function seedFromResume(s: State, e: ResumeFields, now: number): string |
   s.preCompactCtx = 0
   if (e.prompt_cache_likely_expired !== true || s.ctx < BIG_TOKENS) return null
   const usd = typeof e.estimated_cache_write_usd === 'number' ? fmtUsd(e.estimated_cache_write_usd) : fmtUsd(coldUsd(s))
-  return `resuming cold. The first message re-writes ${s.ctx.toLocaleString('en-US')} tokens, about ${usd}. /clear and paste a summary if you only need the conclusions.`
+  return `콜드 상태로 재개했습니다. 첫 메시지가 ${s.ctx.toLocaleString('en-US')}개 토큰을 다시 쓰며 비용은 약 ${usd}입니다. 결론만 필요하다면 /clear 후 요약을 붙여 넣으세요.`
 }
 
 /** A transcript resumed without the time of its last response: that response came after its first launch, so an hour after that launch the cache may be cold. */
@@ -329,9 +329,9 @@ function mayBeCold(s: State, now: number): boolean {
 /** The line for a resumed session whose last response time never arrived: the cache may be cold, and this is what that would cost. */
 function unknownText(s: State): string {
   const price = priceOf(s.lastModel, s.ctx)
-  const rate = price ? `$${price[1]}/MTok` : 'the cache-write rate'
-  return `resumed with up to ${s.ctx.toLocaleString('en-US')} tokens of context and no time of its last response, so the cache may be cold. ` +
-    `If it is, this message re-writes them at ${rate} = ${fmtUsd(coldUsd(s))}.`
+  const rate = price ? `$${price[1]}/MTok` : '캐시 쓰기 요금'
+  return `마지막 응답 시각 없이 최대 ${s.ctx.toLocaleString('en-US')}개 토큰의 컨텍스트로 재개했으므로 캐시가 만료됐을 수 있습니다. ` +
+    `만료되었다면 이 메시지가 ${rate}로 다시 써서 ${fmtUsd(coldUsd(s))}가 듭니다.`
 }
 
 /** The conversation was summarized: the next request is the first over the new prefix, and a ping out for the old one is dropped. */
@@ -345,17 +345,17 @@ function markCompacted(s: State) {
 }
 
 function statusText(s: State, now: number): string | undefined {
-  if (s.stopped) return `keepwarm stopped: ${s.stopped}`
+  if (s.stopped) return `캐시 유지 중지: ${s.stopped}`
   if (!s.deadline) return undefined
-  const pingText = s.last ? ` · last ping read ${fmtTok(s.last.read)} ${fmtUsd(s.last.usd)}` : ''
-  const nextText = !s.lastRequestAt ? ' · waiting for the first turn'
-    : awaitingPrefix(s) ? ' · waiting for the first turn after compaction'
-    : isCold(s, now) ? ` · cold now, first ping ${fmtDuration(s.every)} after the next turn`
-    : s.waitForTurn ? ' · nothing to fork yet, first ping after the next turn'
-    : s.skipping ? ` · ping skipped, idle budget ${fmtUsd(coldUsd(s) == null ? null : coldUsd(s)! / pingFloor)} reached`
-    : s.retries ? ` · API busy, ping retry ${s.retries} of ${MAX_RETRIES}`
-    : ` · ping in ${fmtDuration(s.lastRequestAt + s.every - now)}`
-  return `keepwarm ${fmtDuration(s.deadline - now)} left${nextText}${pingText}`
+  const pingText = s.last ? ` · 최근 ping 읽기 ${fmtTok(s.last.read)} ${fmtUsd(s.last.usd)}` : ''
+  const nextText = !s.lastRequestAt ? ' · 첫 턴 대기 중'
+    : awaitingPrefix(s) ? ' · 압축 후 첫 턴 대기 중'
+    : isCold(s, now) ? ` · 현재 콜드 상태, 첫 ping은 다음 턴 후 ${fmtDuration(s.every)}`
+    : s.waitForTurn ? ' · 아직 분기할 내용이 없어 첫 ping은 다음 턴 후'
+    : s.skipping ? ` · ping 건너뜀, 유휴 예산 ${fmtUsd(coldUsd(s) == null ? null : coldUsd(s)! / pingFloor)} 도달`
+    : s.retries ? ` · API 혼잡, ping 재시도 ${s.retries}/${MAX_RETRIES}`
+    : ` · ping ${fmtDuration(s.lastRequestAt + s.every - now)} 후`
+  return `캐시 유지 ${fmtDuration(s.deadline - now)} 남음${nextText}${pingText}`
 }
 
 /** The read-only view `$.cacheTax.status()` gives other mods. */
@@ -585,20 +585,20 @@ async function ping($: EngineInterface, s: State) {
   // Checked after the last await. A stop, /clear, resume or compaction, or a main request that moved the
   // cache clock, replaced what this fork was sent for: its reply is dropped and the window armed afresh.
   if (gen !== s.gen || s.lastRequestAt !== sentAt) return s.pending ? undefined : arm($, s)
-  if ('err' in sent) return stop($, s, `the ping failed, ${sent.err instanceof Error ? sent.err.message : String(sent.err)}`)
+  if ('err' in sent) return stop($, s, `ping 실패: ${sent.err instanceof Error ? sent.err.message : String(sent.err)}`)
   const reply = sent.reply
-  if (reply === null) return stop($, s, 'the engine did not send the ping, either the snapshot was cold or the API call failed')
+  if (reply === null) return stop($, s, '엔진이 ping을 보내지 않았습니다. 스냅샷이 콜드 상태였거나 API 호출이 실패했습니다')
   if (reply.isAnswered === false) {
     // A restarted process has no conversation to fork until its first turn; the window waits for one instead of ending.
     if (reply.reason === 'nothing-to-fork') {
       // Said once per wait: /keepwarm already answered "on", and the status row alone does not tell anyone to act.
-      if (!s.waitForTurn) $.ui.log('keepwarm is on, but there is nothing to fork yet, so no ping goes out until your next message. Send one more message and the pings start.')
+      if (!s.waitForTurn) $.ui.log('캐시 유지가 켜져 있지만 아직 분기할 내용이 없어 다음 메시지까지 ping을 보내지 않습니다. 메시지를 한 번 더 보내면 ping이 시작됩니다.')
       s.waitForTurn = true
       return arm($, s)
     }
-    const reason = reply.reason === 'api-error' ? `the API call failed${reply.status === null ? '' : ` (${reply.status})`}`
-      : reply.reason === 'aborted' ? 'the ping was interrupted'
-      : 'the ping returned no text'
+    const reason = reply.reason === 'api-error' ? `API 호출 실패${reply.status === null ? '' : ` (${reply.status})`}`
+      : reply.reason === 'aborted' ? 'ping이 중단되었습니다'
+      : 'ping이 텍스트를 반환하지 않았습니다'
     // A busy or failing API is usually brief; retry while a ping can still land a minute before the cache goes cold.
     if (reply.reason === 'api-error' && (reply.status === null || reply.status === 429 || reply.status >= 500)) {
       const wait = MIN_PING_MS * 2 ** s.retries
@@ -619,7 +619,7 @@ async function ping($: EngineInterface, s: State) {
   const warm = u.cache_read_input_tokens > 0 && u.cache_creation_input_tokens < WARM_WRITE_SHARE * u.cache_read_input_tokens
   const usd = price ? pingUsd(u, price) : null
   s.last = { at: now, read: u.cache_read_input_tokens, write: u.cache_creation_input_tokens, input: u.input_tokens, output: u.output_tokens, usd, warm }
-  if (!warm) return stop($, s, `the ping read ${fmtTok(u.cache_read_input_tokens)} and wrote ${fmtTok(u.cache_creation_input_tokens)} tokens (${fmtUsd(usd)}), the cache was already gone`)
+  if (!warm) return stop($, s, `ping이 ${fmtTok(u.cache_read_input_tokens)}개를 읽고 ${fmtTok(u.cache_creation_input_tokens)}개를 썼습니다 (${fmtUsd(usd)}). 캐시가 이미 만료되었습니다`)
   s.skipSaid = false
   s.lastRequestAt = now
   await arm($, s)
@@ -642,12 +642,12 @@ function underFloor(s: State): boolean {
 }
 
 function skipText(s: State): string {
-  return `keepwarm skipped a ping: this break spent ${fmtUsd(s.idleSpentUsd)}; the next ping is estimated at ${fmtUsd(nextPingUsd(s))}, reaching the rewrite (${fmtUsd(coldUsd(s))}) divided by ${pingFloor}. ` +
-    'The cache is left to go cold; your next turn starts a new budget. Ping floor 0 disables this limit.'
+  return `캐시 유지 ping을 건너뛰었습니다: 이번 휴식에 ${fmtUsd(s.idleSpentUsd)}를 썼고 다음 ping 예상 비용은 ${fmtUsd(nextPingUsd(s))}로, 다시 쓰기 비용 (${fmtUsd(coldUsd(s))})을 ${pingFloor}로 나눈 값에 도달했습니다. ` +
+    '캐시를 만료하도록 두며 다음 턴에서 새 예산이 시작됩니다. ping 하한 0은 이 제한을 끕니다.'
 }
 
 function afterRetries(n: number): string {
-  return n ? ` after ${n} ${n === 1 ? 'retry' : 'retries'}` : ''
+  return n ? ` ${n}회 재시도 후` : ''
 }
 
 /** The reply to an arming command; on a cold cache it says when the first ping can come. */
@@ -680,27 +680,27 @@ function holds(s: State, now: number): boolean {
 
 /** What the guard says about keepwarm after a paid cold write; `then` is the wording of the refusal. */
 function holdNote(s: State, now: number, then: boolean): string {
-  if (!holds(s, now)) return 'keepwarm stays off (/keepwarm to arm it)'
-  if (pingFloor > 0) return `keepwarm will be armed for up to ${fmtDuration(holdMs(s, now))}` + (coldUsd(s) == null ? '' : ', but may stop sooner at the idle spending limit')
-  return then ? `keepwarm will then hold the cache for ${fmtDuration(holdMs(s, now))}` : `keepwarm will hold the cache for ${fmtDuration(holdMs(s, now))} once it lands`
+  if (!holds(s, now)) return '캐시 유지가 꺼진 상태입니다 (/keepwarm으로 켜기)'
+  if (pingFloor > 0) return `최대 ${fmtDuration(holdMs(s, now))} 동안 캐시 유지가 설정됩니다` + (coldUsd(s) == null ? '' : ', 단 유휴 지출 한도에 도달하면 일찍 중단될 수 있습니다')
+  return then ? `그 후 ${fmtDuration(holdMs(s, now))} 동안 캐시를 유지합니다` : `적용되면 ${fmtDuration(holdMs(s, now))} 동안 캐시를 유지합니다`
 }
 
 function noRewriteText(s: State, now: number): string {
   const outcome = s.deadline > now && !s.stopped
-    ? s.always ? `Always keeps keepwarm armed for up to ${fmtDuration(s.deadline - now)}.`
-      : `The existing keepwarm window remains armed for up to ${fmtDuration(s.deadline - now)}; it was not extended for a cold write.`
-    : s.stopped ? `Keepwarm remains stopped: ${s.stopped}. No automatic warming window was opened.`
-      : !autoWarm ? 'Auto keepwarm is off; keepwarm stays off.'
-        : 'No automatic warming window was opened; /keepwarm to arm one.'
-  return `No cold rewrite was detected in the reported usage. ${outcome}`
+    ? s.always ? `always 설정으로 최대 ${fmtDuration(s.deadline - now)} 동안 캐시 유지가 설정되어 있습니다.`
+      : `기존 캐시 유지 창이 최대 ${fmtDuration(s.deadline - now)} 동안 유지됩니다. 콜드 쓰기로 연장되지는 않았습니다.`
+    : s.stopped ? `캐시 유지가 중지된 상태: ${s.stopped}. 자동 워밍 창이 열리지 않았습니다.`
+      : !autoWarm ? '자동 캐시 유지가 꺼져 있어 캐시 유지도 꺼진 상태입니다.'
+        : '자동 워밍 창이 열리지 않았습니다. /keepwarm으로 설정하세요.'
+  return `보고된 사용량에서 콜드 재기록이 감지되지 않았습니다. ${outcome}`
 }
 
 function armedText(s: State, now: number, windowMs: number): string {
   const delay = s.lastRequestAt && !awaitingPrefix(s) && !isCold(s, now) ? Math.max(1000, s.lastRequestAt + s.every - now) : s.every
-  if (windowMs <= delay) return `keepwarm on for ${fmtDuration(windowMs)}. At the current timing, the window ends before a ping is due; use a longer window or a shorter every period`
-  if (isCold(s, now)) return `keepwarm on for ${fmtDuration(windowMs)}. The cache is cold now, so the first ping comes ${fmtDuration(s.every)} after the next turn` + (pingFloor > 0 && coldUsd(s) != null ? '; pings may stop sooner at the idle spending limit' : '')
-  return `keepwarm on for ${fmtDuration(windowMs)}, a ping ${fmtDuration(s.every)} after each idle stretch keeps the cache read, not re-written` +
-    (pingFloor > 0 && coldUsd(s) != null ? '; pings may stop sooner at the idle spending limit' : '')
+  if (windowMs <= delay) return `${fmtDuration(windowMs)} 동안 캐시 유지가 켜집니다. 현재 시점에서는 ping이 예정되기 전에 창이 끝납니다. 더 긴 창이나 짧은 ping 간격을 사용하세요`
+  if (isCold(s, now)) return `${fmtDuration(windowMs)} 동안 캐시 유지가 켜집니다. 현재 캐시가 콜드 상태이므로 첫 ping은 다음 턴 후 ${fmtDuration(s.every)}입니다` + (pingFloor > 0 && coldUsd(s) != null ? '; 유휴 지출 한도에 도달하면 ping이 일찍 중단될 수 있습니다' : '')
+  return `${fmtDuration(windowMs)} 동안 캐시 유지가 켜집니다. 휴식 때마다 ${fmtDuration(s.every)} 후 ping을 보내 캐시를 다시 쓰지 않고 읽도록 유지합니다` +
+    (pingFloor > 0 && coldUsd(s) != null ? '; 유휴 지출 한도에 도달하면 ping이 일찍 중단될 수 있습니다' : '')
 }
 
 // A /keepwarm off after `offs` was read wins: the window it cancelled is not written back. A caller that awaited
@@ -736,27 +736,27 @@ async function startWindow($: EngineInterface, s: State, windowMs: number, every
 
 function card(s: State, now: number): string {
   const lines: string[] = []
-  lines.push(`${s.lastModel ?? 'model not seen yet'}`)
-  if (awaitingPrefix(s)) lines.push('state       reset by compaction, waiting for the first turn')
-  else if (s.resumedAt) lines.push(mayBeCold(s, now) ? 'state       unknown, resumed without the time of its last response' : `state       resumed without the time of its last response, warm for up to ${fmtDuration(s.resumedAt + TTL_MS - now)} more`)
-  else if (!s.lastRequestAt) lines.push('state       no request yet this session')
-  else if (isCold(s, now)) lines.push(`state       COLD, last request ${fmtDuration(now - s.lastRequestAt)} ago`)
-  else lines.push(`state       warm, ${fmtDuration(s.lastRequestAt + TTL_MS - now)} left`)
-  lines.push(`context     ${s.ctx.toLocaleString('en-US')} tokens`)
-  lines.push(`cold cost   ${fmtUsd(coldUsd(s))} to re-write it (warm turn ${fmtUsd(warmUsd(s))})`)
+  lines.push(`${s.lastModel ?? '모델 확인 전'}`)
+  if (awaitingPrefix(s)) lines.push('상태        압축으로 초기화, 첫 턴 대기 중')
+  else if (s.resumedAt) lines.push(mayBeCold(s, now) ? '상태        불명, 마지막 응답 시각 없이 재개됨' : `상태        마지막 응답 시각 없이 재개됨, 최대 ${fmtDuration(s.resumedAt + TTL_MS - now)} 동안 유지`)
+  else if (!s.lastRequestAt) lines.push('상태        이번 세션에 요청 없음')
+  else if (isCold(s, now)) lines.push(`상태        콜드, 마지막 요청 ${fmtDuration(now - s.lastRequestAt)} 전`)
+  else lines.push(`상태        웜, ${fmtDuration(s.lastRequestAt + TTL_MS - now)} 남음`)
+  lines.push(`컨텍스트   ${s.ctx.toLocaleString('en-US')}개 토큰`)
+  lines.push(`콜드 비용  다시 쓰기 ${fmtUsd(coldUsd(s))} (웜 턴 ${fmtUsd(warmUsd(s))})`)
   const always = s.always ? ' (always)' : ''
-  const idle = s.always ? `off until the next turn, which arms ${fmtDuration(s.alwaysMs)} (always)` : 'off (/keepwarm to arm it for 6h00m)'
-  lines.push(`keepwarm    ${s.deadline ? (statusText(s, now) ?? '').replace(/^keepwarm /, 'on, ') + always : s.stopped ? `stopped, ${s.stopped}${always}` : idle}`)
+  const idle = s.always ? `다음 턴까지 꺼짐, 다음 턴에서 ${fmtDuration(s.alwaysMs)} 설정 (always)` : '꺼짐 (/keepwarm으로 6h00m 설정)'
+  lines.push(`keepwarm    ${s.deadline ? (statusText(s, now) ?? '').replace(/^캐시 유지 /, '켜짐, ') + always : s.stopped ? `중지됨, ${s.stopped}${always}` : idle}`)
   const pings = breakEvenPings(s)
-  if (pings != null) lines.push(`break-even  up to ${pings} pings at the read rate cost one cold write, about ${fmtDuration(pings * s.every)} of idle at one ping per ${fmtDuration(s.every)}`)
-  lines.push(`guard       ${s.guard === 'warn' ? 'warn only (/cache-tax guard refuse to be asked first)'
-    : s.guard ? `ask first at ${fmtUsd(s.guard)} or more, warn below (/cache-tax guard refuse to ask at any price)`
-    : 'ask first (/cache-tax guard warn to only show the price)'}`)
+  if (pings != null) lines.push(`손익 분기  읽기 요금으로 ping ${pings}회가 콜드 쓰기 1회 비용과 같습니다. ${fmtDuration(s.every)}마다 한 번씩 약 ${fmtDuration(pings * s.every)} 동안 유휴 상태일 때 해당합니다`)
+  lines.push(`guard       ${s.guard === 'warn' ? '경고만 (/cache-tax guard refuse로 먼저 묻기)'
+    : s.guard ? `${fmtUsd(s.guard)} 이상이면 먼저 묻고 그 아래는 경고 (/cache-tax guard refuse로 항상 묻기)`
+    : '먼저 묻기 (/cache-tax guard warn으로 가격만 표시)'}`)
   const priced = s.misses.filter(m => m.usd != null)
   const unpriced = s.misses.length - priced.length
   const paid = priced.reduce((a, m) => a + (m.usd ?? 0), 0)
-  const total = !unpriced ? fmtUsd(paid) : priced.length ? `${fmtUsd(paid)} and ${unpriced} with no price row` : 'no price row'
-  lines.push(`session     ${s.misses.length} cold write${s.misses.length === 1 ? '' : 's'} paid, ${total}`)
+  const total = !unpriced ? fmtUsd(paid) : priced.length ? `${fmtUsd(paid)} 및 가격 정보 없는 ${unpriced}회` : '가격 정보 없음'
+  lines.push(`세션        콜드 쓰기 ${s.misses.length}회 비용 지불, ${total}`)
   return lines.join('\n')
 }
 
@@ -851,20 +851,20 @@ export const register: Register = (on, options) => {
     else if (s.deadline) await arm($, s)
     await $.command.register({
       name: 'keepwarm',
-      description: 'Keep the prompt cache warm: bare for 6h, a window such as 90m, always (or always 24h), off, or status (cache-tax)',
+      description: '프롬프트 캐시 유지: 인자 없이 6시간, 90m 같은 기간, always (또는 always 24h), off, status (cache-tax)',
       argumentHint: '[6h | always [24h] | off | status]',
       immediate: true,
     })
     await $.command.register({
       name: 'cache-tax',
-      description: 'Prompt cache state, cold price and this session\'s cold writes; guard default|warn|refuse|test (cache-tax, the Mod)',
+      description: '프롬프트 캐시 상태, 콜드 비용, 이번 세션의 콜드 쓰기; guard default|warn|refuse|test (cache-tax mod)',
       argumentHint: '[status | guard default | guard warn | guard refuse [dollars] | guard test]',
       immediate: true,
     })
     // The hook form of cache-tax ships a /cache-tax:status skill; both installed means two guards.
     const commands = await $.command.list()
     if (commands.some(c => c.name === 'cache-tax:status')) {
-      $.ui.log('the hook form (cache-tax@claude-code-hooks) is also installed, so a cold send is warned about or refused twice. Uninstall it, or /cache-tax guard warn here.')
+      $.ui.log('훅 형태 (cache-tax@claude-code-hooks)도 설치되어 있어 콜드 전송 경고 또는 거부가 두 번 발생합니다. 제거하거나 여기서 /cache-tax guard warn을 사용하세요.')
     }
     updateStatus($, s, now)
     return r
@@ -904,17 +904,17 @@ export const register: Register = (on, options) => {
       ? words.length === 1 ? DEFAULT_WINDOW_MS : words.length === 2 ? parseDuration(words[1]!) : null
       : !words.length ? DEFAULT_WINDOW_MS : parseDuration(mode!)) ?? 0
     let every = PING_AFTER_MS
-    const usage = 'keepwarm takes a window from 1m to 168h, such as 6h or 90m, or always, off, or status; keepwarm is unchanged'
+    const usage = 'keepwarm은 1m~168h 범위의 기간(예: 6h 또는 90m)이나 always, off, status를 받습니다. 캐시 유지 설정은 변경되지 않았습니다'
     if (mode === 'off' || mode === 'status') {
-      if (words.length !== 1) return { text: `${mode} takes no other words; keepwarm is unchanged` }
+      if (words.length !== 1) return { text: `${mode}에는 다른 단어가 필요 없습니다. 캐시 유지 설정은 변경되지 않았습니다` }
     } else if (mode === 'always') {
-      if (window < TTL_MS || window > MAX_WINDOW_MS) return { text: 'always takes one window from 1h to 168h, such as always 24h' }
+      if (window < TTL_MS || window > MAX_WINDOW_MS) return { text: 'always에는 1h~168h 범위의 기간 하나가 필요합니다 (예: always 24h)' }
     } else {
       if (window < MIN_PING_MS || window > MAX_WINDOW_MS ||
         (words.length > 1 && (words.length !== 3 || words[1] !== 'every'))) return { text: usage }
       if (words[1] === 'every') {
         const period = parseDuration(words[2]!)
-        if (period == null || period < MIN_PING_MS || period >= TTL_MS) return { text: 'every takes a period from 1m to 59m' }
+        if (period == null || period < MIN_PING_MS || period >= TTL_MS) return { text: 'every에는 1m~59m 범위의 간격이 필요합니다' }
         every = period
       }
     }
@@ -923,7 +923,7 @@ export const register: Register = (on, options) => {
     if (words[0] === 'off') {
       const wasAlways = s.always
       await stop($, s, null, true)
-      return { text: wasAlways ? 'keepwarm is off, and always is off for every session from its next turn' : 'keepwarm is off' }
+      return { text: wasAlways ? '캐시 유지가 꺼졌고 다음 턴부터 모든 세션에서 always도 꺼집니다' : '캐시 유지가 꺼졌습니다' }
     }
     if (words[0] === 'always') {
       const windowMs = window
@@ -934,8 +934,8 @@ export const register: Register = (on, options) => {
       // The default window is still stored as true, which every version reads.
       await $.store.set(KEY_ALWAYS, windowMs === DEFAULT_WINDOW_MS ? true : windowMs)
       await startWindow($, s, windowMs, PING_AFTER_MS)
-      const cold = isCold(s, now) ? `. The cache is cold now, so the first ping comes ${fmtDuration(s.every)} after the next turn` : ''
-      return { text: `keepwarm always on: every session is armed for up to ${fmtDuration(windowMs)} after its last turn; /keepwarm off turns it off for good${cold}` + (pingFloor > 0 && coldUsd(s) != null ? '; pings may stop sooner at the idle spending limit' : '') }
+      const cold = isCold(s, now) ? `. 현재 캐시가 콜드 상태이므로 첫 ping은 다음 턴 후 ${fmtDuration(s.every)}입니다` : ''
+      return { text: `캐시 유지 always 켜짐: 모든 세션이 마지막 턴 후 최대 ${fmtDuration(windowMs)} 동안 유지되도록 설정됩니다. /keepwarm off로 완전히 끌 수 있습니다${cold}` + (pingFloor > 0 && coldUsd(s) != null ? '; 유휴 지출 한도에 도달하면 ping이 일찍 중단될 수 있습니다' : '') }
     }
     if (!words.length) {
       await startWindow($, s, DEFAULT_WINDOW_MS, PING_AFTER_MS)
@@ -944,9 +944,9 @@ export const register: Register = (on, options) => {
     if (words[0] !== 'status') {
       await startWindow($, s, window, every)
       const rolls = s.always && (window < s.alwaysMs || every !== PING_AFTER_MS)
-      return { text: armedText(s, now, window) + (rolls ? `. Always is on, so your next turn makes it at least ${fmtDuration(s.alwaysMs)} at one ping per ${fmtDuration(PING_AFTER_MS)}` : '') }
+      return { text: armedText(s, now, window) + (rolls ? `. always가 켜져 있어 다음 턴에서는 ${fmtDuration(PING_AFTER_MS)}마다 ping을 보내 최소 ${fmtDuration(s.alwaysMs)} 동안 유지됩니다` : '') }
     }
-    return { text: statusText(s, now) ?? 'keepwarm is off' }
+    return { text: statusText(s, now) ?? '캐시 유지가 꺼졌습니다' }
   })
 
   on('command.run', { command: 'cache-tax' }, async ($, e) => {
@@ -958,21 +958,21 @@ export const register: Register = (on, options) => {
         s.guard = 0
         explicitRefuse = false
         await $.store.delete(KEY_GUARD)
-        return { text: 'guard reset to default: ask before cold sends; Headless prompts controls non-interactive SDK sends' }
+        return { text: '가드를 기본값으로 재설정했습니다: 콜드 전송 전에 묻습니다. 비대화형 SDK 전송은 Headless prompts 설정이 제어합니다' }
       }
       if (words[1] === 'test' && !words[2]) {
         s.testOnce = true
-        return { text: 'the next prompt you send asks as if the cache were cold, priced at this session\'s context; the test scores nothing, though a send into a cache that really is cold is scored as usual' }
+        return { text: '다음에 보내는 프롬프트는 캐시가 콜드 상태인 것처럼 이 세션의 컨텍스트로 가격을 계산해 묻습니다. 테스트 자체는 비용에 포함되지 않지만, 실제로 콜드인 캐시에 보내면 평소와 같이 계산됩니다' }
       }
       const floor = words[1] === 'refuse' && words[2] ? Number(words[2].replace(/^\$/, '')) : 0
       const valid = words[1] === 'warn' ? !words[2] : words[1] === 'refuse' && words.length <= 3 && (!words[2] || (floor > 0 && Number.isFinite(floor)))
-      if (!valid) return { text: '/cache-tax guard takes default, warn, refuse, refuse with a dollar floor such as refuse 5, or test' }
+      if (!valid) return { text: '/cache-tax guard는 default, warn, refuse, refuse 5 같은 금액 하한이 있는 refuse, test를 받습니다' }
       s.guard = words[1] === 'warn' ? 'warn' : floor
       explicitRefuse = words[1] === 'refuse' && floor === 0
       await $.store.set(KEY_GUARD, s.guard || 'refuse')
-      return { text: s.guard === 'warn' ? 'guard set to warn: a cold send goes through with its price shown'
-        : s.guard ? `guard set to ask at ${fmtUsd(s.guard)} or more: a cold send waits for ${SEND_LABEL} or ${KEEP_LABEL}, a cheaper one goes through with its price shown`
-        : `guard set to ask: a cold send waits for ${SEND_LABEL} or ${KEEP_LABEL}` }
+      return { text: s.guard === 'warn' ? '가드를 경고로 설정했습니다: 콜드 전송이 가격 표시와 함께 진행됩니다'
+        : s.guard ? `가드를 ${fmtUsd(s.guard)} 이상일 때 묻도록 설정했습니다: 콜드 전송은 ${SEND_LABEL} 또는 ${KEEP_LABEL}을 기다리고, 그보다 저렴하면 가격을 표시하고 진행됩니다`
+        : `가드를 먼저 묻도록 설정했습니다: 콜드 전송은 ${SEND_LABEL} 또는 ${KEEP_LABEL}을 기다립니다` }
     }
     return { text: card(s, now) }
   })
@@ -991,12 +991,12 @@ export const register: Register = (on, options) => {
       tellUnpriced($, s)
       const sid = s.sid
       const send = sendLabel(s)
-      const answer = await ask($, `cache-tax test, as if the cache were cold: ${costText(s)} ${saveText(s, now)} Send it anyway?`, send)
+      const answer = await ask($, `cache-tax 테스트, 캐시가 콜드 상태인 것처럼: ${costText(s)} ${saveText(s, now)} 그래도 전송할까요?`, send)
       // The answer can take minutes, and the cache may have gone cold while the question was open. The clock is read
       // before the conversation check, so nothing awaits between that check and the send.
       const answeredAt = await $.clock.now()
       if (s.sid !== sid) return { drop: MOVED_TEXT }
-      if (answer !== send) return { drop: 'cache-tax test: not sent.' }
+      if (answer !== send) return { drop: 'cache-tax 테스트: 전송하지 않았습니다.' }
       // A test that lands on a cache that really is cold pays like any cold send, so it is scored like one.
       if (isCold(s, answeredAt) && s.ctx >= BIG_TOKENS) s.coldWritePending = true
       return next(e)
@@ -1020,8 +1020,8 @@ export const register: Register = (on, options) => {
     const optedIn = guardLoaded && headless && sendHeadless && !explicitRefuse && e.origin.kind === 'sdk' && guard === 0
     const under = guard !== 'warn' && usd != null && usd < guard
     if (guard === 'warn' || unattended || under || optedIn) {
-      const why = optedIn ? ', since Headless prompts is set to send' : unattended ? `, since this ${e.origin.kind} prompt cannot be sent again` : under ? `, since it is under your ${fmtUsd(guard)} floor` : ''
-      $.ui.log(`${guardText(s, now)} Sending anyway${why}; ${holdNote(s, now, false)}.`)
+      const why = optedIn ? ', Headless prompts가 전송하도록 설정되어 있습니다' : unattended ? `, 이 ${e.origin.kind} 프롬프트는 다시 보낼 수 없습니다` : under ? `, 설정한 ${fmtUsd(guard)} 하한보다 낮습니다` : ''
+      $.ui.log(`${guardText(s, now)} 그래도 전송합니다${why}; ${holdNote(s, now, false)}.`)
       s.coldWritePending = true
       return next(e)
     }
@@ -1036,7 +1036,7 @@ export const register: Register = (on, options) => {
     // Ask before the turn starts: the button lets this very prompt through, still the user's own.
     const sid = s.sid
     const send = sendLabel(s)
-    const answer = await ask($, `cache-tax: ${guardText(s, now)} ${saveText(s, now)} Send it anyway?`, send)
+    const answer = await ask($, `cache-tax: ${guardText(s, now)} ${saveText(s, now)} 그래도 전송할까요?`, send)
     // A person can take minutes to answer. If /clear or a resume moved the process to another conversation meanwhile, the
     // answer belongs to the old one: nothing is sent, scored or stored under the new id.
     if (s.sid !== sid) return { drop: MOVED_TEXT }
@@ -1044,12 +1044,12 @@ export const register: Register = (on, options) => {
       s.coldWritePending = true
       return next(e)
     }
-    if (answer !== null) return { drop: `cache-tax: not sent, nothing paid${usd == null ? '' : ` (${fmtUsd(usd)} saved)`}. Send it again to be asked again, or /clear and start from a note.` }
+    if (answer !== null) return { drop: `cache-tax: 전송하지 않았고 비용도 발생하지 않았습니다${usd == null ? '' : ` (${fmtUsd(usd)} 절약)`}. 다시 보내면 다시 묻거나, /clear 후 메모로 시작할 수 있습니다.` }
     // No dialog to answer (dismissed, or a run with no one to ask): refuse once, the resend pays.
     s.ackedAt = s.lastRequestAt
     if (s.lastResponseAt) await $.store.set(ackedKey(s), s.lastResponseAt)
-    const override = headless && sendHeadless && explicitRefuse && e.origin.kind === 'sdk' ? ' Headless prompts: send is overridden by guard refuse. Use /cache-tax guard default to restore the default.' : ''
-    const reason = `cache-tax: ${guardText(s, now)} Send it again to pay it, and ${holdNote(s, now, true)}. Or /clear and start from a note.${override}`
+    const override = headless && sendHeadless && explicitRefuse && e.origin.kind === 'sdk' ? ' Headless prompts: 가드 거부 설정이 전송을 덮어씁니다. 기본값으로 돌리려면 /cache-tax guard default를 사용하세요.' : ''
+    const reason = `cache-tax: ${guardText(s, now)} 다시 보내면 비용이 발생합니다. ${holdNote(s, now, true)}. 또는 /clear 후 메모로 시작하세요.${override}`
     if (headless) $.ui.log(reason)
     return { drop: reason }
   })
@@ -1178,8 +1178,8 @@ export const register: Register = (on, options) => {
         const extend = autoWarm && !s.always && s.deadline < now + AUTO_WARM_MS && s.offs === offs
         if (extend) await startWindow($, s, AUTO_WARM_MS, s.every, offs, s.alwaysGen, sid)
         if (s.sid !== sid) return r
-        $.ui.log(`cold write of ${fmtTok(write)} tokens paid (${fmtUsd(usd)}).` +
-          (extend ? pingFloor > 0 ? ` Keepwarm armed for up to ${fmtDuration(AUTO_WARM_MS)}` + (coldUsd(s) == null ? '' : '; pings may stop sooner at the idle spending limit') + '. /keepwarm off to stop.' : ` Keeping the cache warm for ${fmtDuration(AUTO_WARM_MS)} so it is not paid again today; /keepwarm off to stop.` : ''))
+        $.ui.log(`${fmtTok(write)}개 토큰 콜드 쓰기 비용 지불 (${fmtUsd(usd)}).` +
+          (extend ? pingFloor > 0 ? ` 최대 ${fmtDuration(AUTO_WARM_MS)} 동안 캐시 유지가 설정되었습니다` + (coldUsd(s) == null ? '' : '; 유휴 지출 한도에 도달하면 ping이 일찍 중단될 수 있습니다') + '. 중지하려면 /keepwarm off.' : ` 오늘 다시 비용이 들지 않도록 ${fmtDuration(AUTO_WARM_MS)} 동안 캐시를 유지합니다. 중지하려면 /keepwarm off.` : ''))
       } else if (s.coldWritePending && write === 0) $.ui.log(noRewriteText(s, now))
     }
     s.coldWritePending = false

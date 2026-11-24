@@ -55,30 +55,30 @@ export function tokenize(command) {
     const c = s[i]
     if (c === ' ' || c === '\t') { push(); i++; continue }
     if (c === '|') {
-      if (s[i + 1] === '|') return { ok: false, why: 'operator ||' }
+      if (s[i + 1] === '|') return { ok: false, why: '연산자 ||' }
       push()
-      if (argv.length === 0) return { ok: false, why: 'empty pipeline segment' }
+      if (argv.length === 0) return { ok: false, why: '빈 파이프라인 구간' }
       segments.push(argv); argv = []; i++; continue
     }
     if (c === "'") {
       const end = s.indexOf("'", i + 1)
-      if (end < 0) return { ok: false, why: 'unbalanced quote' }
+      if (end < 0) return { ok: false, why: '따옴표가 짝 맞지 않음' }
       word = (word ?? '') + s.slice(i + 1, end); i = end + 1; continue
     }
     if (c === '"') {
       const end = s.indexOf('"', i + 1)
-      if (end < 0) return { ok: false, why: 'unbalanced quote' }
+      if (end < 0) return { ok: false, why: '따옴표가 짝 맞지 않음' }
       const inner = s.slice(i + 1, end)
-      if (/[$`\\!]/.test(inner)) return { ok: false, why: 'expansion inside double quotes' }
+      if (/[$`\\!]/.test(inner)) return { ok: false, why: '큰따옴표 안에서 확장' }
       word = (word ?? '') + inner; i = end + 1; continue
     }
     // `~` expands only at the start of a word (`~/x`), so `HEAD~1` is a plain word.
-    if (c === '~' && word === null) return { ok: false, why: 'shell syntax "~"' }
-    if (/[;&<>()`$\\\n\r{}*?[\]!#]/.test(c)) return { ok: false, why: `shell syntax ${JSON.stringify(c)}` }
+    if (c === '~' && word === null) return { ok: false, why: '셸 구문 "~"' }
+    if (/[;&<>()`$\\\n\r{}*?[\]!#]/.test(c)) return { ok: false, why: `셸 구문 ${JSON.stringify(c)}` }
     word = (word ?? '') + c; i++
   }
   push()
-  if (argv.length === 0) return segments.length ? { ok: false, why: 'empty pipeline segment' } : { ok: false, why: 'empty command' }
+  if (argv.length === 0) return segments.length ? { ok: false, why: '빈 파이프라인 구간' } : { ok: false, why: '빈 명령' }
   segments.push(argv)
   return { ok: true, segments }
 }
@@ -176,7 +176,7 @@ function inside(path, root) {
 
 // ── Classification ──────────────────────────────────────────────────────────────────────────────
 // call: { tool, command?, file_path?, notebook_path? }  task: the bound task, or null.
-const delegated = (rule) => ({ outcome: 'pass', rule: `delegated to the host: ${rule}`, delegated: true })
+const delegated = (rule) => ({ outcome: 'pass', rule: `호스트에 위임: ${rule}`, delegated: true })
 
 export function classify(task, call) {
   const tool = call?.tool
@@ -184,13 +184,13 @@ export function classify(task, call) {
   // classes refuse, observational adapters pass, and everything else is marked delegated — and is
   // therefore recorded, task or not (found by an adversarial test). Other tools are not judged.
   if (!task) {
-    if (tool !== 'Bash') return { outcome: 'pass', rule: 'no task bound' }
+    if (tool !== 'Bash') return { outcome: 'pass', rule: '바인드된 작업 없음' }
     return classifyBash(NO_TASK, call.command)
   }
   // A binding whose record is missing: only the Read tool inside the worktree, whose path is checked,
   // passes. Bash is refused outright — an observational command's paths are not verified here.
   if (task.recordMissing) {
-    return tool === 'Read' ? classifyTool(task, call) : { outcome: 'deny', rule: 'task record missing: only reads inside the worktree' }
+    return tool === 'Read' ? classifyTool(task, call) : { outcome: 'deny', rule: '작업 기록 없음: 워크트리 내부 읽기만 허용' }
   }
   if (tool === 'Bash') return classifyBash(task, call.command)
   return classifyTool(task, call)
@@ -207,7 +207,7 @@ function classifyBash(task, command) {
   if (t.segments.length === 1) {
     const { env, argv } = splitEnv(t.segments[0])
     if (Object.keys(env).length === 0) {
-      for (const n of task.needsUser ?? []) if (startsWith(argv, n)) return { outcome: 'needs-user', rule: `needs-user: ${n.join(' ')}` }
+      for (const n of task.needsUser ?? []) if (startsWith(argv, n)) return { outcome: 'needs-user', rule: `사용자 확인 필요: ${n.join(' ')}` }
     }
   }
   // Executors before adapters: a declared check that is also observational (`git status`) must still
@@ -215,7 +215,7 @@ function classifyBash(task, command) {
   if (t.segments.length === 1) {
     const { env, argv } = splitEnv(t.segments[0])
     if (Object.keys(env).length === 0) {
-      for (const e of task.executors ?? []) if (startsWith(argv, e.argv)) return { outcome: 'pass', rule: `authorized executor: ${e.argv.join(' ')}`, executor: e }
+      for (const e of task.executors ?? []) if (startsWith(argv, e.argv)) return { outcome: 'pass', rule: `승인된 실행자: ${e.argv.join(' ')}`, executor: e }
     }
   }
   let allAdapters = true
@@ -223,10 +223,10 @@ function classifyBash(task, command) {
     const { env, argv } = splitEnv(seg)
     if (!checkAdapter(argv, env).ok) { allAdapters = false; break }
   }
-  if (allAdapters) return { outcome: 'pass', rule: 'observational adapter' }
+  if (allAdapters) return { outcome: 'pass', rule: '관찰용 어댑터' }
   const first = splitEnv(t.segments[0]).argv
   const why = checkAdapter(first, splitEnv(t.segments[0]).env).why
-  return delegated(`unclassified: ${why}`)
+  return delegated(`분류되지 않음: ${why}`)
 }
 
 function classifyTool(task, call) {
@@ -234,52 +234,52 @@ function classifyTool(task, call) {
   const worktree = normalizePath(task.worktree, '/')
   if (tool === 'Read') {
     const p = normalizePath(call.file_path, worktree)
-    return p && worktree && inside(p, worktree) ? { outcome: 'pass', rule: 'read inside the worktree' } : { outcome: 'deny', rule: 'read outside the worktree' }
+    return p && worktree && inside(p, worktree) ? { outcome: 'pass', rule: '워크트리 내부 읽기' } : { outcome: 'deny', rule: '워크트리 외부 읽기' }
   }
   if (EDIT_TOOLS.has(tool)) {
-    if (!(task.allow ?? []).includes('edit')) return { outcome: 'deny', rule: 'edits not allowed by this task' }
+    if (!(task.allow ?? []).includes('edit')) return { outcome: 'deny', rule: '이 작업에서는 편집이 허용되지 않음' }
     const p = normalizePath(call.file_path ?? call.notebook_path, worktree)
     // A root outside the worktree grants nothing, even on a record stored before validation refused it.
     const roots = (task.editRoots ?? ['.']).map((r) => normalizePath(r, worktree)).filter((r) => r && worktree && inside(r, worktree))
-    return p && roots.some((r) => inside(p, r)) ? { outcome: 'pass', rule: 'edit inside an allowed root' } : { outcome: 'deny', rule: 'edit outside the allowed roots' }
+    return p && roots.some((r) => inside(p, r)) ? { outcome: 'pass', rule: '허용된 루트 내부 편집' } : { outcome: 'deny', rule: '허용된 루트 외부 편집' }
   }
-  if (INTERNAL_TOOLS.has(tool)) return { outcome: 'pass', rule: `host-internal tool: ${tool}` }
-  if ((task.tools ?? []).includes(tool)) return { outcome: 'pass', rule: `tool named by the task: ${tool}` }
-  return delegated(`tool not classified: ${tool}`)
+  if (INTERNAL_TOOLS.has(tool)) return { outcome: 'pass', rule: `호스트 내부 도구: ${tool}` }
+  if ((task.tools ?? []).includes(tool)) return { outcome: 'pass', rule: `작업에서 지정한 도구: ${tool}` }
+  return delegated(`분류되지 않은 도구: ${tool}`)
 }
 
 // ── Task validation (at `/agentctl task set`) ──────────────────────────────────────────────────────
 export function validateTask(task) {
   const errors = []
-  if (!task || typeof task !== 'object') return { ok: false, errors: ['task must be an object'] }
+  if (!task || typeof task !== 'object') return { ok: false, errors: ['작업은 객체여야 합니다'] }
   // A task id becomes a store key and is shown everywhere: a bounded identifier, never free text.
   if (task.id !== undefined && (typeof task.id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(task.id) || redactLike(task.id) !== task.id)) {
-    errors.push('id must be 1-64 letters, digits, dot, underscore or hyphen, and carry no credential')
+    errors.push('id는 1~64자의 영문자, 숫자, 점, 밑줄 또는 하이픈이어야 하며 자격 증명을 포함할 수 없습니다')
   }
-  if (!task.goal || typeof task.goal !== 'string') errors.push('goal is required')
-  if (!task.worktree || typeof task.worktree !== 'string' || !task.worktree.startsWith('/')) errors.push('worktree must be an absolute path')
+  if (!task.goal || typeof task.goal !== 'string') errors.push('goal은 필수입니다')
+  if (!task.worktree || typeof task.worktree !== 'string' || !task.worktree.startsWith('/')) errors.push('worktree는 절대 경로여야 합니다')
   for (const k of ['executors', 'needsUser', 'forbid', 'allow', 'editRoots', 'tools']) {
-    if (task[k] !== undefined && !Array.isArray(task[k])) errors.push(`${k} must be an array`)
+    if (task[k] !== undefined && !Array.isArray(task[k])) errors.push(`${k}은(는) 배열이어야 합니다`)
   }
   if (errors.length) return { ok: false, errors }
-  for (const e of task.executors ?? []) if (!e || typeof e !== 'object' || !Array.isArray(e.argv) || e.argv.length === 0 || !e.argv.every((x) => typeof x === 'string')) errors.push('each executor needs a non-empty argv array')
-  for (const n of task.needsUser ?? []) if (!Array.isArray(n) || n.length === 0) errors.push('each needsUser entry must be a non-empty argv array')
+  for (const e of task.executors ?? []) if (!e || typeof e !== 'object' || !Array.isArray(e.argv) || e.argv.length === 0 || !e.argv.every((x) => typeof x === 'string')) errors.push('각 executor에는 비어 있지 않은 argv 배열이 필요합니다')
+  for (const n of task.needsUser ?? []) if (!Array.isArray(n) || n.length === 0) errors.push('각 needsUser 항목은 비어 있지 않은 argv 배열이어야 합니다')
   // A credential in a policy value would be stored and shown verbatim; such a task is refused.
   const secretLike = (argv) => argv.join(' ') !== redactLike(argv.join(' '))
-  for (const e of task.executors ?? []) if (Array.isArray(e?.argv) && secretLike(e.argv)) errors.push('an executor carries a credential-like value; keep secrets out of the task')
-  for (const n of task.needsUser ?? []) if (Array.isArray(n) && secretLike(n)) errors.push('a needsUser entry carries a credential-like value; keep secrets out of the task')
-  for (const f of task.forbid ?? []) if (secretLike(toWords(f))) errors.push('a forbid entry carries a credential-like value')
-  for (const k of ['allow', 'editRoots', 'tools']) for (const x of task[k] ?? []) if (secretLike([String(x)])) errors.push(`a ${k} entry carries a credential-like value`)
+  for (const e of task.executors ?? []) if (Array.isArray(e?.argv) && secretLike(e.argv)) errors.push('executor에 자격 증명과 같은 값이 있습니다. 작업에 비밀 값을 넣지 마세요')
+  for (const n of task.needsUser ?? []) if (Array.isArray(n) && secretLike(n)) errors.push('needsUser 항목에 자격 증명과 같은 값이 있습니다. 작업에 비밀 값을 넣지 마세요')
+  for (const f of task.forbid ?? []) if (secretLike(toWords(f))) errors.push('forbid 항목에 자격 증명과 같은 값이 있습니다')
+  for (const k of ['allow', 'editRoots', 'tools']) for (const x of task[k] ?? []) if (secretLike([String(x)])) errors.push(`${k} 항목에 자격 증명과 같은 값이 있습니다`)
   // Edit roots stay inside the worktree: `../other` or an absolute path elsewhere would let the task
   // authorize writes the worktree does not own (found by an adversarial test).
   const wt = typeof task.worktree === 'string' ? normalizePath(task.worktree, '/') : null
   for (const r of task.editRoots ?? []) {
     const n = wt ? normalizePath(String(r), wt) : null
-    if (!n || !inside(n, wt)) errors.push(`edit root ${String(r).slice(0, 80)} is outside the worktree`)
+    if (!n || !inside(n, wt)) errors.push(`편집 루트 ${String(r).slice(0, 80)}이(가) 워크트리 밖에 있습니다`)
   }
-  if (typeof task.worktree === 'string' && secretLike([task.worktree])) errors.push('the worktree carries a credential-like value')
+  if (typeof task.worktree === 'string' && secretLike([task.worktree])) errors.push('worktree에 자격 증명과 같은 값이 있습니다')
   const classes = forbiddenClasses(task)
-  const overlap = (argv, label) => { const hit = matchForbidden(argv, classes); if (hit) errors.push(`${label} ${argv.join(' ')} overlaps forbidden class (${hit.rule})`) }
+  const overlap = (argv, label) => { const hit = matchForbidden(argv, classes); if (hit) errors.push(`${label} ${argv.join(' ')}이(가) 금지 유형(${hit.rule})과(와) 겹칩니다`) }
   for (const e of task.executors ?? []) if (Array.isArray(e?.argv)) overlap(e.argv, 'executor')
   for (const n of task.needsUser ?? []) if (Array.isArray(n)) overlap(n, 'needsUser')
   return { ok: errors.length === 0, errors }

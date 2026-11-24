@@ -141,12 +141,12 @@ export function register(on: On): void {
     try {
       await $.command.register({
         name: COMMAND,
-        description: 'agent-usage-guard: status, allow, resume, report',
+        description: 'agent-usage-guard: 상태, 허용, 재개, 보고',
         argumentHint: '[status | allow [agents|context] [minutes] | pause [minutes] | resume | report [days] | help]',
         immediate: true,
       })
     } catch (error) {
-      $.ui.log(`agent-usage-guard could not add /${COMMAND}: ${String(error)}`, { to: 'debug' })
+      $.ui.log(`agent-usage-guard /${COMMAND} 등록 실패: ${String(error)}`, { to: 'debug' })
     }
     return next(e)
   }).catch(($, e, next) => failOpen($, 'session.start', next.error, () => next(e)))
@@ -235,7 +235,7 @@ export function register(on: On): void {
         if (now - lastPublished >= HEARTBEAT_MS) await publish($, now)
       }
     } catch (error) {
-      $.ui.log(`agent-usage-guard: could not record a response (${String(error)})`, { to: 'debug' })
+      $.ui.log(`agent-usage-guard: 응답 기록 실패 (${String(error)})`, { to: 'debug' })
     }
     return result
   })
@@ -258,7 +258,7 @@ export function register(on: On): void {
       compactAfterTurn = false
       $.clock.after(0, async () => {
         const failed = await compact($)
-        if (failed !== undefined) $.ui.log(`could not compact (${failed}).`)
+        if (failed !== undefined) $.ui.log(`압축 실패 (${failed}).`)
       })
     }
     await refreshStatus($)
@@ -387,7 +387,7 @@ export function register(on: On): void {
 
     const print = fingerprint(canonical(argumentsOf(e)))
     if (!resumed) {
-      const label = loop === MAIN ? 'this conversation' : agentLabel(loop)
+      const label = loop === MAIN ? '이 대화' : agentLabel(loop)
       const request = { loop, tool: e.tool, fingerprint: print, label }
       if (isScheduling(e.tool)) await loadPeers($, now)
       let verdict = scheduleGate(session, peers, config, now, request)
@@ -434,9 +434,9 @@ export function register(on: On): void {
     if (command.action === 'allow') {
       // Only the person lifts limits: another plugin's $.command.run reaches this hook too.
       if (!fromPerson(e.origin.kind)) {
-        const from = e.origin.kind === 'plugin' ? `the ${e.origin.name} plugin` : `a ${e.origin.kind} prompt`
-        $.ui.log(`refused /${COMMAND} ${e.args.trim()} from ${from}.`)
-        return { text: `Only you can lift the guard's limits, and this came from ${from}, so nothing changed. Type /${COMMAND} ${e.args.trim()} to lift them.` }
+        const from = e.origin.kind === 'plugin' ? `${e.origin.name} 플러그인` : `${e.origin.kind} 프롬프트`
+        $.ui.log(`${from}에서 /${COMMAND} ${e.args.trim()} 요청 거부.`)
+        return { text: `가드 제한은 당신만 해제할 수 있으며 이번 요청은 ${from}에서 왔으므로 변경된 것은 없습니다. 해제하려면 /${COMMAND} ${e.args.trim()}를 입력하세요.` }
       }
       const text = applyOverride(session, now, command.scope, command.minutes)
       await journal($, now, { ev: 'override', rule: command.scope })
@@ -451,7 +451,7 @@ export function register(on: On): void {
     }
     await loadPeers($, now)
     return { text: statusReport(session, peers, config, now, problems, await pluginVersion($), storeFailure) }
-  }).catch(($, e, next) => ({ text: `The command failed: ${next.error?.message ?? 'unknown error'}` }))
+  }).catch(($, e, next) => ({ text: `명령 실패: ${next.error?.message ?? '알 수 없는 오류'}` }))
 }
 
 /** Each variable is named in full, so `claude plugin validate` can list every one the mod reads. */
@@ -525,7 +525,7 @@ async function housekeeping($: Api): Promise<void> {
       if (typeof at !== 'number' || now - at > LAST_ACTIVE_KEEP_MS) await $.store.delete(key)
     }
   } catch (error) {
-    $.ui.log(`agent-usage-guard housekeeping failed: ${String(error)}`, { to: 'debug' })
+    $.ui.log(`agent-usage-guard 정리 실패: ${String(error)}`, { to: 'debug' })
   }
 }
 
@@ -566,7 +566,7 @@ async function publish($: Api, now: number): Promise<void> {
   try {
     await save($, PEER_PREFIX + session.id, peerRecord(session, now, config.windowMs))
   } catch (error) {
-    $.ui.log(`agent-usage-guard could not publish its counts: ${String(error)}`, { to: 'debug' })
+    $.ui.log(`agent-usage-guard: 사용량 게시 실패: ${String(error)}`, { to: 'debug' })
   }
   await keepLastActive($)
   await refreshStatus($)
@@ -585,7 +585,7 @@ async function keepLastActive($: Api): Promise<void> {
     await save($, LAST_ACTIVE_PREFIX + session.id, last)
     lastActiveKept = last
   } catch (error) {
-    $.ui.log(`agent-usage-guard could not store when the session was last active: ${String(error)}`, { to: 'debug' })
+    $.ui.log(`agent-usage-guard: 세션 마지막 활동 시각 저장 실패: ${String(error)}`, { to: 'debug' })
   }
 }
 
@@ -614,7 +614,7 @@ async function loadPeers($: Api, now: number): Promise<void> {
     const records = await Promise.all(keys.map((k) => $.store.get(k)))
     peers = livePeers(records, now, config.peerTtlMs)
   } catch (error) {
-    $.ui.log(`agent-usage-guard could not read other sessions: ${String(error)}`, { to: 'debug' })
+    $.ui.log(`agent-usage-guard: 다른 세션 읽기 실패: ${String(error)}`, { to: 'debug' })
   }
 }
 
@@ -655,13 +655,13 @@ async function refreshStatus($: Api): Promise<void> {
     const expiries = [statusLineExpiry(session, peers, config, now), bandExpiry(session, peers, config, now)].filter((t) => t !== undefined)
     redrawAt($, expiries.length > 0 ? Math.min(...expiries) : undefined, now)
     await drawBand($, now)
-    const parts = [statusLine(session, peers, config, now), storeFailure === undefined || !config.enabled ? undefined : "store not saving: other sessions can't count this one"]
+    const parts = [statusLine(session, peers, config, now), storeFailure === undefined || !config.enabled ? undefined : "저장소 저장 실패: 다른 세션이 이 세션을 집계할 수 없습니다"]
     const text = parts.filter((p) => p !== undefined).join(' · ') || undefined
     if (text === lastStatus) return
     lastStatus = text
     $.ui.status(text)
   } catch (error) {
-    $.ui.log(`agent-usage-guard could not update its status line: ${String(error)}`, { to: 'debug' })
+    $.ui.log(`agent-usage-guard: 상태 표시줄 업데이트 실패: ${String(error)}`, { to: 'debug' })
   }
 }
 
@@ -715,7 +715,7 @@ async function askUser($: Api, ask: Ask, ctx?: string): Promise<Asked> {
       session.canAsk = false
       unavailable = true
     } else if (!/\$\.ui\.ask: no answer\b/.test(text)) {
-      $.ui.log(`agent-usage-guard: the question ended without an answer (${text}), so it counts as dismissed.`, { to: 'debug' })
+      $.ui.log(`agent-usage-guard: 질문이 답변 없이 종료됨 (${text}), 취소로 처리합니다.`, { to: 'debug' })
     }
   }
   return { answer, unavailable, at: await $.clock.now() }
@@ -754,22 +754,22 @@ async function oneAtATime<T>($: Api, key: string, held: () => T, run: () => Prom
  */
 async function simulation($: Api, rule: SimulatedRule, now: number): Promise<string> {
   const verdict = simulate(rule, config, now, canAsk())
-  const opening = `Simulation of ${rule}`
-  const aside = `${opening}: nothing was held, and none of this applies to the current work.`
+  const opening = `규칙 ${rule} 시뮬레이션`
+  const aside = `${opening}: 보류하거나 변경한 것은 없으며 현재 작업에는 적용되지 않습니다.`
   if (verdict.kind === 'ask') {
     if (canAsk()) {
       try {
-        const answer = await $.ui.ask(`Simulation, nothing changes: ${verdict.question}`, { options: verdict.options, header: HEADER })
-        return `${opening}: you answered "${answer}". Nothing was held, nothing changed and no usage was spent.`
+        const answer = await $.ui.ask(`시뮬레이션입니다. 아무것도 변경되지 않습니다: ${verdict.question}`, { options: verdict.options, header: HEADER })
+        return `${opening}: "${answer}"을(를) 선택했습니다. 보류나 변경, 사용량 소비는 없었습니다.`
       } catch {
         // Dismissed, or the dialog could not open: show the question instead.
       }
     }
-    return `${aside} The guard would ask:\n\n${verdict.question}\nOptions: ${verdict.options.join(' · ')}`
+    return `${aside} 가드가 다음 질문을 했습니다:\n\n${verdict.question}\nOptions: ${verdict.options.join(' · ')}`
   }
-  if (verdict.kind === 'deny') return `${aside} Claude would read this refusal:\n\n${verdict.message}`
-  if (verdict.kind === 'drop') return `${aside} A prompt you send would be held:\n\n${verdict.message}`
-  return `${opening}: with your settings, this rule would not trip.`
+  if (verdict.kind === 'deny') return `${aside} Claude가 다음 거부 메시지를 보았습니다:\n\n${verdict.message}`
+  if (verdict.kind === 'drop') return `${aside} 보낸 프롬프트가 보류되었을 것입니다:\n\n${verdict.message}`
+  return `${opening}: 현재 설정에서는 이 규칙이 발동하지 않습니다.`
 }
 
 /** Compacts the conversation. Returns why it did not, or undefined once it has. */
@@ -801,7 +801,7 @@ async function compactThenSend($: Api, text: string, resend: boolean): Promise<v
   const failed = await compact($)
   if (failed !== undefined) {
     if (resend) await putBack($, text)
-    $.ui.log(`could not compact (${failed}), so your prompt is back in the input box.`)
+    $.ui.log(`압축 실패 (${failed})로 프롬프트를 입력창에 되돌렸습니다.`)
     return
   }
   if (!resend) return
@@ -810,7 +810,7 @@ async function compactThenSend($: Api, text: string, resend: boolean): Promise<v
     await $.prompt.submit({ text, asUser: true })
   } catch (error) {
     await putBack($, text)
-    $.ui.log(`could not send your prompt (${String(error)}), so it is back in the input box.`)
+    $.ui.log(`프롬프트 전송 실패 (${String(error)})로 입력창에 되돌렸습니다.`)
   }
 }
 
@@ -874,7 +874,7 @@ function resumeTarget(to: unknown, message: unknown): string | undefined {
  */
 function agentLabel(id: string): string {
   const name = session.agents[id]?.name
-  return name !== undefined && PLAIN_NAME.test(name) ? `agent "${name}"` : `agent ${id.slice(0, 8)}`
+  return name !== undefined && PLAIN_NAME.test(name) ? `에이전트 "${name}"` : `에이전트 ${id.slice(0, 8)}`
 }
 
 /** The tool's own arguments, for its fingerprint. */
@@ -939,7 +939,7 @@ async function appendRow($: Api, id: string, now: number, row: Omit<JournalRow, 
     if (journalCache.rows.length > MAX_ROWS_PER_DAY) journalCache.rows.splice(0, journalCache.rows.length - MAX_ROWS_PER_DAY)
     await save($, key, journalCache.rows)
   } catch (error) {
-    $.ui.log(`agent-usage-guard could not write its journal: ${String(error)}`, { to: 'debug' })
+    $.ui.log(`agent-usage-guard: 저널 기록 실패: ${String(error)}`, { to: 'debug' })
   }
 }
 
@@ -960,12 +960,12 @@ async function report($: Api, now: number, days: number): Promise<string> {
     const rows = (await Promise.all(recent.map((k) => $.store.get(k)))).flatMap((v) => (Array.isArray(v) ? v.filter(isJournalRow) : []))
     return formatReport(rows, now, days)
   } catch (error) {
-    return `Could not read the journal (${String(error)}).`
+    return `저널을 읽을 수 없습니다 (${String(error)}).`
   }
 }
 
 /** A hook that throws or overruns lets the event go ahead: a broken guard must not break the session. */
 function failOpen<T>($: Api, event: string, error: { kind?: string; message?: string } | undefined, proceed: () => T): T {
-  $.ui.log(`agent-usage-guard: the ${event} hook failed, so the event went ahead (${error?.kind ?? 'error'}: ${error?.message ?? 'unknown'})`, { to: 'debug' })
+  $.ui.log(`agent-usage-guard: ${event} 훅 실패로 이벤트를 계속 진행했습니다 (${error?.kind ?? '오류'}: ${error?.message ?? '알 수 없음'})`, { to: 'debug' })
   return proceed()
 }

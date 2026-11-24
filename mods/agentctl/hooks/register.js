@@ -21,6 +21,12 @@ const BUILT_IN_RULES = new Set(HARD_FORBIDDEN.map((h) => h.rule))
 const TICK_MS = 30 * 1000
 const GATE_STALE_MS = 30 * 1000
 
+function noProposalText(lang) {
+  if (lang === 'ko') return '대기 중인 초안이 없습니다. 작성하려면: /agentctl <지금 하는 일>'
+  if (lang === 'zh') return '目前沒有等待中的草稿。要起草：/agentctl <你要做的事>'
+  return '대기 중인 초안이 없습니다. 작성하려면: /agentctl <지금 하는 일>'
+}
+
 // Per-session runtime context, rebuilt from the store after a hot reload. Built once per session
 // through one shared promise: session.start and the first ui.render arrive concurrently in an
 // interactive terminal, and two separate builds left the band reading a context nobody updated
@@ -176,16 +182,16 @@ async function readGate($, c) {
     if (await $.fs.exists('.claude/scripts/review-state.js')) script = '.claude/scripts/review-state.js'
     else if (await $.fs.exists('scripts/review-state.js')) script = 'scripts/review-state.js'
   } catch (err) {
-    c.gate = { failed: sanitize('cannot look for review-state.js: ' + (err && err.message ? err.message : err), 80), at }
+    c.gate = { failed: sanitize('review-state.js 검색 실패: ' + (err && err.message ? err.message : err), 80), at }
     return
   }
-  if (!script) { c.gate = { failed: 'no review-state.js here', at }; return }
+  if (!script) { c.gate = { failed: '여기에 review-state.js가 없습니다', at }; return }
   try {
     // `check` only — this mod never writes a verdict (FR-19).
     const r = await $.process.run(['node', script, 'check', '--format=json'], { cwd: c.cwd, timeoutMs: TIMEOUT_MS })
     c.gate = { ...gateReading(r, at), staleAfterMs: GATE_STALE_MS }
   } catch (err) {
-    c.gate = { failed: sanitize('check failed: ' + (err && err.message ? err.message : err), 80), at }
+    c.gate = { failed: sanitize('검사 실패: ' + (err && err.message ? err.message : err), 80), at }
   }
 }
 
@@ -239,7 +245,7 @@ async function observe($, c, observation, taskId) {
   const now = await $.clock.now()
   const { toSend, sent } = decideNotices(c.state.interventions, c.notices, now)
   c.notices = sent
-  for (const n of toSend) $.ui.toast(`agentctl: ${n.reason.replace('-', ' ')} — /agentctl for details`)
+  for (const n of toSend) $.ui.toast(`agentctl: ${n.reason.replace('-', ' ')} — 자세한 내용은 /agentctl`)
   persist(c, taskId)
   $.ui.invalidate('ui.render')
 }
@@ -264,7 +270,7 @@ async function closeBackground($, c, id, status, isError) {
       ev.outcome = status === 'completed' ? (isError ? 'error' : 'ok') : status === 'failed' ? 'error' : 'cancelled'
       ev.after = await readFingerprint($, c.cwd)
       ev.coverage = worstCoverage(ev.before, ev.after)
-      ev.note = 'after-reading taken when the terminal result was observed, not at completion'
+      ev.note = '완료 시점이 아니라 터미널 결과를 확인한 시점에 사후 판독을 수행함'
     }
   }
   persist(c, task?.id)
@@ -275,27 +281,27 @@ async function taskCommand($, c, e, rest) {
   const [sub, ...more] = rest
   if (!sub || sub === 'show') {
     const t = await boundTask($, c)
-    return t ? policyText(t) : 'No task bound to this worktree. Set one with /agentctl task set <json>.'
+    return t ? policyText(t) : '이 워크트리에 바인드된 작업이 없습니다. /agentctl task set <json>으로 설정하세요.'
   }
-  if (sub !== 'set' && sub !== 'clear') return 'Usage: /agentctl task show | set <json> | clear'
+  if (sub !== 'set' && sub !== 'clear') return '사용법: /agentctl task show | set <json> | clear'
   // Scope changes come only from the person at the prompt (FR-25).
-  if (e.origin?.kind !== 'composer') return 'agentctl refused: the task can be set or cleared only from your own prompt.'
+  if (e.origin?.kind !== 'composer') return 'agentctl 거부: 작업 설정과 해제는 자신의 프롬프트에서만 할 수 있습니다.'
   const now = await $.clock.now()
   if (sub === 'clear') {
     // Report what persisted (INV-006): a failed delete leaves the old policy in force.
     if (!(await c.writer.delete(keys.binding(worktreeKey(c.cwd))))) {
-      return 'agentctl: the task could not be cleared (store error); the previous task still applies.'
+      return 'agentctl: 작업을 해제할 수 없습니다 (저장소 오류). 이전 작업이 계속 적용됩니다.'
     }
-    return 'Task cleared for this worktree; only the built-in classes are refused now.'
+    return '이 워크트리의 작업을 해제했습니다. 이제 기본 제공 거부 유형만 적용됩니다.'
   }
   let input
-  try { input = JSON.parse(more.join(' ')) } catch { return 'agentctl: the task must be JSON.' }
-  if (!input || typeof input !== 'object' || Array.isArray(input)) return 'agentctl: the task must be a JSON object.'
+  try { input = JSON.parse(more.join(' ')) } catch { return 'agentctl: 작업은 JSON이어야 합니다.' }
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return 'agentctl: 작업은 JSON 객체여야 합니다.'
   // The worktree is this session's; a task naming another one is refused, never re-pointed.
-  if (input.worktree !== undefined && input.worktree !== c.cwd) return 'agentctl: task rejected —\n- the task names another worktree'
+  if (input.worktree !== undefined && input.worktree !== c.cwd) return 'agentctl: 작업 거부 —\n- 다른 워크트리가 지정되었습니다'
   const raw = { ...input, worktree: c.cwd }
   const v = validateTask(raw)
-  if (!v.ok) return `agentctl: task rejected —\n- ${v.errors.map((x) => sanitize(x, 200)).join('\n- ')}`
+  if (!v.ok) return `agentctl: 작업 거부 —\n- ${v.errors.map((x) => sanitize(x, 200)).join('\n- ')}`
   // The policy version only rises: re-setting an id that already has a record continues from it, so
   // evidence and proposals tied to the earlier policy never read as this one's.
   const id = raw.id ?? `T${now}`
@@ -311,14 +317,14 @@ async function bindTask($, c, task) {
   const bindingKey = keys.binding(worktreeKey(c.cwd))
   const current = await $.store.get(bindingKey)
   if (!(await c.writer.set(keys.task(scopeOf(c, task.id)), task))) {
-    return 'agentctl: the task could not be saved (store error); the previous task, if any, still applies.'
+    return 'agentctl: 작업을 저장할 수 없습니다 (저장소 오류). 기존 작업이 있다면 계속 적용됩니다.'
   }
   if (current !== task.id && !(await c.writer.set(bindingKey, task.id))) {
-    return 'agentctl: the task was saved but could not be bound (store error); the previous task, if any, still applies.'
+    return 'agentctl: 작업은 저장됐지만 바인드할 수 없습니다 (저장소 오류). 기존 작업이 있다면 계속 적용됩니다.'
   }
   persist(c, task.id)
   $.ui.invalidate('ui.render')
-  return `Task ${task.id} bound to this worktree.\n${policyText(task)}`
+  return `작업 ${task.id}을(를) 이 워크트리에 바인드했습니다.\n${policyText(task)}`
 }
 
 // ── Proposals ───────────────────────────────────────────────────────────────────────────────────
@@ -345,10 +351,10 @@ async function checkProposal($, c) {
   const bound = await boundTask($, c)
   // A malformed submission is a rejection, never a failed hook.
   let r
-  try { r = readProposal(text, { cwd: c.cwd, boundId: bound?.id ?? null }) } catch { r = { ok: false, errors: ['the proposal could not be validated'] } }
+  try { r = readProposal(text, { cwd: c.cwd, boundId: bound?.id ?? null }) } catch { r = { ok: false, errors: ['초안을 검증할 수 없습니다'] } }
   if (!r.ok) {
     // No `agentctl:` prefix: the host already names the mod on every transcript line (found live).
-    $.ui.log(`proposal not shown — ${r.errors.join('; ')}`)
+    $.ui.log(`초안을 표시하지 않습니다 — ${r.errors.join('; ')}`)
     persist(c, bound?.id)
     return
   }
@@ -417,20 +423,20 @@ async function settleProposal($, c, p) {
 
 async function acceptCommand($, c, e, given) {
   // Scope comes only from the person at the prompt (FR-25).
-  if (e.origin?.kind !== 'composer') return 'agentctl refused: a proposal can be accepted only from your own prompt.'
+  if (e.origin?.kind !== 'composer') return 'agentctl 거부: 초안은 자신의 프롬프트에서만 승인할 수 있습니다.'
   const p = c.pending
-  if (!p) return c.lang === 'zh' ? '目前沒有等待中的草稿。要起草：/agentctl <你要做的事>' : 'No proposal is waiting. To draft one: /agentctl <what you are doing>'
-  if (!digestMatches(given, p.digest)) return `agentctl refused: ${sanitize(given, 30)} does not match the waiting proposal ${p.digest.slice(0, 8)}. Check /agentctl proposal.`
+  if (!p) return noProposalText(c.lang)
+  if (!digestMatches(given, p.digest)) return `agentctl 거부: ${sanitize(given, 30)}이(가) 대기 중인 초안 ${p.digest.slice(0, 8)}과(와) 일치하지 않습니다. /agentctl proposal을 확인하세요.`
   const bound = await boundTask($, c)
   if ((bound?.id ?? null) !== p.effective.base || revisionOf(bound) !== p.baseRev) {
     await settleProposal($, c, p)
     persist(c, bound?.id)
-    return 'agentctl refused: the bound task changed since this proposal was drafted (stale); it was discarded. Ask for a new draft.'
+    return 'agentctl 거부: 초안 작성 후 바인드된 작업이 변경되어 폐기했습니다. 새 초안을 요청하세요.'
   }
   const now = await $.clock.now()
   const record = acceptedRecord(p.effective, { now, baseTask: bound })
   const text = await bindTask($, c, record)
-  if (!text.startsWith('Task ')) return text
+  if (!text.startsWith('작업 ')) return text
   await settleProposal($, c, p)
   persist(c, `T${now}`)
   // Say what accepting did and did not do; the full policy is one command away.
@@ -438,7 +444,7 @@ async function acceptCommand($, c, e, given) {
   // uncoached run, where `npm test | grep` passed but never counted). Never shortened: a cut command
   // would not match its check.
   const checks = checkArgv(record)
-  return [copy(c.lang).accepted, `Task ${record.id}: ${sanitize(record.goal, 120)}`,
+  return [copy(c.lang).accepted, `작업 ${record.id}: ${sanitize(record.goal, 120)}`,
     ...(checks.length ? [copy(c.lang).runChecks(checks.map((a) => sanitize(a, Infinity)))] : []), copy(c.lang).wholeScope].join('\n')
 }
 
@@ -446,22 +452,22 @@ async function stopCommand($, c) {
   const h = await saveHandoff($, c)
   const turnId = c.state.runtime.turnId
   // Say what happened: a checkpoint exists only when a task is bound.
-  const lines = [h.saved ? 'Hand-over saved before stopping.'
-    : h.reason === 'no-task' ? 'No task bound: the hand-over was not saved (see /agentctl handoff).'
-      : 'The hand-over could not be saved (store error); /agentctl handoff still prints it.']
-  if (!turnId) lines.push('No running turn was observed; nothing was cancelled.')
+  const lines = [h.saved ? '중지하기 전에 인계 내용을 저장했습니다.'
+    : h.reason === 'no-task' ? '바인드된 작업이 없어 인계 내용을 저장하지 않았습니다 (/agentctl handoff 참조).'
+      : '인계 내용을 저장할 수 없습니다 (저장소 오류). /agentctl handoff로 출력할 수 있습니다.']
+  if (!turnId) lines.push('실행 중인 턴이 관측되지 않아 취소한 것은 없습니다.')
   else {
     try {
       await $.turn.abort({ turnId })
-      lines.push(`Cancellation requested for turn ${turnId}; it reads as ended only once its end is observed.`)
+      lines.push(`턴 ${turnId}의 취소를 요청했습니다. 종료가 확인될 때까지는 완료로 간주하지 않습니다.`)
     } catch (err) {
-      lines.push(`Cancellation request failed; turn outcome unconfirmed (${sanitize(err && err.message ? err.message : err, 120)}).`)
+      lines.push(`취소 요청 실패; 턴 결과가 확인되지 않았습니다 (${sanitize(err && err.message ? err.message : err, 120)}).`)
     }
   }
   const open = Object.entries(c.state.ops).filter(([, o]) => o.endedAt === undefined && o.outcome !== 'refused')
-  lines.push(open.length ? 'Tracked operations, as last observed:' : 'No tracked operation was running.')
+  lines.push(open.length ? '추적 중인 작업 (마지막 관측 시점):' : '실행 중인 추적 작업이 없습니다.')
   for (const [id, o] of open) lines.push(`- ${sanitize(o.requested, 120)} (${o.tool}) — ${o.outcome}, ${id}`)
-  lines.push('Untracked processes cannot be confirmed; this is never "all stopped".')
+  lines.push('Untracked processes cannot be confirmed; "모두 중지됨"을 뜻하지 않습니다.')
   return lines.join('\n')
 }
 
@@ -492,13 +498,13 @@ export function register(on) {
     if (c.checkpoint) {
       // Shown before any work: a transcript notice (not sent to the model; `-p` receives it as
       // ui_log) and the band. Nothing is replayed, and the mod holds no approvals to carry over.
-      $.ui.log(`last hand-over for task ${task.id}, saved ${new Date(c.checkpoint.savedAt).toISOString()} — /agentctl last shows it again`)
+      $.ui.log(`작업 ${task.id}의 최근 인계 내용, 저장 시각 ${new Date(c.checkpoint.savedAt).toISOString()} — /agentctl last로 다시 표시`)
       // The whole checkpoint (already bounded by the hand-over cap), never a silent preview.
       for (const line of String(c.checkpoint.markdown).split('\n')) $.ui.log(line)
     }
     await checkProposal($, c)
     // `immediate`: /agentctl stop must run while the turn it cancels is still in flight.
-    await $.command.register({ name: 'agentctl', description: 'Agent Control Plane — describe the work and Claude drafts a scope you accept', argumentHint: '<what you are doing> | accept <digest> | help', immediate: true })
+    await $.command.register({ name: 'agentctl', description: '에이전트 제어 — 작업을 설명하면 Claude가 범위 초안을 작성하고 당신이 승인합니다', argumentHint: '<지금 하는 일> | accept <digest> | help', immediate: true })
     $.ui.invalidate('ui.render')
     return next(e)
   })
@@ -576,8 +582,8 @@ export function register(on) {
       // propose widening a task that cannot widen it (found live).
       const builtIn = BUILT_IN_RULES.has(v.rule)
       return { deny: builtIn
-        ? `agentctl refused (${rule}): a built-in class no task can lift. Run it yourself, or through your project's own push or deploy workflow.`
-        : `agentctl refused (${rule}). Do not reach the same result another way (a shell redirect, a script); if it is needed, ask the person to accept a wider scope. The task's scope is shown by /agentctl policy.` }
+        ? `agentctl 거부 (${rule}): 기본 제공 거부 유형은 어떤 작업으로도 해제할 수 없습니다. 직접 실행하거나 프로젝트의 push 또는 배포 워크플로를 사용하세요.`
+        : `agentctl 거부 (${rule}). 셸 리다이렉트나 스크립트 등 다른 방법으로 같은 결과를 얻지 마세요 (a shell redirect, a script); if it is needed, 필요하다면 더 넓은 범위를 승인해 달라고 요청하세요. 작업 범위는 /agentctl policy에서 확인할 수 있습니다.` }
     }
     // Delegated: the host's permission flow (or auto mode) decides; the mod only records that it did
     // not classify the call, so the events list can show it.
@@ -594,7 +600,7 @@ export function register(on) {
     await observe($, c, { type: 'tool.end', id, outcome: outcomeOf(r), at: endAt }, task?.id)
     await observe($, c, { type: 'permission.settled', at: endAt }, task?.id)
     return r
-  }).catch(($, e, next) => (next.called ? next(e) : { deny: 'agentctl refused: the policy check failed before the call ran' }))
+  }).catch(($, e, next) => (next.called ? next(e) : { deny: 'agentctl 거부: 호출 전에 정책 검사가 실패했습니다' }))
 
   // Evidence, beneath the policy hook: brackets Bash calls; its failures are evidence failures,
   // never refusals (feasibility § 6).
@@ -660,14 +666,14 @@ export function register(on) {
       persist(c, task?.id)
     }
     return out
-  }).catch(() => ({ decision: 'deny', reason: 'agentctl refused: the verdict check failed' }))
+  }).catch(() => ({ decision: 'deny', reason: 'agentctl 거부: 판정 검사가 실패했습니다' }))
 
   // Text replies for every surface, answered without a model call.
   on('command.run', { command: 'agentctl' }, async ($, e) => {
     const c = await context($)
     // Replies carry no `agentctl:` prefix of their own: the host already adds one (found in a
     // first-run test, where every reply read "agentctl: agentctl:").
-    const reply = (text) => ({ text: String(text).replace(/^agentctl: /gm, '').replace(/^agentctl refused: /gm, 'Refused: ') })
+    const reply = (text) => ({ text: String(text).replace(/^agentctl: /gm, '').replace(/^agentctl 거부: /gm, '거부: ') })
     const t = copy(c.lang)
     const p = parseCommand(e.args)
     if (p.kind === 'goal') return reply(await goalCommand($, c, e, p.text))
@@ -679,16 +685,16 @@ export function register(on) {
       const m = await model($, c)
       const bound = m.task && !m.task.recordMissing
       const next = c.pending ? t.next.proposal(c.pending.digest.slice(0, 8)) : bound ? nextForTask(t, checkProgress(m.task, m.evidence, m.fingerprint)) : t.next.none
-      const extra = c.checkpoint ? [`Last hand-over saved ${new Date(c.checkpoint.savedAt).toISOString()} — /agentctl last`] : []
+      const extra = c.checkpoint ? [`최근 인계 내용 저장 ${new Date(c.checkpoint.savedAt).toISOString()} — /agentctl last`] : []
       return reply([next, statusText(m, { details: rest[0] === '--details' }), ...extra].join('\n'))
     }
     if (sub === 'help') return reply(helpText(c.lang, rest[0] === 'advanced'))
     if (sub === 'last') {
-      if (c.checkpoint) return reply(`Last hand-over (${new Date(c.checkpoint.savedAt).toISOString()}):\n${c.checkpoint.markdown}`)
+      if (c.checkpoint) return reply(`최근 인계 내용 (${new Date(c.checkpoint.savedAt).toISOString()}):\n${c.checkpoint.markdown}`)
       return reply((await boundTask($, c)) ? t.noHandover : t.noTaskLast)
     }
     if (sub === 'proposal') {
-      if (!c.pending) return reply(c.lang === 'zh' ? '目前沒有等待中的草稿。要起草：/agentctl <你要做的事>' : 'No proposal is waiting. To draft one: /agentctl <what you are doing>')
+      if (!c.pending) return reply(noProposalText(c.lang))
       await suggestAccept($, c)
       return reply(preview(c).join('\n'))
     }
@@ -698,7 +704,7 @@ export function register(on) {
       await settleProposal($, c, c.pending)
       persist(c, (await boundTask($, c))?.id)
       $.ui.invalidate('ui.render')
-      return reply(had ? 'Proposal discarded; the bound task is unchanged.' : 'No proposal was waiting.')
+      return reply(had ? '초안을 폐기했습니다. 바인드된 작업은 변경되지 않았습니다.' : '대기 중인 초안이 없습니다.')
     }
     if (sub === 'task') {
       // A sentence where a subcommand belongs is a goal, not a usage error (found in a first-run test).

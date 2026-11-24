@@ -59,9 +59,11 @@ export function parseCommand(raw) {
   return { kind: 'goal', text }
 }
 
-// A limited English / Traditional Chinese copy heuristic over the goal text — not locale detection.
+// 목표 문자열에 대한 제한된 영어/번체 중국어/한국어 문구 휴리스틱입니다. 로케일 감지가 아닙니다.
 export function languageOf(goal) {
-  return /\p{Script=Han}/u.test(String(goal ?? '')) ? 'zh' : 'en'
+  const text = String(goal ?? '')
+  if (/\p{Script=Hangul}/u.test(text)) return 'ko'
+  return /\p{Script=Han}/u.test(text) ? 'zh' : 'en'
 }
 
 // A path for a POSIX shell, single-quoted: the only character needing care inside is `'` itself.
@@ -81,6 +83,13 @@ export function helperPath(root) {
 export function draftingRequest({ goal, worktree, base, root, lang }) {
   const helper = `node ${shellQuote(helperPath(root))} --worktree ${shellQuote(worktree)} --stdin`
   const baseText = base ? `"${base}"` : 'null'
+  if (lang === 'ko') {
+    return [
+      `다음 작업의 agentctl 작업 범위 초안을 작성하세요: "${goal}"`,
+      `먼저 ${helper.replace(' --stdin', ' --help')}을(를) 실행해 필드를 확인하고, 프로젝트를 읽은 뒤 가장 좁은 범위(편집 경로, 검사 명령, 수락 기준)를 제안하세요. 불확실한 점이 있으면 나에게 묻고 답을 기다리세요. 답보다 먼저 proposal을 작성하거나 권한을 임의로 넓히지 마세요.`,
+      `${helper}(으)로 작성하세요 (base는 ${baseText}. heredoc 구분자는 따옴표로 감싸고 JSON에 등장하지 않는 것으로 하세요). proposal만 작성한 뒤 내 승인을 기다리세요.`,
+    ].join('\n')
+  }
   if (lang === 'zh') {
     return [
       `請為這件事起草 agentctl 任務範圍：「${goal}」`,
@@ -96,6 +105,27 @@ export function draftingRequest({ goal, worktree, base, root, lang }) {
 }
 
 const COPY = {
+  ko: {
+    filled: (bound) => `Claude에 작업 범위 초안 작성을 요청하는 내용을 입력창에 넣었습니다. Enter를 눌러 보내세요. ${bound ? '새 범위를 승인할 때까지 현재 작업이 그대로 적용됩니다.' : '아직 바인드된 작업이 없습니다.'}`,
+    mixed: (bound) => `요청이 당신이 입력한 글 뒤에 추가되어 두 내용이 모두 입력창에 있습니다. 보내기 전에 수정하세요. ${bound ? '새 범위를 승인할 때까지 현재 작업이 그대로 적용됩니다.' : '아직 바인드된 작업이 없습니다.'}`,
+    copy: (bound) => `이 내용을 Claude에 보내 범위 초안을 작성하게 하세요 (${bound ? '새 범위를 승인할 때까지 현재 작업이 그대로 적용됩니다' : '아직 바인드된 작업이 없습니다'}):`,
+    typo: (v) => `"/agentctl ${v}"을(를) 입력하려 했나요? 작업을 시작하려면 내용을 설명하세요: /agentctl <지금 하는 일>`,
+    extra: (v) => `"/agentctl ${v}"에는 그런 인자가 없습니다. ${v === 'proposal' ? '대기 중인 초안을 표시할 뿐입니다. 작성하려면 작업을 설명하세요: /agentctl <지금 하는 일>' : '/agentctl help를 참조하세요.'}`,
+    acceptLine: (d) => `이 범위 승인: /agentctl accept ${d} — 범위만 바인드하며 작업을 시작하지는 않습니다.`,
+    accepted: '범위를 바인드했습니다. 다음: Claude에 작업 시작을 요청하세요.',
+    runChecks: (checks) => `증거를 남기려면 각 검사를 작성된 그대로 실행하세요: ${checks.join(' · ')} — 파이프, 리다이렉트, 래퍼를 쓰면 실행으로 인정되지 않고, 인자를 추가하면 선언보다 적게 검사할 수 있습니다.`,
+    wholeScope: '전체 범위는 /agentctl policy에서 확인할 수 있습니다.',
+    noTaskLast: '바인드된 작업이 없으므로 인계 내용도 없습니다. 시작하려면: /agentctl <지금 하는 일>',
+    noHandover: '이 작업에는 저장된 인계 내용이 없습니다. /agentctl handoff로 저장할 수 있습니다.',
+    next: {
+      none: '다음: 작업을 설명하세요 — /agentctl <지금 하는 일>. 기본 제공 거부(직접 git push, 운영 환경 쓰기)는 지금도 적용됩니다.',
+      proposal: (d) => `다음: /agentctl proposal을 확인한 뒤 /agentctl accept ${d}`,
+      task: '다음: Claude에 작업을 요청하세요. /agentctl handoff로 현재 상태를 저장할 수 있습니다.',
+      taskThenChecks: (checks) => `다음: Claude에 작업을 요청한 뒤 검사를 작성된 그대로 실행하세요: ${checks.join(' · ')}. 모두 최신 상태가 되면: /agentctl handoff`,
+      rerun: (checks) => `다음: 현재 트리에서 검사가 최신이 아닙니다. Claude에 정확히 작성된 대로 실행하게 하세요: ${checks.join(' · ')}. 그 후: /agentctl handoff`,
+      checksCurrent: '다음: 선언된 검사가 모두 현재 트리에서 최신입니다 — /agentctl handoff로 인계 내용을 저장할 수 있습니다.',
+    },
+  },
   en: {
     filled: (bound) => `A request for Claude to draft the scope is in your prompt box — press Enter to send it. ${bound ? 'The current task stays in force until you accept the new scope.' : 'Nothing is bound yet.'}`,
     mixed: (bound) => `The request was added after text you typed meanwhile; both are in your prompt box. Edit it before you press Enter. ${bound ? 'The current task stays in force until you accept the new scope.' : 'Nothing is bound yet.'}`,
@@ -141,14 +171,14 @@ const COPY = {
 }
 
 export function copy(lang) {
-  return COPY[lang === 'zh' ? 'zh' : 'en']
+  return COPY[lang === 'zh' ? 'zh' : lang === 'ko' ? 'ko' : 'en']
 }
 
 // A check as a line Claude can run as written: quoted so it reads back as the declared argv, never
 // shortened. An argv no quoting can carry is shown as its JSON array instead, which says to run it as
 // those words.
 export function checkLine(argv) {
-  return renderArgv(argv) ?? `${JSON.stringify(argv)} (as these words)`
+  return renderArgv(argv) ?? `${JSON.stringify(argv)} (이 단어들로 실행)`
 }
 
 // The task's declared checks, as the command lines Claude must run as written.
@@ -165,6 +195,23 @@ export function nextForTask(t, progress) {
 }
 
 export function helpText(lang, advanced) {
+  if (lang === 'ko') {
+    return advanced ? [
+      '고급:',
+      '  /agentctl task show | set <json> | clear — 작업을 직접 보거나 설정',
+      '  /agentctl policy — 적용 중인 범위와 제한',
+      '  /agentctl events [n] — 최근 거부와 호스트에 위임된 호출',
+      '  /agentctl handoff · last — 인계 내용 저장 · 최근 인계 내용 표시',
+      '  /agentctl stop — 현재 턴을 취소하고 인계 내용 저장',
+      '  /agentctl status --details · discard — 전체 상태 · 초안 폐기',
+    ].join('\n') : [
+      'agentctl은 당신이 승인한 범위 안에서 Claude를 실행하고 검사 증거를 기록합니다.',
+      '  /agentctl <지금 하는 일> — Claude가 범위 초안을 작성합니다 (바인드는 하지 않음)',
+      '  /agentctl accept <digest> — 범위를 승인합니다 (작업을 시작하지 않음)',
+      '  /agentctl — 현재 상태와 다음 단계',
+      '더 보기: /agentctl help advanced',
+    ].join('\n')
+  }
   if (lang === 'zh') {
     return advanced ? [
       '進階：',
@@ -200,7 +247,7 @@ export function helpText(lang, advanced) {
 }
 
 // What the box should suggest while a proposal waits (found live on 2.1.292: the host's own guess —
-// "確認" — took the box, so Tab + Enter sent that word to Claude instead of accepting). Only the
+// "확인" — took the box, so Tab + Enter sent that word to Claude instead of accepting). Only the
 // host's own guess is replaced, and only while a proposal is waiting; a plugin's suggestion, ours
 // included, passes unchanged.
 export function suggestionWhileWaiting(originKind, pendingDigest) {
