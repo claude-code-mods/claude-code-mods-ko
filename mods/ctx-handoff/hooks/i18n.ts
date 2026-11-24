@@ -2,7 +2,7 @@
 // 不放這裡：給模型的提示、經驗檔的格式與標記（NOTE_TAG、標題、做法／理由／根據、規則行）、store 的鍵——那些是資料，改了會讀不了舊檔。
 // 有參數的訊息寫成函式；zh-TW 是原文，en 的型別跟著它，少一條就編譯不過。
 
-export type Lang = 'en' | 'zh-TW'
+export type Lang = 'en' | 'zh-TW' | 'ko'
 
 let current: Lang = 'en'
 export const setLang = (lang: Lang) => { current = lang }
@@ -11,12 +11,14 @@ export const t = (): Messages => MSG[current]
 
 // 設定值或語系字串是不是中文（zh、zh_TW.UTF-8、繁體中文、Traditional Chinese…）
 export const isChinese = (s: string) => /^zh|chinese|中文|繁體|繁体|台灣|taiwan/i.test(s.trim())
+const KO = /^ko(?:-|[_ ]|$)|korean|한국어|한글|조선어/i
+
 
 // 選介面語言：Claude Code 的 language 設定（使用者明確選的）優先，沒設就看系統語系。
 // 系統語系在 Linux／macOS 跟著 LANG，在 Windows 是作業系統的顯示語言；Git Bash 的 LANG 常是 en_US，不能拿來判斷
 export const pickLang = (setting: unknown, systemLocale: string | undefined): Lang => {
-  if (typeof setting === 'string' && setting.trim()) return isChinese(setting) ? 'zh-TW' : 'en'
-  return systemLocale && isChinese(systemLocale) ? 'zh-TW' : 'en'
+  if (typeof setting === 'string' && setting.trim()) return isChinese(setting) ? 'zh-TW' : KO.test(setting) ? 'ko' : 'en'
+  return systemLocale && isChinese(systemLocale) ? 'zh-TW' : systemLocale && KO.test(systemLocale) ? 'ko' : 'en'
 }
 
 const s = (n: number) => (n === 1 ? '' : 's')
@@ -435,7 +437,398 @@ const zh = {
   },
 }
 
-export type Messages = typeof zh
+const ko: Messages = {
+  ind: '  ',
+  bullet: '- ',
+  list: ', ',
+  slashList: ' / ',
+  fieldLabel: line => line.replace(/^做法：/, 'How: ').replace(/^理由：/, 'Why: ').replace(/^根據：/, 'Evidence: '),
+  guardMatch: (tool, match, unless) => `${tool} matches /${match}/${unless ? ` and not /${unless}/` : ''}`,
+
+  usage: (input, read, ratio, write, plain, output, sec) =>
+    `입력 ${input} (캐시 읽기 ${read} = ${ratio}%, 기록 ${write}, 캐시 안 됨 ${plain}) · 출력 ${output} · ${sec}초`,
+
+  fork: {
+    timeout: 'timeout: fork가 제한 시간 내에 응답하지 않아 대기를 중단했습니다',
+    nothingToFork: 'nothing-to-fork: 이 세션은 방금 재시작하거나 /clear한 직후라 이어받을 요청이 없습니다. 메시지를 하나 보내고 답을 기다린 뒤 다시 시도하세요',
+  },
+
+  handoff: {
+    failedLog: why => `handoff 실패: ${why}`,
+    failedToast: 'handoff 실패',
+    failGenerate: why => `생성 실패: ${why}`,
+    savedLog: (kind, usage) => `handoff(${kind}) ${usage}`,
+    dropped: reason => `삭제됨: ${reason}`,
+    reasonClear: r => `clear 실패: ${r}`,
+    reasonSubmit: r => `전송 실패: ${r}`,
+    reasonException: r => `예외: ${r}`,
+    reasonStage: (stage, r) => `${stage} 실패: ${r}`,
+    resubmitFailed: r => `handoff 중 받은 메시지를 다시 보내지 못했습니다: ${r}`,
+    clearFailedLog: r => `/clear 실패: ${r}`,
+    submitFailedLog: r => `전송 실패: ${r}`,
+    submitFailedToast: 'handoff가 생성되었지만 전송되지 않았습니다. /handoff resend로 다시 보내세요',
+    failedAll: r => `handoff 실패: ${r}`,
+    failedCleanup: r => `실패한 handoff의 후처리도 실패했습니다: ${r}`,
+    whyManual: '사용자가 /handoff now를 실행함',
+    whyTokens: tokens => `context가 ${tokens} tokens에 도달`,
+    intro: why =>
+      `이전 대화가 ${why}때문에 자동으로 clear되었습니다. 다음은 handoff입니다. 읽은 뒤 현재 상태와 다음 단계를 몇 줄로 알려주고, 사용자의 지시를 기다리세요. 아직 작업을 시작하지 마세요.`,
+    introHeld: why =>
+      `이전 대화가 ${why}때문에 자동으로 clear되었습니다. 다음은 handoff와 handoff 중에 사용자가 보낸 메시지입니다. handoff를 참고하여 아래 마지막 사용자 메시지에 답하세요.`,
+    note: note => ` (${note})`,
+    heldHead: '---\nhandoff 중에 사용자가 보낸 메시지:',
+  },
+
+  background: {
+    pause: '이 세션의 자리 비움 작업 일시정지',
+    resume: '이 세션의 자리 비움 작업 재개',
+    bound: (file, sid) => `워크스페이스 노트: ${file}; 이 세션 ${sid}`,
+    away: (paused, next) => `자리 비움 작업 ${paused ? '일시정지' : '활성'}; ${next === undefined ? '예약된 타이머 없음' : `다음 ${new Date(next).toLocaleString()}`}`,
+    task: (label, sid, phase, at) => `${label}: ${phase} (출처 ${sid}, ${new Date(at).toLocaleTimeString()} 시작)`,
+    distill: '노트 업데이트', handoff: 'handoff / 새로고침', idle: '대기',
+    idleTask: label => `${label}: 대기`,
+    phases: { refresh: '캐시 새로고침', generating: '요약 생성', submitting: 'handoff 전송' },
+    collected: (at, usage, unknown) => `이 세션의 백그라운드 사용량 (${new Date(at).toLocaleString()} 이후 업데이트분부터 수집, 청구액 아님): ${usage}; 사용량을 알 수 없는 요청 ${unknown}건`,
+    uncollected: '이 세션에서 수집된 백그라운드 사용량이 아직 없습니다. 이전 비용이 0이라는 뜻은 아닙니다',
+    pending: sid => `전달되지 않은 handoff 출처 ${sid}; /handoff resend ${sid}`,
+    history: '최근 기록 (진단용 기록이며 복원 가능한 요약이 아닙니다)',
+  },
+  distill: {
+    why: {
+      idle: '유휴 새로고침',
+      away: '자리 비움',
+      before: 'handoff 전',
+      manual: '수동',
+      every: n => `${n}개 메시지마다`,
+    },
+    failLog: (why, reason) => `노트 업데이트 실패(${why}): ${reason}`,
+    timeout: min => `timeout: ${min}분 동안 응답이 없어 중단했습니다`,
+    edited: file => `업데이트 중 노트 파일이 수정되어 이번에는 건너뜁니다: ${file}`,
+    skipLog: (why, reason) => `노트 업데이트(${why}): ${reason}`,
+    waiting: why => `노트 업데이트(${why}): 다른 업데이트가 실행 중이라 그 뒤에 예약했습니다. 이 대화 부분은 이미 기록되었습니다`,
+    doneLog: (why, changes, rejected, file) =>
+      `노트 업데이트(${why}): 변경 ${changes}건${rejected ? `, 잘못된 줄 ${rejected}개 삭제` : ''}${changes ? `; ${file}에 기록` : ''}`,
+    queued: n => `변경 ${n}건을 다음 메시지로 넘겼습니다`,
+    toast: (n, queued, file) => `노트 업데이트: 변경 ${n}건${queued ? ', 다음 메시지와 함께 전송' : ''}: ${file}`,
+    writeFailed: err => `파일을 쓸 수 없습니다: ${err}`,
+    noUsableActions: '노트 출력에 사용할 수 있는 동작이 없습니다. 재시도를 위해 대화를 남겨둡니다',
+    retryLost: '이전 부분 업데이트 지점이 없어 노트와 진행 상황을 변경하지 않았습니다',
+    retryCleanup: err => `노트는 업데이트되었지만 재시도 지점 정리에 실패했습니다: ${err}`,
+  },
+
+  status: {
+    running: '노트 업데이트 중…',
+    left: n => `노트 업데이트까지 메시지 ${n}개 남음`,
+    short: '대화가 짧아 아직 노트를 업데이트하지 않았습니다',
+    next: '다음 메시지 후 노트를 업데이트합니다',
+    deferred: parts => `handoff 지연: ${parts}`,
+  },
+
+  distillStatus: {
+    head: (on, every) => `백그라운드 노트 ${on} (유휴 새로고침, 자리 비움, handoff 전, ${every}개 메시지마다)`,
+    next: (left, idleMin) => `다음: 메시지 ${left}개 후, 유휴 ${idleMin}분 후, 또는 handoff 전`,
+    last: (at, why, n) => `마지막: ${at} · ${why} · 변경 ${n}건`,
+    lastNone: '마지막: 없음',
+    rejected: (n, samples) => `잘못된 줄 ${n}개 삭제: ${samples}`,
+    failed: (at, why, reason) => `마지막 실패: ${at} · ${why} · ${reason}`,
+    notes: (file, memory, rules, injected) =>
+      `워크스페이스 노트: ${file} (기억 ${memory}개, 규칙 ${rules}개, 새 대화로 전달되는 규칙 ${injected}개)`,
+    procedures: (n, inProject) => `워크스페이스 절차: ${n}개 (${inProject}개는 프로젝트 skill이나 문서에 이미 있음; 절차는 새 대화로 전달되지 않습니다)`,
+    tiers: (full, titles, archived, days) =>
+      `전달되는 기억: 선호와 교정 ${full}개는全文, 사실과 위치 ${titles}개는 제목만, 보관 ${archived}개 (${days}일 이상 확인되지 않아 전달 안 함)`,
+  },
+
+  idle: {
+    refreshSkipped: '캐시 새로고침 건너뜀: 이 프로세스에는 fork할 요청이 없습니다. 다음 주 대화 응답 후 유휴 타이머가 다시 시작됩니다',
+    refresh: (n, max, read, create) => `캐시 새로고침 ${n}/${max} cache_read=${read} cache_creation=${create}`,
+    refreshFailed: (n, max, reason) => `캐시 새로고침 ${n}/${max} 실패: ${reason}`,
+    awaySavedLog: tokens => `자리 비움 handoff 저장됨(${tokens} tokens), 자동 /clear하지 않습니다`,
+    awaySavedToast: '자리 비움 handoff 저장됨',
+    outdated: '대화가 계속되어 오래된 자리 비움 handoff를 삭제했습니다',
+  },
+
+  stop: {
+    tasks: n => `백그라운드 작업 ${n}건`,
+    oneShot: n => `일회성 예약 ${n}건`,
+    agents: n => `subagent ${n}개`,
+    deferral: (parts, cap) => `${parts}이(가) 아직 실행 중이어서 끝날 때까지 handoff를 기다립니다 (제한 ${cap} tokens)`,
+    deferLog: (tokens, parts) => `context ${tokens}이 임계값에 도달했지만 ${parts}이(가) 아직 실행 중이어서 끝날 때까지 기다립니다`,
+    note: (parts, cap) => `handoff 시점에 ${parts}이(가) 아직 실행 중입니다. context가 ${cap} 한도에 도달했습니다`,
+    capLog: (tokens, cap, parts) => `context ${tokens}이 ${cap} 한도에 도달해 ${parts}을 더 기다리지 않고 지금 handoff합니다`,
+    retryLog: tokens => `context ${tokens}이 임계값에 도달했지만 최근 handoff가 실패했으므로 나중에 다시 시도합니다`,
+    stopFailed: err => `Stop 확인 실패: ${err}`,
+  },
+
+  loops: {
+    doneLog: '완료라고 했지만 이 턴에서 코드를 수정한 뒤 테스트나 검사를 실행하지 않았습니다. Claude에게 먼저 확인하도록 요청했습니다',
+    rewriteLog: '마지막 답변이 지정한 언어가 아니어서 Claude에게 한 번 다시 작성하도록 요청했습니다',
+    status: (retry, done, reply) => `넛지: 반복 실패 ${retry}, 완료 전 확인 ${done}, 답변 언어 ${reply}`,
+  },
+
+  progress: {
+    status: (at, task, state, hintOff) => `최근 진행 상황: ${at}, ${task} (${state})${hintOff ? ', 새 대화에 힌트로 제공되지 않음 (resume_hint 꺼짐)' : ''}`,
+    states: { done: '완료', in_progress: '진행 중', blocked: '막힘' },
+  },
+
+  start: {
+    description: 'ctx-handoff: status; panel / now / dry / distill / resume / continue / resend / away / guard / refresh',
+    taken: err => `/handoff가 이미 사용 중입니다(${err}). /ctx-handoff를 사용하세요`,
+    registerFailed: err => `명령을 등록할 수 없습니다: ${err}`,
+    resumeFailed: err => `유휴 타이머를 복원할 수 없습니다: ${err}`,
+    pruneFailed: err => `시작 시 store를 정리할 수 없습니다: ${err}`,
+  },
+
+  submit: {
+    wait: (sec, max) => `${sec}초 경과, 보통 1분 내에 완료되며 최대 약 ${max}분`,
+    attach: '이미지와 첨부 파일은 보관할 수 없습니다. handoff 후 다시 붙여넣으세요.',
+    busy: (wait, attach) => `handoff 진행 중(${wait}).${attach ? ` ${attach}` : ''}`,
+    dup: (wait, attach) => `handoff 진행 중(${wait}). 이 메시지는 이미 보관되어 있으며 두 번 전송되지 않습니다.${attach ? ` ${attach}` : ''}`,
+    held: (wait, attach) => `handoff 진행 중(${wait}). 이 메시지는 보관되어 새 대화에서 전송됩니다.${attach ? ` ${attach}` : ''}`,
+    pendingToast: '전달되지 않은 handoff가 있습니다. /handoff resend로 다시 보내세요',
+    awayAttach: '자리 비움 handoff가 있고 이전 대화의 캐시가 만료되었습니다. 첨부 파일은 보관할 수 없습니다. 먼저 /handoff resume(새 대화) 또는 /handoff continue(기존 대화 유지)를 실행한 뒤 다시 붙여넣으세요.',
+    awayHeld: hasAttach =>
+      '자리 비움 handoff가 있고 이전 대화의 캐시가 만료되었습니다. /handoff resume: 새 대화에서 이어가며 이 메시지도 포함합니다. /handoff continue: 기존 대화에서 이 메시지를 전송합니다(또는 다시 보내도 됩니다).' +
+      (hasAttach ? ' 텍스트만 보관되었습니다. 선택 후 이미지와 첨부 파일을 다시 붙여넣으세요.' : ''),
+  },
+
+  guard: {
+    state: { proposed: '초안', on: '켜짐', off: '꺼짐' },
+    mode: { deny: '차단', remind: '알림' },
+    checkFailed: err => `guard 확인 실패, 호출을 통과시킵니다: ${err}`,
+    head: (id, rule, message) => `Guard #${id}(${rule}): ${message}`,
+    denyToast: (id, tool, rule) => `Guard #${id}가 ${tool}를 차단했습니다: ${rule}`,
+    denyHint: id => `사용자가 그대로 실행하길 원한다면 먼저 /handoff guard off ${id}를 실행하도록 요청하세요.`,
+    noCandidates: min => `repo에 기록한 뒤 다시 지적받은 규칙도, repo 밖에 두었는데 ${min}회 이상 언급된 규칙도 없습니다`,
+    suggestFailed: reason => `guard 제안 실패: ${reason}`,
+    autoFailed: reason => `guard 초안 작성 실패: ${reason}`,
+    autoDrafted: n => `guard ${n}개를 초안으로 작성했습니다. 다음 대화에서 Claude가 사용 여부를 묻습니다`,
+    suggested: (rules, drafts) => `규칙 ${rules}개를 확인하고 guard 초안 ${drafts}개를 작성했습니다(아직 활성화되지 않음. /handoff guard on N으로 승인)`,
+    droppedLines: (n, list) => `줄 ${n}개 삭제: ${list}`,
+    none: min => `Guard: 없음 (repo에 기록한 뒤 다시 지적받은 규칙이거나 repo 밖에서 ${min}회 이상 언급된 규칙이 있으면 초안이 작성되고 Claude가 묻습니다. /handoff guard suggest도 사용하세요)`,
+    listHead: 'Guard:',
+    entry: (id, state, mode, rule, hits) => `#${id} [${state} · ${mode}] ${rule} (발동 ${hits}회)`,
+    example: (bad, good) => `예: "${bad}"은 차단, "${good}"은 허용`,
+    replay: (calls, hits) => `초안 작성 시점 시험 매칭: 이 대화의 도구 호출 ${calls}회 중 ${hits}회가 일치`,
+    recentHits: '최근 발동 (정말 알림이 필요한지 확인하세요. 오탐이 많으면 범위를 좁히거나 끄세요):',
+    usage: '사용법: /handoff guard [suggest | on N | off N | mode N deny|remind | drop N]',
+    missing: id => `Guard #${id}이(가) 없습니다`,
+    changed: (id, dropped) => `Guard #${id} ${dropped ? '삭제' : '업데이트'}`,
+    summary: (on, draft, off) => `Guard: 켜짐 ${on}, 초안 ${draft}, 꺼짐 ${off}`,
+    summaryMore: (n, min) => `; guard 없이 ${min}회 이상 나타난 규칙 ${n}개 (/handoff guard suggest)`,
+    panelDone: (id, action) => `Guard #${id} ${action === 'on' ? '승인' : action === 'off' ? '꺼짐' : '삭제'}`,
+    parse: {
+      noMarker: 'ACTIONS 마커를 찾을 수 없습니다',
+      notCandidate: '규칙이 후보가 아닙니다',
+      badTool: 'tool 형식이 잘못되었습니다',
+      missingFields: 'match / message / mode가 없습니다',
+      tooLong: 'regex가 너무 깁니다',
+      missingExamples: 'bad / good 예제가 없습니다',
+      badNotBlocked: '나쁜 예제가 차단되지 않았습니다',
+      goodBlocked: '좋은 예제도 차단됩니다',
+      duplicate: '같은 규칙이 반복되었습니다',
+      wrap: (line, why) => `${line} (${why})`,
+    },
+  },
+
+  panelCmd: {
+    opened: '입력창 위에 패널을 열었습니다. 버튼을 클릭하거나 ctrl+x tab으로 키보드를 사용하세요. /handoff panel을 다시 실행하면 닫힙니다',
+    closed: '패널을 닫았습니다',
+    readFailed: err => `패널 데이터를 읽을 수 없습니다: ${err}`,
+    failed: err => `실패: ${err}`,
+    busyKeep: '노트를 업데이트 중입니다. 잠시 후 다시 시도하세요',
+    busyDrop: '노트를 업데이트 중입니다. 잠시 후 다시 삭제해 보세요',
+    notFound: '항목을 찾을 수 없습니다. 노트 파일이 방금 수정되었을 수 있습니다',
+    kept: title => `유지: ${title} (다시 새 대화로 전달됩니다)`,
+    deleted: (kind, name, dir) =>
+      `${kind === 'm' ? '기억' : kind === 'r' ? `규칙 "${name}"` : `절차 "${name}"`}을(를) 삭제했습니다 (원본은 ${dir}/.ctx-handoff-backup/에 백업됨)`,
+    settingSet: (name, value) => `${name}: ${value} (다른 세션은 다음 메시지부터 적용)`,
+    settingReset: (name, value) => `${name}을 settings.json 또는 기본값으로 되돌렸습니다: ${value}`,
+  },
+
+  change: {
+    addMemory: head => `기억 추가: ${head}`,
+    updateMemory: head => `기억 업데이트: ${head}`,
+    confirmMemory: head => `기억 확인됨: ${head}`,
+    deleteMemory: head => `기억 삭제: ${head}`,
+    addRule: (name, rule) => `새 규칙: ${name} (확인 1회): ${rule}`,
+    confirmRule: (name, count) => `규칙 확인됨: ${name} → 확인 ${count}회`,
+    updateRule: name => `규칙 업데이트: ${name}`,
+    deleteRule: name => `규칙 삭제: ${name}`,
+    addProcedure: (name, steps) => `새 절차: ${name} (${steps}단계, 확인 1회)`,
+    confirmProcedure: (name, count) => `절차 확인됨: ${name} → 확인 ${count}회`,
+    updateProcedure: name => `절차 업데이트: ${name}`,
+    deleteProcedure: name => `절차 삭제: ${name}`,
+    inProject: (name, where) => `이제 repo에 있음: ${name} → ${where}`,
+    notInProject: name => `repo로 옮기지 않음 (거부함): ${name}`,
+    guardApproved: (id, rule) => `Guard #${id} 켜짐 (승인함): ${rule}`,
+    guardDeclined: (id, rule) => `Guard #${id} 거부됨 (거부함): ${rule}`,
+  },
+
+  reject: {
+    over: (k, max) => `${k}이 ${max}자를 넘습니다`,
+    overJoin: ', ',
+    idNot: kind => `id가 ${kind}#이 아닙니다`,
+    noId: id => `그런 id가 없습니다: ${id}`,
+    whereMissing: where => `${where}이 repo에 없습니다`,
+    buried: title => `"${title}"은 사용자가 삭제했고 사용자의 새로운 인용이 없습니다`,
+    badType: type => `잘못된 유형 (${type})`,
+    missing: names => `${names}이(가) 없습니다`,
+    quoteNotFound: '인용이 사용자의 메시지에 없습니다',
+    quoteMissing: type => `${type} 항목에는 사용자의 인용이 필요합니다`,
+    badOp: op => `알 수 없는 op (${op})`,
+    badSteps: (min, max) => `steps는 비어 있지 않은 문자열 ${min}개에서 ${max}개여야 합니다`,
+    noMarker: marker => `${marker} 마커를 찾을 수 없습니다`,
+    badJson: msg => `잘못된 JSON (${msg})`,
+    notObject: 'JSON 객체가 아닙니다',
+    secret: '비밀키처럼 보입니다',
+    badState: v => `잘못된 상태 (${v})`,
+    badFiles: 'files가 목록이 아닙니다',
+    badList: field => `${field}이 목록이 아닙니다`,
+    tooMany: (k, max) => `${k}이 ${max}개를 넘습니다`,
+    overTotal: max => `진행 노트가 전체 ${max}자를 넘습니다`,
+    noRecord: '(내용 기록 안 됨)',
+    sample: (why, line) => `${why}: ${line}`,
+  },
+
+  cmd: {
+    unknown: sub => `알 수 없는 하위 명령 "${sub}"`,
+    usageHead: '사용법:',
+    usageLines: [
+      '  /handoff                  상태',
+      '  /handoff now              지금 handoff를 만들고 /clear',
+      '  /handoff dry              시험 handoff, /clear 없음',
+      '  /handoff distill          이 워크스페이스의 노트를 지금 업데이트',
+      '  /handoff resume           자리 비움 handoff를 새 대화에서 이어받기 (/clear 실행)',
+      '  /handoff continue         자리 비움 handoff를 버리고 기존 대화에서 보관된 메시지 전송',
+      '  /handoff resend [source-session-id] 전달되지 않은 handoff 다시 보내기; 재시작 후에는 출처 세션 지정',
+      '  /handoff away pause|resume 이 세션의 자리 비움 작업 일시정지 또는 재개; 노트는 계속 업데이트',
+      '  /handoff refresh on|off   유휴 캐시 새로고침 켜기 또는 끄기',
+      '  /handoff distill on|off   백그라운드 노트 켜기 또는 끄기',
+      '  /handoff panel            입력창 위 패널 전환: 최근 노트 변경, 잘못된 노트 삭제, guard 승인, 설정',
+      '  /handoff guard           guard 목록; suggest로 반복 규칙의 초안 작성; on|off|drop N; mode N deny|remind',
+    ],
+    context: (tokens, threshold, window) => `context ${tokens} / threshold ${threshold} (window ${window})`,
+    refresh: (on, n, max, timer) => `캐시 새로고침 ${on}, 이 유휴 기간에 ${n}/${max}회 새로고침, 타이머 ${timer ? '대기 중' : '시작 안 됨'}`,
+    away: state => `자리 비움 handoff: ${state === 'none' ? '없음' : state === 'yes' ? '있음' : '있음 (메시지 1개 보관)'}`,
+    latest: last => `최근 handoff: ${last ? `${last.at} ${last.kind}, context ${last.tokens}` : '없음'}`,
+    latestFailure: (at, kind, reason) => `최근 실패: ${at} ${kind}, ${reason}`,
+    undelivered: '전달되지 않은 handoff: 있음 (/handoff resend로 다시 보내기)',
+    deferred: deferral => `handoff 지연: ${deferral}`,
+    background: (tasks, oneShot, recurring) => `백그라운드 (마지막 Stop 기준): 작업 ${tasks}건, 일회성 예약 ${oneShot}건, 반복 예약 ${recurring}건`,
+    busy: '다른 handoff가 진행 중입니다',
+    nowStarted: 'handoff를 만든 다음 /clear하고 전송합니다',
+    dryFailed: '시험 실행이 실패했습니다. 위 로그에서 이유를 확인하세요',
+    dryDone: tokens => `시험 실행 완료 (/clear 없음), context ${tokens}`,
+    distillSet: arg => `백그라운드 노트를 ${arg}(으)로 설정했습니다`,
+    distillUsage: '사용법: /handoff distill (지금 업데이트) 또는 /handoff distill on|off',
+    distilling: '이미 노트를 업데이트 중입니다',
+    distillNone: '노트가 업데이트되지 않았습니다: 마지막 업데이트 이후 새 메시지가 없거나 실패했습니다',
+    distillDone: '노트 업데이트 완료',
+    refreshNow: on => `현재 ${on}. 사용법: /handoff refresh on|off`,
+    refreshSet: (arg, minutes) => `캐시 새로고침을 ${arg}(으)로 설정했습니다${arg === 'off' ? ` (유휴 ${minutes}분 후 자리 비움 handoff가 생성됨)` : ''}`,
+    noAway: '자리 비움 handoff가 없습니다',
+    resumeIntro: '이전 대화가 유휴 상태가 되어 handoff가 생성되었습니다. 이어가는 새 대화입니다. handoff를 읽고 현재 상태와 다음 단계를 몇 줄로 알려준 뒤 사용자의 지시를 기다리세요.',
+    resumeIntroHeld: '이전 대화가 유휴 상태가 되어 handoff가 생성되었습니다. 이어가는 새 대화입니다. handoff를 참고하여 마지막에 있는 사용자의 메시지에 답하세요.',
+    resumeHeld: '---\n돌아온 뒤 사용자의 첫 메시지:',
+    resumeFailedLog: r => `/clear 또는 전송 실패: ${r}`,
+    resumeClearFailed: '/clear가 실패했습니다. 자리 비움 handoff는 유지되므로 /handoff resume을 다시 실행할 수 있습니다',
+    resuming: '/clear한 뒤 자리 비움 handoff를 전송합니다',
+    resendIntro: '이전 handoff를 다시 보냅니다. 읽고 현재 상태와 다음 단계를 몇 줄로 알려준 뒤 사용자의 지시를 기다리세요. 아직 작업을 시작하지 마세요.',
+    nothingToResend: '이 세션에는 다시 보낼 handoff가 없습니다',
+    pendingUnbound: '이 오래된 보류 기록에는 워크스페이스 출처가 없어 안전하게 다시 보낼 수 없습니다. 변경하지 않고 유지합니다',
+    awayUsage: '사용법: /handoff away pause|resume (이 세션만 해당; 노트 업데이트는 계속 실행)',
+    commandFailed: err => `명령이 실패했으며 완료를 보고하지 않았습니다: ${err}`,
+    awayChanged: paused => paused ? '이 세션의 자리 비움 작업을 일시정지했습니다. 이미 보낸 요청은 취소할 수 없고 tokens가 들 수 있습니다. 늦게 도착한 결과는 무시합니다. 노트 업데이트는 계속 실행됩니다' : '이 세션의 자리 비움 작업을 재개했습니다. 유휴 타이머가 지금 다시 시작됩니다',
+    resendFailed: err => `다시 보내기 실패: ${err}`,
+    resending: 'handoff를 다시 보냅니다 (/clear 없음)',
+    discarded: '자리 비움 handoff를 버리고 기존 대화에 머뭅니다',
+    discardedSend: '자리 비움 handoff를 버리고 마지막 메시지를 기존 대화에서 전송합니다',
+    sendHeldFailed: err => `보관된 메시지를 보낼 수 없습니다: ${err}`,
+  },
+
+  panel: {
+    title: ' · 프로젝트 노트와 guard',
+    close: '닫기',
+    more: '더 보기',
+    less: '간단히',
+    del: '삭제',
+    confirmDel: '확인',
+    cancel: '취소',
+    keep: '유지',
+    off: '끄기',
+    approve: '승인',
+    draftBtn: 'guard 초안 작성',
+    buttonsCells: 32,
+    tabGuard: n => `Guard ${n}`,
+    tabMemory: n => `기억 ${n}`,
+    tabRules: (r, p = 0) => (p > 0 ? `규칙 ${r} / 절차 ${p}` : `규칙 ${r}`),
+    tabDistill: '마지막 업데이트',
+    tabSettings: '설정',
+    settingsHint: '여기서 설정한 값이 settings.json보다 우선하며 모든 워크스페이스에 적용됩니다. 자세한 내용은 더 보기를 누르세요',
+    source: { panel: 'panel', file: 'settings.json', default: 'default' },
+    on: '켜짐',
+    offValue: '꺼짐',
+    toggleBtn: '전환',
+    resetBtn: '초기화',
+    minutes: n => `${n}분`,
+    settingName: {
+      auto_handoff: '임계값에서 handoff',
+      threshold: 'handoff 임계값',
+      window_ratio: '작은 창에서의 임계값 비율',
+      refresh: '자리 비움 중 캐시 유지',
+      idle_minutes: '새로고침 전 유휴 시간',
+      max_refresh: '유휴 기간당 새로고침 횟수',
+      away_handoff: '자리 비움 handoff',
+      distill: '프로젝트 노트 (백그라운드)',
+      distill_every: '노트 업데이트 사이 메시지 수',
+      min_tokens: '처리하는 최소 대화 크기',
+      notes_model: '노트용 모델',
+      resume_hint: '새 대화에 마지막 위치 알려주기',
+      retry_nudge: '반복 실패 알림',
+      done_check: '"완료" 전 확인',
+      reply_language: '답변 언어 알림',
+      language: '메시지 언어',
+    },
+    settingHelp: {
+      auto_handoff: '끄면 임계값에서 아무 일도 일어나지 않고 Claude Code 자체 compact가 처리합니다',
+      threshold: 'context가 이 tokens 수에 도달하면 새 대화로 handoff합니다 (자동 handoff가 켜져 있어야 함)',
+      window_ratio: '임계값보다 작은 창에서는 창 크기의 이 비율에서 handoff합니다',
+      refresh: '자리 비운 동안 가끔 아주 작은 요청을 보내 캐시가 만료되지 않게 합니다',
+      idle_minutes: '캐시를 마지막으로 사용한 뒤 새로고침까지의 분 (캐시는 60분에 만료)',
+      max_refresh: '이 횟수 이후에는 돌아왔을 때 이어받을 자리 비움 handoff를 작성합니다',
+      away_handoff: '새로고침 횟수가 소진되거나 꺼지면 자리 비움 handoff를 작성하고 돌아왔을 때 /handoff resume 또는 continue를 제안합니다. 꺼지면 아무 일도 하지 않습니다',
+      distill: '백그라운드에서 N개 메시지마다, 유휴 시와 handoff 전에 프로젝트 노트를 업데이트합니다',
+      distill_every: '이만큼의 메시지 후 노트를 업데이트합니다. 적을수록 최신이지만 요청이 더 많이 듭니다',
+      min_tokens: '작은 대화는 다시 만드는 비용이 저렴합니다: 새로고침, 노트, 자리 비움 handoff 없음',
+      notes_model: '백그라운드 노트용 모델 (최소 Sonnet 5.5); settings.json에서 다른 모델을 지정할 수 있습니다',
+      resume_hint: '7일 내 같은 폴더의 새 대화에 이전 대화가 멈춘 위치를 알려줍니다',
+      retry_nudge: '도구가 같은 이유로 두 번 연속 실패하면 Claude에게 다른 방법을 요청합니다',
+      done_check: 'Claude가 코드를 수정한 뒤 통과한 테스트나 검사 없이 완료했다고 하면 한 번 확인하도록 요청합니다',
+      reply_language: "Claude의 설명이 이 언어가 아니면 한 번 알려줍니다. auto는 Claude Code의 언어를 따릅니다",
+      language: "상태 표시줄, 알림, 패널의 언어입니다. auto는 Claude Code의 언어, 그 다음 시스템 언어를 따릅니다",
+    },
+    noGuards: '아직 guard가 없습니다. 규칙이 3회 이상 나타나면 모델에 초안을 요청할 수 있습니다.',
+    guardMeta: (id, mode, hits) => `#${id} · ${mode} · 발동 ${hits}회`,
+    blockLabel: '차단: ',
+    allowLabel: '허용: ',
+    replay: (calls, hits) => `이 대화 시험 매칭: 도구 호출 ${calls}회 중 ${hits}회 일치`,
+    recentHits: '최근 발동 (오탐이 많으면 범위를 좁히거나 끄세요):',
+    suggesting: '모델에 초안을 요청 중…',
+    candidates: n => `guard 없는 규칙 ${n}개가 3회 이상 나타났습니다 `,
+    memoryHint: (shown, total) => `최근 ${shown}/${total}개 · 선호와 교정은 전문을, 사실과 위치는 제목만 새 대화로 전달됩니다`,
+    archived: (n, days) => `보관 ${n}개: ${days}일 이상 확인되지 않아 새 대화로 전달되지 않습니다`,
+    noRules: '아직 규칙이 없습니다',
+    ruleCount: n => `${n}회`,
+    proceduresHint: n => `절차 ${n}개 · 새 대화로 전달되지 않습니다. 3회 이상이면 AI에 프로젝트 skill로 만들도록 요청합니다`,
+    inProject: project => (project.startsWith('已在 ') ? `repo 내 ${project.slice(3)}` : 'repo 밖에 유지'),
+    distillLine: (at, why, n) => `${at} · ${why} · 변경 ${n}건`,
+    noDistill: '아직 노트 업데이트가 없습니다',
+    footer: file => `ctrl+x tab 후 1–5로 탭 전환 · ${file}`,
+    typeLabel: { user: '선호', feedback: '교정', project: '사실', reference: '위치' },
+  },
+}
+
+export type Messages = typeof ko
 
 const en: Messages = {
   ind: '  ',
@@ -829,4 +1222,4 @@ const en: Messages = {
   },
 }
 
-const MSG: Record<Lang, Messages> = { 'zh-TW': zh, en }
+const MSG: Record<Lang, Messages> = { 'zh-TW': zh, en, ko: ko }
