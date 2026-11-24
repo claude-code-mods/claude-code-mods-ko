@@ -1,0 +1,19 @@
+{
+  "name": "tavernweave-agent-skills",
+  "version": "2.4.0",
+  "description": "TavernWeaveX 무한월독 2.4.0: 역할 카드, 소프트웨어 작업, 범위가 제한된 클라우드 작업을 위한 공유 스킬 23개로, 기능 확인과 재개 가능한 인계를 제공합니다. Claude Code에서는 Host Front Door를 주입하고 tavernweave 에이전트와 입력창 위 Soul 모드 전환을 추가합니다. 실제 실행은 호스트 도구와 권한에 따라 달라집니다.",
+  "author": {
+    "name": "LiarMTTT"
+  },
+  "homepage": "https://github.com/LiarMTTT/TavernWeave",
+  "repository": "https://github.com/LiarMTTT/TavernWeave",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "types": "./hooks/soul-switch-types.d.ts",
+  "keywords": [
+    "agent-skills",
+    "sillytavern",
+    "rolecard",
+    "mvu",
+    "code-quality"
+  ]
+}

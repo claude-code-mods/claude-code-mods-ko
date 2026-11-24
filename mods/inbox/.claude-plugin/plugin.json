@@ -1,0 +1,15 @@
+{
+  "name": "inbox",
+  "version": "0.6.0",
+  "description": "세션에서 당신을 기다리는 질문, 작업, 발견 사항과 PR을 모아 줍니다.",
+  "author": {
+    "name": "Pete Petrash"
+  },
+  "repository": "https://github.com/petekp/inbox",
+  "homepage": "https://github.com/petekp/inbox",
+  "documentationUrl": "https://github.com/petekp/inbox#readme",
+  "supportUrl": "https://github.com/petekp/inbox/issues",
+  "privacyPolicyUrl": "https://github.com/petekp/inbox#what-it-runs-sends-and-changes",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

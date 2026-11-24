@@ -1,0 +1,10 @@
+{
+  "name": "work-mode",
+  "version": "0.8.0",
+  "description": "Claude Code용 /work-mode 세션 모드입니다. auto(작업 중 질문 없음), out(일괄 작업 위임), wrap(수렴하여 마무리)와 위임 알림을 제공합니다.",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Dustin Yuchen Teng"
+  },
+  "license": "MIT"
+}

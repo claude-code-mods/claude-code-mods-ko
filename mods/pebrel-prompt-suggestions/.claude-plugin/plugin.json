@@ -1,0 +1,8 @@
+{
+  "name": "pebrel-prompt-suggestions",
+  "version": "0.1.0",
+  "author": {
+    "name": "Pebrel contributors"
+  },
+  "description": "Pebrel 세션 브리지를 통해 빈 입력창에서 프롬프트를 예측해 표시합니다."
+}

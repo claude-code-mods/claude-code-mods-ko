@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "shunt",
+  "displayName": "shunt · gateway",
+  "version": "0.1.0",
+  "description": "shunt 게이트웨이용 Claude mod입니다. 입력창 위 띠에 각 사용량 창의 사용량과 초기화까지의 시간을 표시합니다(공유 계정 풀의 shunt GET /usage 값 또는 shunt를 거치지 않은 세션 자체 Claude 사용량 제한). /shunt:usage는 풀의 전체 내역을 출력합니다.",
+  "author": {
+    "name": "Minsu Lee",
+    "email": "minsu.lee@pleaseai.dev",
+    "url": "https://github.com/amondnet"
+  },
+  "homepage": "https://github.com/pleaseai/shunt",
+  "repository": "https://github.com/pleaseai/shunt",
+  "license": "MIT OR Apache-2.0",
+  "keywords": [
+    "shunt",
+    "llm-gateway",
+    "usage",
+    "quota",
+    "usage-band",
+    "mod",
+    "function-hooks"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "usageBand": {
+      "type": "boolean",
+      "title": "Usage band",
+      "description": "Show usage above the prompt: the shunt pool's, refreshed every minute and after each turn, or the session's own rate limits off shunt. Off, the mod polls nothing and /shunt:usage still answers.",
+      "default": true
+    }
+  }
+}

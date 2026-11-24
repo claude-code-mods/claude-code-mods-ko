@@ -1,0 +1,5 @@
+{
+  "name": "multi-core",
+  "description": "하나의 Claude Code 세션에서 ChatGPT, Cursor, OpenCode, Antigravity 모델을 /model로 전환하며 사용합니다.",
+  "version": "0.0.0"
+}

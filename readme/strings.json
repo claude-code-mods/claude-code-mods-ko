@@ -1,0 +1,28 @@
+{
+  "ko": {
+    "label": "한국어",
+    "file": "README.md",
+    "categories": {
+      "dashboards": "대시보드와 사용량",
+      "agents": "에이전트와 서브에이전트",
+      "productivity": "생산성과 컨텍스트",
+      "rendering": "렌더링과 미리보기",
+      "safety": "안전과 가드",
+      "git": "Git, PR과 배포",
+      "fun": "기다리는 동안"
+    },
+    "columns": [
+      "Mod",
+      "기능",
+      "접근 범위"
+    ],
+    "reach": {
+      "http": "네트워크",
+      "process": "명령 실행",
+      "model": "모델 호출",
+      "fs": "파일",
+      "mcp": "MCP"
+    },
+    "by": "작성자"
+  }
+}

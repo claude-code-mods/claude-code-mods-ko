@@ -1,0 +1,19 @@
+{
+  "name": "lane-stack",
+  "version": "1.67.4",
+  "description": "Claude Code용 1인 PM 컨베이어입니다. 오케스트레이터 에이전트, 레인별 지침, 시작 및 재개 명령을 제공합니다.",
+  "author": {
+    "name": "VKirill",
+    "url": "https://github.com/VKirill/claude-lane-stack"
+  },
+  "homepage": "https://github.com/VKirill/claude-lane-stack",
+  "repository": "https://github.com/VKirill/claude-lane-stack",
+  "license": "MIT",
+  "keywords": [
+    "orchestration",
+    "dev-orchestrator",
+    "lanes",
+    "run-supervisor",
+    "claude-code"
+  ]
+}

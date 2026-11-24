@@ -1,0 +1,8 @@
+{
+  "name": "agentctl",
+  "version": "0.3.1",
+  "description": "한 Claude Code 세션을 위한 에이전트 제어판입니다. 작업 범위, 근거 자료, 인계를 관리합니다. 통제와 표시를 제공하지만 격리 경계는 아닙니다.",
+  "author": {
+    "name": "sd0xdev"
+  }
+}

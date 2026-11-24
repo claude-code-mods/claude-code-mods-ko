@@ -1,0 +1,9 @@
+{
+  "name": "fm",
+  "version": "1.0.0",
+  "description": "Claude Code용 Firstmate Calm: 작업 중 돛단배 애니메이션과 대화 전용 기록 화면을 제공하고, Pi Calm 확장과 home별 config/calm 설정을 공유합니다. 훅 모듈은 CLAUDE_CODE_ENABLE_FUNCTION_HOOKS 또는 Claude Code의 tengu_plugin_hooks_modules 롤아웃 플래그로 로드될 수 있지만, CLAUDE_CODE_ENABLE_FUNCTION_HOOKS가 정확히 1일 때만 동작하며 그 외에는 완전한 무동작(no-op)입니다.",
+  "author": {
+    "name": "Firstmate",
+    "url": "https://github.com/kunchenguid/firstmate"
+  }
+}

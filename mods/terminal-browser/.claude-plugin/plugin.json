@@ -1,0 +1,24 @@
+{
+  "name": "terminal-browser",
+  "version": "0.0.2",
+  "description": "Claude Code 안에서 바로 실행되는 브라우저입니다. 사이트와 HTML 문서를 미리 보고, 에이전트가 내장 브라우저를 조작할 수 있습니다.",
+  "author": {
+    "name": "zenbu-labs"
+  },
+  "homepage": "https://github.com/zenbu-labs/terminal-browser/tree/main/claude-code-plugin",
+  "repository": "https://github.com/zenbu-labs/terminal-browser",
+  "license": "MIT",
+  "keywords": [
+    "browser",
+    "function-hooks"
+  ],
+  "types": "./hooks/browser.d.ts",
+  "userConfig": {
+    "agentTool": {
+      "type": "boolean",
+      "title": "Give the agent a tool to open/close terminal-browser inside claude code",
+      "description": "Adds an open/close tool the model can call to show a page in the browser pane. Off by default.",
+      "default": false
+    }
+  }
+}

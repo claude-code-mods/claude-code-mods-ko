@@ -1,0 +1,9 @@
+{
+  "name": "lcu-approve",
+  "version": "0.6.0",
+  "description": "Claude 앱과 Claude Code에서 LCU 컴퓨터 사용을 앱별로 기본 승인합니다(이 대화만 허용, 항상 허용, 거부). 승인된 앱 목록은 /computer-use-apps 패널에서 볼 수 있습니다.",
+  "author": {
+    "name": "LCU"
+  },
+  "types": "./types/index.d.ts"
+}

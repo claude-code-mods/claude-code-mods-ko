@@ -1,0 +1,18 @@
+{
+  "name": "agent-standup-band",
+  "version": "1.47.1",
+  "description": "이 컴퓨터의 다른 Claude Code 세션이 당신을 필요로 할 때(승인이나 답변) 입력창 위에 줄을 표시하고, 세션이 턴을 마치면 토스트 알림을 띄웁니다. Claude Code가 세션용으로 보관하는 상태 파일만 읽으며, 아무것도 전송하지 않습니다.",
+  "author": {
+    "name": "Double Geste",
+    "url": "https://github.com/Atoll92"
+  },
+  "homepage": "https://agent-standup.com",
+  "repository": "https://github.com/Atoll92/agent-standup",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "sessions",
+    "notifications",
+    "standup"
+  ]
+}

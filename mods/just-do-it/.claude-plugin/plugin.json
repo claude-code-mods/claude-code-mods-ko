@@ -1,0 +1,15 @@
+{
+  "name": "just-do-it",
+  "version": "0.1.0",
+  "description": "승인된 작업을 검증과 전달까지 이어 가고, 조치 가능한 설정 문제를 드러내고 수정합니다.",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "fleetConfigPath": {
+      "type": "file",
+      "title": "Fleet configuration",
+      "description": "Optional absolute path to a private fleet configuration. Empty disables fleet inspection.",
+      "required": false,
+      "default": ""
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "start",
+  "version": "4.0.0",
+  "description": "에이전트식 소프트웨어 개발을 위한 워크플로 오케스트레이션 명령입니다.",
+  "author": {
+    "name": "Rudolf S."
+  },
+  "homepage": "https://github.com/rsmdt/the-startup",
+  "repository": "https://github.com/rsmdt/the-startup",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "commands",
+    "specification",
+    "implementation",
+    "refactoring",
+    "code-review",
+    "documentation",
+    "migration"
+  ],
+  "outputStyles": "./output-styles/"
+}

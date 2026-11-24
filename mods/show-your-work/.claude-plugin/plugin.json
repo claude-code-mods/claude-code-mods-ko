@@ -1,0 +1,25 @@
+{
+  "name": "show-your-work",
+  "version": "1.1.0",
+  "description": "Claude가 완료한 작업을 터미널에서 바로 보여 줍니다. 스크린샷, 앱을 클릭하는 영상, 동기화된 전후 QA를 제공합니다.",
+  "author": {
+    "name": "Umer Ansari",
+    "url": "https://github.com/iamumeransari"
+  },
+  "homepage": "https://github.com/iamumeransari/claude-show-your-work",
+  "repository": "https://github.com/iamumeransari/claude-show-your-work",
+  "license": "MIT",
+  "keywords": [
+    "screenshots",
+    "video",
+    "playwright",
+    "qa",
+    "kitty",
+    "ghostty",
+    "terminal"
+  ],
+  "types": "./types/index.d.ts",
+  "privacyPolicyUrl": "https://github.com/iamumeransari/claude-show-your-work/blob/main/PRIVACY.md",
+  "documentationUrl": "https://github.com/iamumeransari/claude-show-your-work#readme",
+  "termsOfServiceUrl": "https://github.com/iamumeransari/claude-show-your-work/blob/main/LICENSE"
+}

@@ -1,0 +1,42 @@
+{
+  "name": "engineer",
+  "version": "0.40.2",
+  "description": "Disciplined Agentic Engineering(DAE) — Claude Code용 방법론 키트입니다. 기능 접수, 인수 조건 탐색, 명세 작성, 계획, 구현, 검증, 강화의 DAE 파이프라인을 구현하는 스킬을 제공합니다.",
+  "author": {
+    "name": "Miklos"
+  },
+  "repository": "https://github.com/swingerman/engineer",
+  "license": "MIT",
+  "keywords": [
+    "dae",
+    "disciplined-agentic-engineering",
+    "methodology",
+    "ai-development",
+    "tdd",
+    "atdd",
+    "engineering"
+  ],
+  "decarchy": {
+    "lifecycles": {
+      "command": "python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/scripts/dae_lifecycle.py"
+      ]
+    }
+  },
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "economyModel": {
+      "type": "string",
+      "title": "Economy model alias",
+      "description": "The model alias the economy class resolves to for the mod's own dispatches (model-classes.md). Change it when the lineup changes.",
+      "default": "sonnet"
+    },
+    "frontierModels": {
+      "type": "string",
+      "title": "Frontier model aliases",
+      "description": "Comma-separated aliases (or id fragments) that count as the frontier class for the loop guard.",
+      "default": "fable"
+    }
+  }
+}

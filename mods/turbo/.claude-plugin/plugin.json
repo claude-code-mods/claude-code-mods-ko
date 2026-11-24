@@ -1,0 +1,13 @@
+{
+  "name": "turbo",
+  "displayName": "Turbo",
+  "description": "사람이 관여하는 에이전트식 소프트웨어 공장입니다. 무엇을 만들지 결정하고 결과를 판단하면, 스킬이 변경 사항을 다듬고 만들고 마무리하며 배포하고 그 과정에서 학습합니다.",
+  "author": {
+    "name": "Tobias Hagemann",
+    "url": "https://github.com/tobihagemann"
+  },
+  "homepage": "https://github.com/tobihagemann/turbo",
+  "repository": "https://github.com/tobihagemann/turbo",
+  "license": "MIT",
+  "types": "./types/index.d.ts"
+}

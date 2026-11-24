@@ -1,0 +1,9 @@
+{
+  "name": "jev-auto-compact",
+  "version": "1.6.1",
+  "description": "Jev가 안내하는 원문 압축: 컨텍스트가 60%에 도달하면 생성 없이 오래된 도구 호출을 정리합니다. 정리할 것이 없으면 건너뛰며(LLM 요약으로 대체하지 않음) 학습용 근거를 learning.db에 기록합니다.",
+  "author": {
+    "name": "vexjoy-agent"
+  },
+  "license": "MIT"
+}
