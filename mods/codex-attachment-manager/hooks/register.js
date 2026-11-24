@@ -89,6 +89,34 @@ const WORDS = {
       failed: '接続先の切り替えに失敗したため、直接接続しています。画像の選択は反映されません',
     },
   },
+  ko: {
+    title: '컨텍스트 자산',
+    open: '자산 패널 열기', copy: '링크 복사', copied: '링크를 복사했습니다',
+    opened: 'Claude 자체 브라우저에서 패널을 열었습니다.',
+    hint: '패널은 로컬 엔진이 제공하는 페이지로, Codex의 패널과 같습니다. 이미지 선택, 미리 보기, 필터, 자동 선택을 여기서 할 수 있습니다. 위 링크를 브라우저에서 열거나, 링크를 복사해 브라우저에 붙여넣으세요.',
+    summary: (images, off) => `이 세션의 이미지 ${images}장${off ? `, 전송하지 않음 ${off}장` : ''}`,
+    routing: {
+      on: (port) => `이 세션의 요청은 로컬 엔진(포트 ${port})을 거칩니다`,
+      waiting: '로컬 엔진이 시작되기를 기다리는 중…',
+      'other-endpoint': '이 세션은 다른 연결 주소를 사용하므로 변경하지 않았습니다. 이미지 선택이 적용되지 않습니다',
+      provider: '이 세션은 서드파티 모델 서비스를 사용하므로 변경하지 않았습니다. 이미지 선택이 적용되지 않습니다',
+      'engine-old': '실행 중인 엔진이 너무 오래되어 별도 경로를 지원하지 않습니다. Codex를 종료하고 cam install을 실행한 뒤 새 세션을 시작하세요',
+      'no-engine': '로컬 엔진이 실행되지 않아 이 세션은 직접 연결합니다. 이미지 선택이 적용되지 않습니다',
+      failed: '연결 주소 변경에 실패해 이 세션은 직접 연결합니다. 이미지 선택이 적용되지 않습니다',
+    },
+  },
+}
+
+// The panel reports a short code from Claude Desktop's locale (zh, ja, ko or en); accept the common aliases too.
+// Unknown codes still fall back to English.
+function wordsFor(lang) {
+  if (!lang) return 'en'
+  const value = String(lang).trim().toLowerCase()
+  if (value.startsWith('zh')) return 'zh'
+  if (value.startsWith('ja')) return 'ja'
+  if (value.startsWith('ko')) return 'ko'
+  if (value.startsWith('en')) return 'en'
+  return WORDS[value] ? value : 'en'
 }
 
 // What the pane shows, kept between redraws: the routing state, whether /cam opened the page in Claude's browser, and
@@ -367,12 +395,12 @@ async function openPane($) {
   copied = false
   paneOpened = true
   await loadOverview($, false)
-  await $.ui.open({ id: PANE, title: (WORDS[overview?.lang] ?? WORDS.en).title, focus: true, closeOnEscape: true })
+  await $.ui.open({ id: PANE, title: (WORDS[wordsFor(overview?.lang)] ?? WORDS.en).title, focus: true, closeOnEscape: true })
 }
 
 async function drawPane($, e) {
   const { Box, Text, Button, Link } = $.ui.resolve(e)
-  const w = WORDS[overview?.lang] ?? WORDS.en
+  const w = WORDS[wordsFor(overview?.lang)] ?? WORDS.en
   const url = panelUrl(await $.session.id())
   const routing = routingState
   const status = routing?.active ? w.routing.on(routing.port) : w.routing[routing?.reason ?? 'waiting'] ?? w.routing.waiting

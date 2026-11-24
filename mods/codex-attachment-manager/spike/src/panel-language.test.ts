@@ -11,7 +11,7 @@ const texts = JSON.parse(/<script type="application\/json" id="messages">([\s\S]
 test("the panel recognizes Japanese host locales without changing the model language parser", async () => {
   const expression = /const langOf = ([^;]+);/.exec(page)![1];
   const panelLangOf = new Function(`return (${expression})`)();
-  assert.deepEqual(["en-US", "zh-CN", "zh-TW", "ja", "ja-JP", "fr-FR"].map(panelLangOf), ["en", "zh", "zh", "ja", "ja", "en"]);
+  assert.deepEqual(["en-US", "zh-CN", "zh-TW", "ja", "ja-JP", "ko", "ko-KR", "fr-FR"].map(panelLangOf), ["en", "zh", "zh", "ja", "ja", "ko", "ko", "en"]);
   const { langOf } = await import("../../plugin/src/core/language.ts");
   assert.equal(langOf("ja-JP"), "en", "Japanese panel support must not extend the model's existing language contract");
 });
@@ -23,6 +23,9 @@ test("every Japanese panel label exists and keeps the same interpolation values"
   assert.deepEqual(base(texts.ja), base(texts.zh));
   for (const key of base(texts.zh)) assert.deepEqual(values(texts.ja[key]), values(texts.zh[key]), key);
   assert.equal(texts.ja["auto.label"], "自動選択");
+  assert.ok(texts.ko, "a Korean text table is required");
+  assert.deepEqual(base(texts.ko), base(texts.zh));
+  for (const key of base(texts.zh)) assert.deepEqual(values(texts.ko[key]), values(texts.zh[key]), key);
 });
 
 test("Claude's fallback pane also has a complete Japanese interface", () => {
@@ -32,6 +35,12 @@ test("Claude's fallback pane also has a complete Japanese interface", () => {
   assert.deepEqual(Object.keys(words.ja).sort(), Object.keys(words.en).sort());
   assert.deepEqual(Object.keys(words.ja.routing).sort(), Object.keys(words.en.routing).sort());
   assert.equal(words.ja.copy, "リンクをコピー");
+  assert.ok(words.ko, "the fallback pane must have a Korean dictionary");
+  assert.deepEqual(Object.keys(words.ko).sort(), Object.keys(words.en).sort());
+  assert.deepEqual(Object.keys(words.ko.routing).sort(), Object.keys(words.en.routing).sort());
+  assert.equal(words.ko.copy, "링크 복사");
+  assert.equal(words.zh.title, "上下文素材");
+  assert.equal(words.ja.title, "コンテキスト素材");
 });
 
 test("Claude uses its own locale, rereads changes, and leaves the settings read-only", async () => {
@@ -40,6 +49,7 @@ test("Claude uses its own locale, rereads changes, and leaves the settings read-
   const config = join(root, "config.json");
   const options = { settingsFiles: [config], env: { LANG: "en_US.UTF-8", CAM_LANG: "zh" }, home: root };
   const set = (locale: unknown) => writeFileSync(config, JSON.stringify({ locale, unrelated: "preserve" }));
+  set("ko-KR"); assert.equal(claudePanelLanguage(options), "ko");
   set("ja-JP");
   const original = readFileSync(config, "utf8");
   assert.equal(claudePanelLanguage(options), "ja");
