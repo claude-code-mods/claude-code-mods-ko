@@ -91,6 +91,12 @@ python3 -I <plugin>/repair_fixture.py
 
 미완료: 진정한 독립적 의미 검토 출처, 정확한 파일 바이트를 넘어선 DoD별 완전한 타입 의미 검증, 외부 유지보수 어댑터와 호스트 훅 시작 실패 관측, 실제 패널/네이티브 세션/설치 수용, 유료 런타임 비용 증명. 캐시 트랜잭션은 파일 시스템 수리를 원자적으로 만들지 않으며 기존 수리 롤백이 별도로 처리합니다. 프롬프트 해시는 관측된 콜백 연결을 설정할 뿐 호스트 인증 사용자 신원은 아닙니다. 자동 출처 완전성과 실제 사용자 의미는 여전히 검토 의무입니다. 오프라인 테스트는 이 요구 사항을 종결하지 않습니다. 최종 후보는 별도의 독립 검토가 필요합니다.
 
+## 한국어 마켓플레이스 설치
+
+```
+/plugin install just-do-it@claude-code-mods-ko
+```
+
 ## 출처 및 라이선스
 
 - 원작자: [Lifecycle-Innovations-Limited](https://github.com/Lifecycle-Innovations-Limited/just-do-it)

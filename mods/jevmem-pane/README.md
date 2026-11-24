@@ -22,6 +22,12 @@ Claude Code에서 jevmem 마켓플레이스를 추가한 뒤(`claude plugin mark
 
 각 상태의 의미를 포함한 전체 설명은 [docs/pane.md](https://avinash-jetwani.github.io/jevmem/pane/)에 있습니다.
 
+## 한국어 마켓플레이스 설치
+
+```
+/plugin install jevmem-pane@claude-code-mods-ko
+```
+
 ## 출처 및 라이선스
 
 - 원작자: [Avinash-jetwani](https://github.com/Avinash-jetwani/jevmem)

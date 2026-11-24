@@ -30,6 +30,12 @@ Helper는 설치할 때(재설치 시에도) Operator 마켓플레이스의 자�
 
 확인, 업데이트 및 문제 해결은 [Claude Code 안내](https://github.com/aerovato/operator-memory/blob/main/docs/harnesses/claude-code.md)를 참고하세요. 로컬 개발에서는 워크스페이스 루트에서 `bun run preview:claude-code`를 실행합니다.
 
+## 한국어 마켓플레이스 설치
+
+```
+/plugin install operator@claude-code-mods-ko
+```
+
 ## 출처 및 라이선스
 
 - 원작자: [aerovato](https://github.com/aerovato/operator-memory)

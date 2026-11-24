@@ -440,6 +440,12 @@ Claude Code의 출력 스타일 설정에서 원하는 스타일을 선택합니
 - [메인 README](../../README.md)
 - [Claude Code 문서](https://code.claude.com/docs/ko)
 
+## 한국어 마켓플레이스 설치
+
+```
+/plugin install start@claude-code-mods-ko
+```
+
 ## 출처 및 라이선스
 
 - 원작자: [rsmdt](https://github.com/rsmdt/the-startup)

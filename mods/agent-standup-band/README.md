@@ -34,6 +34,12 @@ Claude Code 2.1.294 이상에서 다음을 실행합니다.
 
 소스 및 이슈: https://github.com/Atoll92/agent-standup. 비공식 프로젝트이며 Anthropic과 관련이 없고 Anthropic의 승인을 받지 않았습니다. MIT 라이선스입니다.
 
+## 한국어 마켓플레이스 설치
+
+```
+/plugin install agent-standup-band@claude-code-mods-ko
+```
+
 ## 출처 및 라이선스
 
 - 원작자: [Atoll92](https://github.com/Atoll92/agent-standup)

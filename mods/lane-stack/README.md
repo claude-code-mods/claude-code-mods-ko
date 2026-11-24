@@ -17,6 +17,12 @@ claude plugin install lane-stack@claude-lane-stack -y
 
 스킬은 `/lane-stack:<skill>` 네임스페이스를 사용합니다. 작업 요약은 `/lane-stack:info` 또는 `/info`에서 볼 수 있습니다. 새 앱/서비스에 관한 이야기는 `/lane-stack:app-architect`, 살아 있는 문서는 `/lane-stack:docs-maintain`, 사실 모음은 `/lane-stack:lane-memory`를 사용하세요. PM 플레이북(`orchestrator-lanes`, `orchestrator-workflow`, `info`, `app-architect`)은 이 플러그인과 `~/.agents/pm-skills`에만 있으며 공용 writer 카탈로그로 복사되지 않습니다.
 
+## 한국어 마켓플레이스 설치
+
+```
+/plugin install lane-stack@claude-code-mods-ko
+```
+
 ## 출처 및 라이선스
 
 - 원작자: [VKirill](https://github.com/VKirill/claude-lane-stack)
