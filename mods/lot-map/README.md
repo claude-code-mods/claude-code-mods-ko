@@ -174,7 +174,7 @@ VS Code 확장에서는 패널이 짧아 패널 너비로 그린 지도가 맞�
 
 | 옵션 | 기본값 | 의미 |
 | --- | --- | --- |
-| `language` | `en` | `en`, `ru`, `es`, `fr`, `de`, `it`, `pt` 중 하나 |
+| `language` | `en` | `en`, `ru`, `es`, `fr`, `de`, `it`, `pt`, `ko` 중 하나 |
 | `coreName` | `CLAUDE` | 가운데 원에 쓰일 글자, 최대 10자 |
 | `theme` | `auto` | 지도 색상. `dark`, `light`, 표면에 따라 결정되는 `auto` |
 | `background` | `solid` | 지도 자체 배경, 또는 뒤의 패널이 비치는 `transparent`. 이름 주변 테두리는 배경 색을 유지하므로 다른 색조의 표면에서는 희미한 후광처럼 보임 |

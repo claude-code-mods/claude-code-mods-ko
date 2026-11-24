@@ -34,7 +34,8 @@
         "fr",
         "de",
         "it",
-        "pt"
+        "pt",
+        "ko"
       ],
       "default": "en",
       "description": "지도에 표시할 레이블의 언어입니다."
