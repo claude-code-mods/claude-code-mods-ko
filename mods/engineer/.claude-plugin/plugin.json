@@ -28,14 +28,14 @@
   "userConfig": {
     "economyModel": {
       "type": "string",
-      "title": "Economy model alias",
-      "description": "The model alias the economy class resolves to for the mod's own dispatches (model-classes.md). Change it when the lineup changes.",
+      "title": "이코노미 모델 별칭",
+      "description": "mod 자체 디스패치에서 이코노미 등급이 해석되는 모델 별칭입니다(model-classes.md). 라인업이 바뀌면 수정하세요.",
       "default": "sonnet"
     },
     "frontierModels": {
       "type": "string",
-      "title": "Frontier model aliases",
-      "description": "Comma-separated aliases (or id fragments) that count as the frontier class for the loop guard.",
+      "title": "프론티어 모델 별칭",
+      "description": "루프 가드에서 프론티어 등급으로 간주할 별칭 또는 id 조각을 쉼표로 구분해 적습니다.",
       "default": "fable"
     }
   }

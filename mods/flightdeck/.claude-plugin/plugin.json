@@ -22,32 +22,32 @@
   "types": "./types/index.d.ts",
   "userConfig": {
     "architectPattern": {
-      "title": "Architect pattern",
-      "description": "Regular expression (case-insensitive) for the agent types and server tools that count as the on-call architect, e.g. advisor|architect|reviewer",
+      "title": "아키텍트 패턴",
+      "description": "온콜 아키텍트로 간주할 에이전트 유형과 서버 도구에 대한 정규식(대소문자 무시)입니다. 예: advisor|architect|reviewer",
       "type": "string",
       "default": "advisor|architect"
     },
     "architectLabel": {
-      "title": "Architect label",
-      "description": "Name shown for the architect role",
+      "title": "아키텍트 표시 이름",
+      "description": "아키텍트 역할에 표시할 이름입니다.",
       "type": "string",
       "default": "ARCHITECT"
     },
     "gateLabel": {
-      "title": "Gate label",
-      "description": "Name shown for the permission panel",
+      "title": "게이트 표시 이름",
+      "description": "권한 패널에 표시할 이름입니다.",
       "type": "string",
       "default": "GATE"
     },
     "panels": {
-      "title": "Panels",
-      "description": "Comma-separated panels in display order: main, architect, gate, agents, loops, receipt, log. Leave one out to hide it.",
+      "title": "패널",
+      "description": "표시 순서대로 쉼표로 구분한 패널입니다. main, architect, gate, agents, loops, receipt, log. 항목을 빼면 숨겨집니다.",
       "type": "string",
       "default": "main,architect,gate,agents,loops,receipt,log"
     },
     "motion": {
-      "title": "Motion",
-      "description": "Animate the connectors while real work flows, or keep them still",
+      "title": "움직임",
+      "description": "실제 작업이 흐를 때 연결선에 애니메이션을 주거나 정적으로 유지합니다.",
       "type": "string",
       "options": [
         "while-active",
@@ -56,32 +56,32 @@
       "default": "while-active"
     },
     "moments": {
-      "title": "Architect moments",
-      "description": "Show the inferred moment of each consult (before a plan, error repeats, before done)",
+      "title": "아키텍트 순간",
+      "description": "각 상담의 추정 시점을 표시합니다(계획 전, 오류 반복, 완료 전).",
       "type": "boolean",
       "default": true
     },
     "matchDescriptions": {
-      "title": "Match agent descriptions",
-      "description": "Also count an agent type as the architect when its description (not just its name) matches the pattern",
+      "title": "에이전트 설명 매칭",
+      "description": "이름뿐 아니라 설명이 패턴과 일치할 때도 에이전트 유형을 아키텍트로 간주합니다.",
       "type": "boolean",
       "default": false
     },
     "maxCards": {
-      "title": "Cards before swimlanes",
-      "description": "Agent cards drawn side by side; more agents than this switch to swimlanes (1-6)",
+      "title": "스윔레인 전환 카드 수",
+      "description": "에이전트 카드를 나란히 그리며, 이 수를 넘으면 스윔레인으로 전환합니다(1-6).",
       "type": "number",
       "default": 3
     },
     "paneColumns": {
-      "title": "Pane width",
-      "description": "Columns the pane asks for when docked beside a fullscreen transcript, 40 or more. Claude Code caps the dock at 45% of the terminal, and a width you dragged it to wins.",
+      "title": "패널 너비",
+      "description": "전체 기록 옆에 도킹될 때 패널이 요청하는 열 수입니다. 40 이상이어야 합니다. Claude Code는 도킹 폭을 터미널의 45%로 제한하며, 사용자가 드래그한 너비가 우선합니다.",
       "type": "number",
       "default": 66
     },
     "layout": {
-      "title": "Layout",
-      "description": "auto: a summary of at most 8 rows when the pane sits inline above the prompt, two columns from 110 columns when docked, one column otherwise",
+      "title": "레이아웃",
+      "description": "auto: 패널이 프롬프트 위에 인라인이면 최대 8행 요약, 도킹 시 110열부터 2열, 그 외에는 1열입니다.",
       "type": "string",
       "options": [
         "auto",
@@ -92,8 +92,8 @@
       "default": "auto"
     },
     "palette": {
-      "title": "Palette",
-      "description": "theme follows your Claude Code theme (light, dark, colour-blind); pastel is fixed colours tuned for dark terminals",
+      "title": "팔레트",
+      "description": "theme은 Claude Code 테마(light, dark, colour-blind)를 따르고, pastel은 어두운 터미널에 맞춘 고정 색상입니다.",
       "type": "string",
       "options": [
         "theme",
@@ -102,14 +102,14 @@
       "default": "theme"
     },
     "openOnStart": {
-      "title": "Open on start",
-      "description": "Open the pane when a session starts",
+      "title": "시작 시 열기",
+      "description": "세션이 시작될 때 패널을 엽니다.",
       "type": "boolean",
       "default": true
     },
     "statusLine": {
-      "title": "Status line",
-      "description": "Show context, agents, consults and denials in the status line",
+      "title": "상태 줄",
+      "description": "상태 줄에 컨텍스트, 에이전트, 상담, 거부 내역을 표시합니다.",
       "type": "boolean",
       "default": true
     }

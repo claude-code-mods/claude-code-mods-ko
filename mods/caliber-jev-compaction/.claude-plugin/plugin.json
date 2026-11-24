@@ -6,67 +6,67 @@
   "userConfig": {
     "apiKey": {
       "type": "string",
-      "title": "Your TypeSafe API key",
-      "description": "Your own TypeSafe API key from typesafe.ai (direct System One). A Vercel AI Gateway key is not a TypeSafe key — use gatewayApiKey or AI_GATEWAY_API_KEY instead. Leave unset to use TYPESAFE_API_KEY. Caliber does not provide a key.",
+      "title": "사용자 TypeSafe API 키",
+      "description": "typesafe.ai에서 발급받은 본인의 TypeSafe API 키(직접 System One)입니다. Vercel AI Gateway 키는 TypeSafe 키가 아닙니다. 대신 gatewayApiKey 또는 AI_GATEWAY_API_KEY를 사용하세요. 비워 두면 TYPESAFE_API_KEY를 사용합니다. Caliber는 키를 제공하지 않습니다.",
       "sensitive": true
     },
     "gatewayApiKey": {
       "type": "string",
-      "title": "Your Vercel AI Gateway API key",
-      "description": "Your own Vercel AI Gateway key (AI_GATEWAY_API_KEY). This is not a TypeSafe key. Leave unset to use AI_GATEWAY_API_KEY from the environment. Caliber does not provide a key.",
+      "title": "사용자 Vercel AI Gateway API 키",
+      "description": "본인의 Vercel AI Gateway 키(AI_GATEWAY_API_KEY)입니다. TypeSafe 키가 아닙니다. 비워 두면 환경의 AI_GATEWAY_API_KEY를 사용합니다. Caliber는 키를 제공하지 않습니다.",
       "sensitive": true
     },
     "gatewayBaseUrl": {
       "type": "string",
-      "title": "Vercel AI Gateway evaluation base URL",
-      "description": "Override the Gateway evaluation prefix. Defaults to https://ai-gateway.vercel.sh/v4/ai — not the OpenAI-compatible /v1 path."
+      "title": "Vercel AI Gateway 평가 기본 URL",
+      "description": "Gateway 평가 접두사를 재정의합니다. 기본값은 https://ai-gateway.vercel.sh/v4/ai이며 OpenAI 호환 /v1 경로가 아닙니다."
     },
     "keepThreshold": {
       "type": "number",
-      "title": "Keep threshold",
-      "description": "Minimum Jev probability that a tool call or tool result is still needed; below it the item is removed.",
+      "title": "유지 임계값",
+      "description": "도구 호출이나 도구 결과가 여전히 필요하다고 판단하는 최소 Jev 확률입니다. 이 값 미만이면 항목이 제거됩니다.",
       "default": 0.5
     },
     "preserveRecentMessages": {
       "type": "number",
-      "title": "Recent messages to preserve",
-      "description": "Number of newest messages pinned from compaction.",
+      "title": "보존할 최근 메시지 수",
+      "description": "압축에서 고정할 가장 최근 메시지의 개수입니다.",
       "default": 6
     },
     "compactAtPercent": {
       "type": "number",
-      "title": "Compaction percentage",
-      "description": "Context percentage at which turn.complete requests compaction.",
+      "title": "압축 비율",
+      "description": "turn.complete가 압축을 요청하는 컨텍스트 비율입니다.",
       "default": 60
     },
     "minReductionRatio": {
       "type": "number",
-      "title": "Minimum reduction ratio",
-      "description": "Minimum estimated character reduction required to replace history.",
+      "title": "최소 감소 비율",
+      "description": "기록을 대체하기 위해 필요한 최소 예상 문자 감소량입니다.",
       "default": 0.25
     },
     "maxStateTokens": {
       "type": "number",
-      "title": "Maximum Jev state tokens",
-      "description": "Estimated token budget for the conversation state sent with every Jev request.",
+      "title": "최대 Jev 상태 토큰 수",
+      "description": "모든 Jev 요청과 함께 전송되는 대화 상태의 예상 토큰 예산입니다.",
       "default": 25000
     },
     "maxRequestTokens": {
       "type": "number",
-      "title": "Maximum Jev request tokens",
-      "description": "Estimated token budget for state plus questions in one Jev request.",
+      "title": "최대 Jev 요청 토큰 수",
+      "description": "한 번의 Jev 요청에서 상태와 질문을 합한 예상 토큰 예산입니다.",
       "default": 30000
     },
     "truncateHeadChars": {
       "type": "number",
-      "title": "Truncated tool result head",
-      "description": "Characters of a tool result kept when Jev decides its full output is no longer needed; 0 keeps only the note.",
+      "title": "잘린 도구 결과 앞부분",
+      "description": "Jev가 도구 결과의 전체 출력이 더 이상 필요 없다고 판단할 때 유지하는 문자 수입니다. 0이면 알림만 유지합니다.",
       "default": 300
     },
     "model": {
       "type": "string",
-      "title": "Jev model",
-      "description": "Jev model. Direct TypeSafe uses jev-latest; Vercel AI Gateway remaps jev / jev-latest to the canonical typesafe-ai/jev (the only Jev id on GET /v1/models).",
+      "title": "Jev 모델",
+      "description": "Jev 모델입니다. 직접 TypeSafe는 jev-latest를 사용하고, Vercel AI Gateway는 jev / jev-latest를 GET /v1/models의 유일한 Jev id인 표준 typesafe-ai/jev로 매핑합니다.",
       "default": "jev-latest"
     }
   }

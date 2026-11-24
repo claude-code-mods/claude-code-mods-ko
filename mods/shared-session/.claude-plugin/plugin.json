@@ -22,8 +22,8 @@
   "userConfig": {
     "server": {
       "type": "string",
-      "title": "Share server",
-      "description": "Leave empty to share through the public server. To use your own, its https address (README: \"Host a server\"). Joining a link always uses the server in that link."
+      "title": "공유 서버",
+      "description": "비워 두면 공개 서버를 통해 공유합니다. 직접 서버를 쓰려면 해당 https 주소를 적으세요(README: \"Host a server\"). 링크에 참여할 때는 항상 그 링크의 서버를 사용합니다."
     }
   },
   "mcpServers": {

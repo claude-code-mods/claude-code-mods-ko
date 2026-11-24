@@ -6,8 +6,8 @@
   "userConfig": {
     "fleetConfigPath": {
       "type": "file",
-      "title": "Fleet configuration",
-      "description": "Optional absolute path to a private fleet configuration. Empty disables fleet inspection.",
+      "title": "플릿 구성",
+      "description": "개인 플릿 구성 파일의 선택적 절대 경로입니다. 비워 두면 플릿 검사를 비활성화합니다.",
       "required": false,
       "default": ""
     }

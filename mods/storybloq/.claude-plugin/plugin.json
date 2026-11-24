@@ -21,28 +21,28 @@
   "hooks": "./hooks/hooks.json",
   "userConfig": {
     "sidebar": {
-      "title": "Ledger dashboard",
+      "title": "원장 대시보드",
       "type": "boolean",
       "default": true,
-      "description": "Draw the .story/ ledger in a pane beside the transcript. On by default; turn it off with /plugin configure storybloq. Projects with no .story/ directory show nothing either way (T-508, T-516)."
+      "description": ".story/ 원장을 기록 옆 패널에 그립니다. 기본값은 켜짐이며 /plugin configure storybloq로 끌 수 있습니다. .story/ 디렉터리가 없는 프로젝트는 어느 설정에서도 아무것도 표시하지 않습니다(T-508, T-516)."
     },
     "startupLogo": {
-      "title": "Storyfield startup logo",
+      "title": "Storyfield 시작 로고",
       "type": "boolean",
       "default": true,
-      "description": "Show a brief copper dot-wave logo before the dashboard. Turn off to show the board immediately."
+      "description": "대시보드 전에 잠시 구리색 점파 로고를 표시합니다. 끄면 보드를 즉시 표시합니다."
     },
     "motion": {
-      "title": "Dashboard motion",
+      "title": "대시보드 움직임",
       "type": "boolean",
       "default": true,
-      "description": "Animate startup, phase progress, story updates, activity, and the context meter. Turn off for a static dashboard that still shows current status and activity."
+      "description": "시작, 단계 진행, 스토리 업데이트, 활동, 컨텍스트 미터에 애니메이션을 줍니다. 끄면 현재 상태와 활동을 보여주는 정적 대시보드가 됩니다."
     },
     "changeHighlights": {
-      "title": "Story status highlights",
+      "title": "스토리 상태 강조",
       "type": "boolean",
       "default": true,
-      "description": "Briefly highlight changed stories and destination counts, and show Ready when a blocker clears. Requires Dashboard motion."
+      "description": "바뀐 스토리와 목적지 개수를 잠시 강조하고, 차단이 해소되면 Ready를 표시합니다. Dashboard motion이 필요합니다."
     }
   },
   "metadata": {

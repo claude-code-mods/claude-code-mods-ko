@@ -26,7 +26,7 @@
   "userConfig": {
     "language": {
       "type": "string",
-      "title": "Language",
+      "title": "언어",
       "options": [
         "en",
         "ru",
@@ -37,195 +37,195 @@
         "pt"
       ],
       "default": "en",
-      "description": "The language of the labels on the map."
+      "description": "지도에 표시할 레이블의 언어입니다."
     },
     "coreName": {
       "type": "string",
-      "title": "Name at the centre",
+      "title": "중앙 이름",
       "default": "CLAUDE",
-      "description": "What the circle in the middle of the map says, up to ten characters."
+      "description": "지도 중앙 원에 표시할 글자입니다. 최대 10자."
     },
     "memoryServers": {
       "type": "string",
       "multiple": true,
-      "title": "Memory servers",
+      "title": "메모리 서버",
       "default": [
         "memory"
       ],
-      "description": "MCP servers whose tools light the Memory station."
+      "description": "도구가 Memory 역을 밝히는 MCP 서버입니다."
     },
     "memoryCommands": {
       "type": "string",
       "multiple": true,
-      "title": "Memory commands",
+      "title": "메모리 명령",
       "default": [],
-      "description": "Shell commands or scripts that light the Memory station. A name counts when it is the command itself or begins with it and a hyphen, an underscore or a dot."
+      "description": "Memory 역을 밝히는 셸 명령이나 스크립트입니다. 명령 자체이거나 명령 뒤에 하이픈, 밑줄, 점이 붙은 이름이면 해당합니다."
     },
     "memorySubcommands": {
       "type": "string",
       "multiple": true,
-      "title": "Memory subcommands",
+      "title": "메모리 하위 명령",
       "default": [],
-      "description": "Words after a memory command that the map may show, such as add or search. Without them a memory command goes by its own name, because the word after it may be content."
+      "description": "지도에 표시할 수 있는 메모리 명령 뒤의 단어입니다(예: add, search). 없으면 메모리 명령은 자체 이름으로 표시되는데, 뒤의 단어가 내용일 수 있기 때문입니다."
     },
     "memoryPaths": {
       "type": "string",
       "multiple": true,
-      "title": "Memory paths",
+      "title": "메모리 경로",
       "default": [],
-      "description": "Parts of a path that make a file a memory. Claude Code's own memory folder always counts."
+      "description": "파일을 메모리로 만드는 경로의 일부입니다. Claude Code 자체 메모리 폴더는 항상 포함됩니다."
     },
     "memoryLabels": {
       "type": "string",
       "multiple": true,
-      "title": "Memory labels",
+      "title": "메모리 레이블",
       "default": [],
-      "description": "Short names for memory tools, each written as tool=name. A tool without one goes by its own name."
+      "description": "메모리 도구의 짧은 이름입니다. tool=name 형식으로 적습니다. 지정하지 않은 도구는 자체 이름을 사용합니다."
     },
     "serverStations": {
       "type": "string",
       "multiple": true,
-      "title": "Servers on a station",
+      "title": "역 위의 서버",
       "default": [],
-      "description": "Put an MCP server's tools on a station of the map, each written as server=station. The stations are files, shell, web, browser, agents, skills and you. Memory keeps memoryServers, which wins if a server is in both. A server without an entry, or with an unknown station, goes where the mod puts it."
+      "description": "MCP 서버의 도구를 지도의 역에 배치하며 server=station 형식으로 적습니다. 역은 files, shell, web, browser, agents, skills, you입니다. Memory는 memoryServers를 유지하며 서버가 양쪽에 있으면 Memory가 우선합니다. 항목이 없거나 알 수 없는 역이면 mod가 배치하는 곳에 표시됩니다."
     },
     "hookRecords": {
       "type": "boolean",
-      "title": "Hooks add numbered records",
+      "title": "훅이 번호 있는 기록 추가",
       "default": false,
-      "description": "Turn on if a hook of yours adds memory records numbered like [#123]: the map then shows them on the Memory station, by number only. It counts such numbers in the text of any hook, not only a memory one."
+      "description": "[#123]처럼 번호가 매겨진 메모리 기록을 추가하는 훅이 있다면 켜세요. 그러면 지도가 번호만으로 Memory 역에 표시합니다. 메모리 훅이 아니어도 모든 훅 텍스트의 해당 번호를 인식합니다."
     },
     "hookReasons": {
       "type": "boolean",
-      "title": "Show why a hook refused",
+      "title": "훅 거부 이유 표시",
       "default": false,
-      "description": "Show the first line of a hook's refusal, up to 72 characters. Off, the map says only which tool was stopped: a refusal may quote what the hook found."
+      "description": "훅 거부 메시지의 첫 줄을 최대 72자까지 표시합니다. 끄면 어떤 도구가 중단됐는지만 표시합니다. 거부 메시지에 훅이 발견한 내용이 인용되어 있을 수 있습니다."
     },
     "guardedHooks": {
       "type": "boolean",
-      "title": "Hooks a guard skips",
+      "title": "가드가 건너뛰는 훅",
       "default": true,
-      "description": "Turn off on a Team or Enterprise login where the transcript gets notices that a lot-map hook was skipped. The map then loses the Hooks station, the records a hook adds, the row of a typed slash command and the mark of a compaction; everything else stays."
+      "description": "lot-map 훅이 건너뛰었다는 알림이 기록에 나타나는 Team이나 Enterprise 로그인이라면 끄세요. 그러면 지도에서 Hooks 역, 훅이 추가한 기록, 입력한 슬래시 명령 행, 압축 표시가 사라지고 나머지는 그대로 유지됩니다."
     },
     "openAtStart": {
       "type": "boolean",
-      "title": "Open the pane when a session starts",
+      "title": "세션 시작 시 패널 열기",
       "default": true,
-      "description": "Off, the pane stays closed until you type /lot-map. The map is kept from the session's first call all the same, so it is whole when you open it."
+      "description": "끄면 /lot-map을 입력할 때까지 패널이 닫혀 있습니다. 지도는 첫 호출부터 계속 만들어지므로 열 때 이미 완전합니다."
     },
     "subagentNames": {
       "type": "boolean",
-      "title": "Name subagents in the rows",
+      "title": "행에 하위 에이전트 이름 표시",
       "default": false,
-      "description": "A subagent's model step says which subagent it is, by the few words it was started with, up to 40 characters. Off, it says only that it is a subagent."
+      "description": "하위 에이전트의 모델 단계는 시작할 때 사용한 몇 단어로 어떤 하위 에이전트인지 표시하며 최대 40자입니다. 끄면 하위 에이전트라는 사실만 표시합니다."
     },
     "contextCost": {
       "type": "boolean",
-      "title": "What each call adds to the context",
+      "title": "각 호출이 컨텍스트에 더하는 양",
       "default": false,
-      "description": "Each row says about how many tokens the context grew by with its call's answer, and the map adds each station's sum to its count. An estimate: the growth of one model step, which also holds the model's own words, what hooks added and, at the start of a turn, the message, shared among that step's calls. It shows one step late, and a call whose step was the last of a turn gets none."
+      "description": "각 행은 해당 호출의 답변으로 컨텍스트가 얼마나 늘었는지를 대략 표시하고, 지도는 각 역의 합계를 개수에 더합니다. 추정치이며, 한 모델 단계의 증가분에는 모델自身的 말, 훅이 추가한 내용, 턴 시작 시의 메시지가 해당 단계의 호출들 사이에 공유됩니다. 한 단계 늦게 표시되며, 턴의 마지막 단계였던 호출에는 값이 없습니다."
     },
     "contextWindow": {
       "type": "string",
-      "title": "What the ring measures against",
+      "title": "링이 측정하는 기준",
       "options": [
         "model",
         "compaction"
       ],
       "default": "model",
-      "description": "What the ring around the centre and its percentage measure the context against: model, the model's whole window, as the status line does; or compaction, the auto-compact window, such as one set with autoCompactWindow, where it is smaller than the model's. Without one, or with auto-compaction off, compaction shows the same as model."
+      "description": "중앙 주변의 링과 그 백분율이 컨텍스트를 무엇과 비교하는지입니다. model은 상태 줄처럼 모델 전체 창, compaction은 autoCompactWindow처럼 설정된 자동 압축 창(모델보다 작음)입니다. 없거나 자동 압축이 꺼져 있으면 compaction은 model과 같습니다."
     },
     "theme": {
       "type": "string",
-      "title": "Colours",
+      "title": "색상",
       "options": [
         "auto",
         "dark",
         "light"
       ],
       "default": "auto",
-      "description": "The map's colours: dark, light, or auto, which is dark on a dark surface and light on a light one."
+      "description": "지도 색상입니다. dark, light 또는 auto(어두운 배경에서는 dark, 밝은 배경에서는 light)."
     },
     "background": {
       "type": "string",
-      "title": "Background",
+      "title": "배경",
       "options": [
         "solid",
         "transparent"
       ],
       "default": "solid",
-      "description": "The map's own background, or transparent, which lets the pane behind it show through."
+      "description": "지도 자체 배경이며, transparent로 두면 뒤의 패널이 비쳐 보입니다."
     },
     "paneBackground": {
       "type": "string",
-      "title": "Pane background",
+      "title": "패널 배경",
       "default": "theme",
-      "description": "What the pane is painted with: theme, Claude Code's own; transparent, which lets the terminal behind it show through; or a colour written as #rrggbb."
+      "description": "패널을 칠하는 내용입니다. theme은 Claude Code 자체, transparent는 뒤의 터미널이 비쳐 보임, 그 외에는 #rrggbb 형식의 색상입니다."
     },
     "colors": {
       "type": "string",
       "multiple": true,
-      "title": "Colours of your own",
+      "title": "사용자 색상",
       "default": [],
-      "description": "Colours that replace the map's own, each written as name=#rrggbb. Names: background, node, line, spoke, text, label, faint, accent, active, error, memory, memoryActive, route. Set theme to dark or light with them."
+      "description": "지도 기본 색상을 대체하는 색상이며 name=#rrggbb 형식으로 적습니다. 이름: background, node, line, spoke, text, label, faint, accent, active, error, memory, memoryActive, route. 함께 theme을 dark나 light로 설정하세요."
     },
     "layout": {
       "type": "string",
-      "title": "Layout",
+      "title": "레이아웃",
       "options": [
         "you-top",
         "you-bottom"
       ],
       "default": "you-top",
-      "description": "Where you are on the map: at the top, or at the bottom with the network and the browser at the top."
+      "description": "지도에서 사용자의 위치입니다. 맨 위 또는 network와 browser가 위에 오는 맨 아래."
     },
     "motion": {
       "type": "string",
-      "title": "Motion",
+      "title": "움직임",
       "options": [
         "full",
         "reduced"
       ],
       "default": "full",
-      "description": "With reduced, nothing on the map flies, spreads or spins: a call lights its station and its spoke, and what changes only fades."
+      "description": "reduced에서는 지도의 어떤 요소도 날아가거나 퍼지거나 회전하지 않습니다. 호출이 역과 연결선을 밝히고, 바뀐 내용은 흐려질 뿐입니다."
     },
     "textSize": {
       "type": "string",
-      "title": "Text size",
+      "title": "글자 크기",
       "options": [
         "caption",
         "footnote",
         "body"
       ],
       "default": "footnote",
-      "description": "The size of the rows under the map: caption is smaller, body larger. A terminal has one size and ignores it."
+      "description": "지도 아래 행의 크기입니다. caption은 작고 body는 큽니다. 터미널은 하나의 크기만 사용하며 이를 무시합니다."
     },
     "logRows": {
       "type": "string",
-      "title": "Rows under the map",
+      "title": "지도 아래 행 수",
       "options": [
         "16",
         "fill"
       ],
       "default": "16",
-      "description": "How many rows the list under the map shows: 16, or fill, as many as the pane has room for below the map, never fewer than 16. Fill is for the desktop app's docked pane; a terminal, the editor and the mobile app keep 16."
+      "description": "지도 아래 목록이 표시하는 행 수입니다. 16 또는 fill(지도 아래 패널 공간만큼, 최소 16). fill은 데스크톱 앱 도킹 패널용이며 터미널, 편집기, 모바일 앱은 16을 유지합니다."
     },
     "terminalView": {
       "type": "string",
-      "title": "Terminal view",
+      "title": "터미널 보기",
       "options": [
         "text",
         "picture",
         "braille"
       ],
       "default": "text",
-      "description": "How the map looks in a terminal: text, the rows alone; picture, the map itself above them, painted by the mod, in a terminal that shows pictures such as kitty, Ghostty or iTerm2 from 3.7.8, not in an earlier iTerm2, which keeps every frame in memory; or braille, the map above them in braille dots and letters, in any terminal whose font has braille, such as Windows Terminal."
+      "description": "터미널에서 지도의 모양입니다. text는 행만, picture은 kitty, Ghostty, iTerm2 3.7.8 이상처럼 그림을 표시하는 터미널에서 mod가 그린 지도를 위에 표시합니다(이전 iTerm2는 모든 프레임을 메모리에 유지하므로 제외). braille은 모든 터미널에서 브라일 점과 글자로 지도를 위에 표시합니다(Windows Terminal 등 글꼴이 브라일을 지원할 때)."
     },
     "cellShape": {
       "type": "number",
-      "title": "Terminal cell shape",
+      "title": "터미널 셀 비율",
       "default": 2.4,
-      "description": "For the terminal picture: how many times taller a terminal cell is than it is wide, so that the picture fills its box. About 2.4 for iTerm2's Monaco 12, about 2 for Menlo in kitty. Raise it if the map leaves an empty band below it or looks stretched tall; lower it if the band is at its right or the map looks squashed. From 1.2 to 4."
+      "description": "터미널 그림에서 셀이 너비보다 몇 배 높은지로, 그림이 박스를 채우게 합니다. iTerm2의 Monaco 12는 약 2.4, kitty의 Menlo는 약 2입니다. 지도 아래에 빈 띠가 생기거나 세로로 늘어나 보이면 높이고, 오른쪽에 띠가 생기거나 눌려 보이면 낮추세요. 1.2~4."
     }
   }
 }

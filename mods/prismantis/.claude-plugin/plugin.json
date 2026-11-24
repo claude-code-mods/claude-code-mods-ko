@@ -21,20 +21,20 @@
   "userConfig": {
     "enabled": {
       "type": "boolean",
-      "title": "Enabled",
-      "description": "Draw replies with this mod. Off falls back to Claude Code's own renderer.",
+      "title": "활성화",
+      "description": "이 mod로 응답을 그립니다. 끄면 Claude Code 자체 렌더러로 돌아갑니다.",
       "default": true
     },
     "surfaces": {
       "type": "string",
-      "title": "Surfaces",
-      "description": "Where this mod draws, as a comma-separated list of terminal, desktop, vscode and mobile, like terminal,vscode. The rest fall back to Claude Code's own renderer. Empty or all draws everywhere.",
+      "title": "적용 표면",
+      "description": "이 mod가 그리는 곳입니다. terminal, desktop, vscode, mobile을 쉼표로 구분해 적습니다(예: terminal,vscode). 나머지는 Claude Code 자체 렌더러를 사용합니다. 비우거나 all이면 모든 곳에 그립니다.",
       "default": "all"
     },
     "theme": {
       "type": "string",
-      "title": "Theme",
-      "description": "Base palette, from popular MIT-licensed themes. Light variants: catppuccin-latte, gruvbox-light, rose-pine-dawn, github-light, solarized-light. mono uses bold and dim only. random picks a dark color preset each time the mod loads (session start or reload).",
+      "title": "테마",
+      "description": "널리 쓰이는 MIT 라이선스 테마의 기본 팔레트입니다. 라이트 변형: catppuccin-latte, gruvbox-light, rose-pine-dawn, github-light, solarized-light. mono는 굵게와 흐리게만 사용합니다. random은 mod가 로드될 때(세션 시작 또는 재로드) 어두운 색상 프리셋을 무작위로 고릅니다.",
       "default": "catppuccin-mocha",
       "options": [
         "catppuccin-mocha",
@@ -61,8 +61,8 @@
     },
     "desktopColors": {
       "type": "string",
-      "title": "Desktop app colors",
-      "description": "match also paints the Claude Code desktop app (Code tab) in the theme's colors, and switches it to light mode for a light theme. Needs Claude Code 2.1.324 or later; the terminal and VS Code keep their own colors. It replaces any other mod's desktop theme, and turning it back to off restores the app's own look. off leaves the app as it is.",
+      "title": "데스크톱 앱 색상",
+      "description": "match는 Claude Code 데스크톱 앱(Code 탭)도 테마 색상으로 칠하고, 라이트 테마则该 앱을 라이트 모드로 전환합니다. Claude Code 2.1.324 이상이 필요하며 터미널과 VS Code는 자체 색상을 유지합니다. 다른 mod의 데스크톱 테마를 대체하며, off로 되돌리면 앱 기본 모양으로 돌아갑니다. off는 앱을 그대로 둡니다.",
       "default": "off",
       "options": [
         "off",
@@ -71,8 +71,8 @@
     },
     "headingStyle": {
       "type": "string",
-      "title": "Heading style",
-      "description": "Terminals have one font size, so headings get weight instead: banner (a box around H1, a heavy rule under H2), bold, underline, or uppercase H1.",
+      "title": "제목 스타일",
+      "description": "터미널은 글자 크기가 하나뿐이므로 제목은 두께로 구분합니다. banner(H1 주변 박스, H2 아래 굵은 선), bold, underline, uppercase H1 중 선택합니다.",
       "default": "banner",
       "options": [
         "bold",
@@ -83,8 +83,8 @@
     },
     "tableStyle": {
       "type": "string",
-      "title": "Table style",
-      "description": "box: every cell boxed, with a double line under the header. rules: a rule under the header and between rows. grid: heavier header rule, wider gaps. minimal: header rule only.",
+      "title": "표 스타일",
+      "description": "box: 모든 칸에 테두리를 두르고 헤더 아래에 이중 선. rules: 헤더 아래와 행 사이에 선. grid: 굵은 헤더 선, 넓은 간격. minimal: 헤더 선만.",
       "default": "box",
       "options": [
         "box",
@@ -95,8 +95,8 @@
     },
     "tableLayout": {
       "type": "string",
-      "title": "Table layout",
-      "description": "classic: today's look, columns share the width and shrink to the terminal. auto: the same, and a table too wide to fit even its longest words stacks each row as label and value pairs. compact: every column sits at its longest word, so the table stays narrow and long cells wrap. stacked: every table draws as label and value pairs. In the desktop app the lines of every layout draw as thin colored boxes to a share of the width.",
+      "title": "표 레이아웃",
+      "description": "classic: 현재 모양으로 열이 너비를 나눠 터미널에 맞춰 줄어듭니다. auto: 동일하지만 가장 긴 단어도 맞지 않을 만큼 넓은 표는 각 행을 레이블-값 쌍으로 쌓습니다. compact: 각 열이 가장 긴 단어 너비여서 표가 좁게 유지되고 긴 칸은 줄바꿈됩니다. stacked: 모든 표를 레이블-값 쌍으로 그립니다. 데스크톱 앱에서는 모든 레이아웃의 선이 너비 비율만큼 얇은 색 상자로 그려집니다.",
       "default": "classic",
       "options": [
         "classic",
@@ -107,8 +107,8 @@
     },
     "statusMatrix": {
       "type": "string",
-      "title": "Status matrix",
-      "description": "How the status cells of a table draw. A status column is the one whose cells are things like ✓, passed, failed or pending. off (the default) keeps tables as written. color: those cells draw in theme colors (green for a pass, red for a failure, amber for a warning, gray for a wait). summary: also draws a count line under the table, like `✓ 2 · ✗ 1 · ⚠ 1`. group: also reorders rows by status and draws a heavy rule where a group changes.",
+      "title": "상태 매트릭스",
+      "description": "표의 상태 칸을 그리는 방식입니다. 상태 열은 ✓, passed, failed, pending 같은 값이 들어간 열입니다. off(기본값)는 표를 있는 그대로 유지합니다. color는 해당 칸을 테마 색으로 그립니다(통과는 초록, 실패는 빨강, 경고는 호박색, 대기는 회색). summary는 표 아래에 `✓ 2 · ✗ 1 · ⚠ 1` 같은 개수 줄도 그립니다. group은 상태별로 행을 재정렬하고 그룹이 바뀌는 곳에 굵은 선을 긋습니다.",
       "default": "off",
       "options": [
         "color",
@@ -119,8 +119,8 @@
     },
     "testMatrix": {
       "type": "string",
-      "title": "Test report",
-      "description": "A report line under a table that reads like test results: a status column of things like ✓ or failed next to durations like 120 ms. report draws the share of the run that passed, a count of every other kind of result and the time all of it took, in the theme's status colors; it replaces the statusMatrix count line when both draw. off (the default) keeps tables as written.",
+      "title": "테스트 보고서",
+      "description": "✓이나 failed 같은 상태 열과 120 ms 같은 소요 시간이 나란한, 테스트 결과처럼 읽히는 표 아래 보고 줄입니다. report는 통과 비율, 다른 결과의 개수, 전체 소요 시간을 테마 상태 색으로 표시하며 statusMatrix와 함께 켜지면 그 개수 줄을 대체합니다. off(기본값)는 표를 있는 그대로 유지합니다.",
       "default": "off",
       "options": [
         "report",
@@ -129,8 +129,8 @@
     },
     "benchTable": {
       "type": "string",
-      "title": "Benchmarks",
-      "description": "How a table that compares benchmarks draws: a column of changes like -10% or +3%. off (the default) keeps tables as written. color draws each change in the theme's colors, green for an improvement and red for a regression; timings read as lower is better, unless a header speaks of req/s, throughput or a score. trend also draws a sparkline of the runs under the table, each step colored by whether it improved.",
+      "title": "벤치마크",
+      "description": "벤치마크를 비교하는 표의 그리기 방식입니다. -10%나 +3% 같은 변화 열이 있습니다. off(기본값)는 표를 있는 그대로 유지합니다. color는 각 변화를 테마 색으로 그립니다(개선은 초록, 후퇴는 빨강). 헤더에 req/s, 처리량, 점수가 언급되지 않으면 시간은 낮을수록 좋게 읽습니다. trend는 표 아래에 실행 추이 스파크라인도 그리고 각 단계를 개선 여부로 색칠합니다.",
       "default": "off",
       "options": [
         "trend",
@@ -140,8 +140,8 @@
     },
     "schemaTable": {
       "type": "string",
-      "title": "Schema",
-      "description": "How a table that describes a database schema draws: a column of fields beside a column of types. off (the default) keeps tables as written. types draws each type cell in the theme's colors by its family: text types like varchar in the string color, numeric types like int in the number color, booleans in the emphasis color, time types like timestamp in the link color. keys draws the constraint cells: PK in the accent color, FK in the link color, unique and index cells in gray. full does both.",
+      "title": "스키마",
+      "description": "데이터베이스 스키마를 설명하는 표의 그리기 방식입니다. 필드 열과 타입 열이 나란합니다. off(기본값)는 표를 있는 그대로 유지합니다. types는 각 타입 칸을 계열별 테마 색으로 그립니다. varchar 같은 텍스트 타입은 문자열 색, int 같은 숫자 타입은 숫자 색, 불리언은 강조 색, timestamp 같은 시간 타입은 링크 색. keys는 제약 칸을 그립니다. PK는 강조 색, FK는 링크 색, unique와 index 칸은 회색. full은 둘 다 합니다.",
       "default": "off",
       "options": [
         "full",
@@ -152,8 +152,8 @@
     },
     "compareTable": {
       "type": "string",
-      "title": "Comparison",
-      "description": "How a table that compares options draws: a column of scores beside a column of ranks. off (the default) keeps tables as written. rank draws the rank cells in the theme's colors: 1 in the accent color, 2 and 3 in the link color. pick draws the score cell of the top score in the theme's improvement color and bold, so it stands out in a theme where that color is also the number color. full does both.",
+      "title": "비교",
+      "description": "선택지를 비교하는 표의 그리기 방식입니다. 점수 열과 순위 열이 나란합니다. off(기본값)는 표를 있는 그대로 유지합니다. rank는 순위 칸을 테마 색으로 그립니다. 1은 강조 색, 2와 3은 링크 색. pick은 최고 점수의 칸을 테마의 개선 색으로 굵게 그려, 그 색이 숫자 색과 같아도 두드러집니다. full은 둘 다 합니다.",
       "default": "off",
       "options": [
         "full",
@@ -164,8 +164,8 @@
     },
     "apiTable": {
       "type": "string",
-      "title": "API reference",
-      "description": "How an API reference table draws: a method column whose cells read like HTTP verbs. off (the default) keeps tables as written. verbs draws each method cell by what the verb does: reads like GET in the link color, writes like POST in the string color, DELETE in the removed color, other verbs in gray. auth draws the scheme cells of an auth column: Bearer, OAuth, API key and JWT in the accent color. full does both.",
+      "title": "API 레퍼런스",
+      "description": "API 레퍼런스 표의 그리기 방식입니다. HTTP 동사처럼 읽히는 메서드 열이 있습니다. off(기본값)는 표를 있는 그대로 유지합니다. verbs는 동사의 역할에 따라 메서드 칸을 그립니다. GET 같은 읽기는 링크 색, POST 같은 쓰기는 문자열 색, DELETE는 제거 색, 그 외 동사는 회색. auth는 인증 열의 스킴 칸을 그립니다. Bearer, OAuth, API key, JWT는 강조 색. full은 둘 다 합니다.",
       "default": "off",
       "options": [
         "full",
@@ -176,8 +176,8 @@
     },
     "kvTable": {
       "type": "string",
-      "title": "Key-value inspector",
-      "description": "How a table that lists configuration draws: a column of options beside columns of values, sources or defaults. off (the default) keeps tables as written. sources draws each source cell in the theme's colors by where it says the value comes from: env in the link color, config in the string color, default in gray. overrides draws the value cell in the accent color when the row's value differs from its default. full does both.",
+      "title": "키-값 검사기",
+      "description": "구성을 나열하는 표의 그리기 방식입니다. 옵션 열과 값·출처·기본값 열이 나란합니다. off(기본값)는 표를 있는 그대로 유지합니다. sources는 값이 어디서 왔는지에 따라 각 출처 칸을 테마 색으로 그립니다. env는 링크 색, config는 문자열 색, default는 회색. overrides는 행의 값이 기본값과 다르면 값 칸을 강조 색으로 그립니다. full은 둘 다 합니다.",
       "default": "off",
       "options": [
         "full",
@@ -188,8 +188,8 @@
     },
     "groupTable": {
       "type": "string",
-      "title": "Grouped table",
-      "description": "How a table that groups its rows draws: the first column whose cells repeat in runs, like a column of services or teams. off (the default) keeps tables as written. merge draws each group label once, in the accent color, and blanks the repeats under it. count also adds the group's size to the label, like api (2). full also draws a heavy rule where one group ends and the next begins. A column of numbers never groups, and a table already grouped by statusMatrix keeps its status grouping.",
+      "title": "그룹화된 표",
+      "description": "행을 그룹으로 묶은 표의 그리기 방식입니다. 서비스나 팀 열처럼 연속해서 같은 값이 반복되는 첫 번째 열이 기준입니다. off(기본값)는 표를 있는 그대로 유지합니다. merge는 각 그룹 레이블을 강조 색으로 한 번만 그리고 아래 반복 값은 비웁니다. count는 레이블에 api (2)처럼 그룹 크기도 더합니다. full은 그룹이 끝나고 다음이 시작되는 곳에 굵은 선도 긋습니다. 숫자 열은 그룹화하지 않으며 statusMatrix로 이미 그룹화된 표는 상태 그룹을 유지합니다.",
       "default": "off",
       "options": [
         "full",
@@ -200,8 +200,8 @@
     },
     "promptStyle": {
       "type": "string",
-      "title": "Your prompt style",
-      "description": "How the prompts you type draw in the transcript. bubble: on the right like a chat app, under You ⬤, in a rounded frame of the theme's green on a deep green fill, with Claude's replies in a bubble of their own while replyStyle is auto. framed: the same with no fill. wide: a rounded accent box across the full width. bar: an accent bar on the left. chevron: a bold accent › before the text. off: Claude Code's own look.",
+      "title": "사용자 프롬프트 스타일",
+      "description": "입력한 프롬프트가 기록에서 어떻게 그려지는지입니다. bubble: 채팅 앱처럼 오른쪽에 You ⬤ 아래, 테마 초록의 둥근 테두리와 짙은 초록 채움으로 표시되고 replyStyle이 auto이면 Claude 응답도 자체 말풍선에 그려집니다. framed: 채움 없는 같은 모양. wide: 전체 너비의 둥근 강조 상자. bar: 왼쪽 강조 막대. chevron: 글자 앞에 굵은 강조 ›. off: Claude Code 기본 모양.",
       "default": "bubble",
       "options": [
         "bubble",
@@ -214,8 +214,8 @@
     },
     "replyStyle": {
       "type": "string",
-      "title": "Claude's reply style",
-      "description": "How Claude's replies draw in the transcript. auto: bubble while promptStyle is bubble, so both sides of the conversation draw as a chat, off with any other promptStyle. bubble: under ⬤ Claude, in a rounded frame of Claude's orange on a fill a step off the background. solid: the same fill to the edge, its top and bottom in half blocks, no frame. framed: the frame with no fill. off: a dot before the first line, no frame.",
+      "title": "Claude 응답 스타일",
+      "description": "Claude 응답이 기록에서 어떻게 그려지는지입니다. auto: promptStyle이 bubble이면 말풍선으로 그려 대화 양쪽이 채팅처럼 보이고, 다른 promptStyle에서는 off. bubble: ⬤ Claude 아래, 배경과 한 단계 다른 Claude 주황 채움의 둥근 테두리. solid: 같은 채움이 끝까지, 위아래는 반 블록, 테두리 없음. framed: 채움 없는 테두리. off: 첫 줄 앞에 점, 테두리 없음.",
       "default": "auto",
       "options": [
         "auto",
@@ -227,8 +227,8 @@
     },
     "bubbleLabels": {
       "type": "string",
-      "title": "Bubble labels",
-      "description": "The You ⬤ label above your prompt bubble and the ⬤ Claude label above Claude's first bubble. large: ⬤, as Claude Code draws it. small: the dot ●. off: no labels, only the frames.",
+      "title": "말풍선 레이블",
+      "description": "사용자 프롬프트 말풍선 위의 You ⬤ 레이블과 Claude 첫 말풍선 위의 ⬤ Claude 레이블입니다. large: Claude Code가 그리는 대로 ⬤. small: 작은 점 ●. off: 레이블 없이 테두리만.",
       "default": "large",
       "options": [
         "large",
@@ -238,8 +238,8 @@
     },
     "clock": {
       "type": "string",
-      "title": "Clock times",
-      "description": "Shows when you sent each prompt and when each turn finished. 24h: 14:32. 12h: 2:32 PM. A time from another day gets its date. off: no times.",
+      "title": "시각 표시",
+      "description": "각 프롬프트를 보낸 시각과 각 턴이 끝난 시각을 표시합니다. 24h: 14:32. 12h: 2:32 PM. 다른 날의 시각은 날짜도 표시합니다. off: 시각 없음.",
       "default": "off",
       "options": [
         "off",
@@ -249,8 +249,8 @@
     },
     "toolStyle": {
       "type": "string",
-      "title": "Tool row style",
-      "description": "How tool rows (Ran, Read, Edited) sit next to Claude's sentences. chat: tool rows dimmed on the right, Claude on the left. tree-dim: tucked under the sentence with ⎿ and dimmed. tree-bold: tree-dim plus one-line sentences in bold. classic: the original look.",
+      "title": "도구 행 스타일",
+      "description": "도구 행(Ran, Read, Edited)이 Claude 문장 옆에 어떻게 놓이는지입니다. chat: 도구 행은 오른쪽에 흐리게, Claude는 왼쪽. tree-dim: ⎿와 함께 문장 아래에 붙이고 흐리게. tree-bold: tree-dim에 한 줄 문장은 굵게. classic: 원래 모양.",
       "default": "chat",
       "options": [
         "chat",
@@ -261,8 +261,8 @@
     },
     "runningDot": {
       "type": "string",
-      "title": "Running tool dot",
-      "description": "The dot of a tool call that is still running. ring: a still ◌. blink: ● blinking on and off every half second, as Claude Code's own does.",
+      "title": "실행 중 도구 점",
+      "description": "아직 실행 중인 도구 호출의 점입니다. ring: 가만있는 ◌. blink: Claude Code처럼 0.5초마다 깜빡이는 ●.",
       "default": "ring",
       "options": [
         "ring",
@@ -271,14 +271,14 @@
     },
     "unreadPrompts": {
       "type": "boolean",
-      "title": "Unread prompts",
-      "description": "Draw a prompt you sent in the comment grey, blinking to the rule color, until the model starts answering the request that carries it, like Claude Code's own grey queued prompts. Slash commands are left alone.",
+      "title": "읽지 않은 프롬프트",
+      "description": "보낸 프롬프트를 Claude Code의 회색 대기 프롬프트처럼 주석 회색으로 그리다가 모델이 그 프롬프트가 포함된 요청에 답하기 시작하면 선 색으로 깜빡입니다. 슬래시 명령은 그대로 둡니다.",
       "default": false
     },
     "toolOutput": {
       "type": "string",
-      "title": "Tool output",
-      "description": "How much of a tool call shows. full: what Claude Code shows. quiet: rows say in plain words what a call did, reads, searches and listings show only their row, other shell commands show their first lines, edits keep their diff, a failed call shows the last line of its error, and a refused call its full reason. rows: quiet, but a call that worked shows only its row, shell output included; edits keep their diff and failures their reason. Needs toolRows on.",
+      "title": "도구 출력",
+      "description": "도구 호출 중 얼마나 많이 보여주는지입니다. full: Claude Code가 보여주는 내용. quiet: 행에 plain 언어로 무엇을 했는지 적고, 읽기·검색·목록은 행만, 다른 셸 명령은 첫 줄, 편집은 diff, 실패한 호출은 오류 마지막 줄, 거부된 호출은 전체 이유를 표시합니다. rows: quiet과 같지만 성공한 호출은 셸 출력까지 행만 표시하고, 편집은 diff, 실패는 이유를 유지합니다. toolRows가 켜져 있어야 합니다.",
       "default": "full",
       "options": [
         "full",
@@ -288,8 +288,8 @@
     },
     "taskStyle": {
       "type": "string",
-      "title": "Task list style",
-      "description": "How - [ ] and - [x] items draw. checks: [ ] and [✓] with done items dimmed and struck through. ticks: ○ and ✓, done items dimmed. box: □ and ✓, done items dimmed and struck through. progress: ticks with a done-count bar above each list.",
+      "title": "할 일 목록 스타일",
+      "description": "- [ ] 및 - [x] 항목의 그리기 방식입니다. checks: [ ]와 [✓], 완료 항목은 흐리고 취소선. ticks: ○와 ✓, 완료 항목은 흐리게. box: □와 ✓, 완료 항목은 흐리고 취소선. progress: ticks에 각 목록 위 완료 개수 막대를 더합니다.",
       "default": "checks",
       "options": [
         "checks",
@@ -300,8 +300,8 @@
     },
     "listMarker": {
       "type": "string",
-      "title": "List bullets",
-      "description": "How bullet list items draw. dots: • at the top level and ◦ nested. dash: - at every level, so a list you select with the mouse pastes as a markdown list into Slack, GitHub or a doc.",
+      "title": "목록 기호",
+      "description": "글머리 기호 목록 항목의 그리기 방식입니다. dots: 최상위는 •, 중첩은 ◦. dash: 모든 수준에서 -를 사용하므로 마우스로 선택해 Slack, GitHub, 문서에 markdown 목록으로 붙여넣을 수 있습니다.",
       "default": "dots",
       "options": [
         "dots",
@@ -310,8 +310,8 @@
     },
     "rtl": {
       "type": "string",
-      "title": "Right-to-left terminal",
-      "description": "Hebrew and Arabic get a right-to-left layout (right aligned, bullets and quote bars on the right, tables mirrored), with the letters sent the way your terminal needs them. auto detects the terminal; pick one to force its handling, or off for none.",
+      "title": "오른쪽에서 왼쪽 터미널",
+      "description": "히브리어와 아라비아어는 오른쪽에서 왼쪽 레이아웃(오른쪽 정렬, 기호와 인용 막대가 오른쪽, 표 좌우 반전)으로 그리며 글자는 터미널이 요구하는 방식으로 보냅니다. auto는 터미널을 감지하고, 하나를 선택하면 그 처리 방식을 강제하며, off는 적용하지 않습니다.",
       "default": "auto",
       "options": [
         "auto",
@@ -331,254 +331,254 @@
     },
     "highlightNumbers": {
       "type": "boolean",
-      "title": "Highlight numbers",
-      "description": "Color versions, IDs, counts and durations in prose and tables.",
+      "title": "숫자 강조",
+      "description": "본문과 표의 버전, ID, 개수, 소요 시간에 색을 줍니다.",
       "default": true
     },
     "highlightPaths": {
       "type": "boolean",
-      "title": "Highlight paths",
-      "description": "Color file paths like ~/src/app.ts or /var/log.",
+      "title": "경로 강조",
+      "description": "~/src/app.ts, /var/log 같은 파일 경로에 색을 줍니다.",
       "default": true
     },
     "fullPaths": {
       "type": "boolean",
-      "title": "Full paths",
-      "description": "Show a path that opens on click in full: ~/notes.md, ./src/app.ts and src/app.ts draw as their absolute path.",
+      "title": "전체 경로",
+      "description": "클릭하면 열리는 경로를 전체로 표시합니다. ~/notes.md, ./src/app.ts, src/app.ts가 절대 경로로 그려집니다.",
       "default": false
     },
     "accentColor": {
       "type": "string",
-      "title": "Accent",
-      "description": "Color for the reply bullet, H3+ headings and quote bars. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "강조색",
+      "description": "응답 글머리 기호, H3 이상 제목, 인용 막대의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "headingColor": {
       "type": "string",
-      "title": "Heading",
-      "description": "Color for H1 and H2 headings. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "제목 색",
+      "description": "H1, H2 제목의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "tableHeaderColor": {
       "type": "string",
-      "title": "Table header",
-      "description": "Color for table header cells. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "표 헤더 색",
+      "description": "표 헤더 칸의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "tableRuleColor": {
       "type": "string",
-      "title": "Table rule",
-      "description": "Color for table rules. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "표 선 색",
+      "description": "표 구분선의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "tableTextColor": {
       "type": "string",
-      "title": "Table text",
-      "description": "Color for plain text in table body cells, on screen and in the png copy. Hex, rgb(), ansi256() or a name. Empty keeps the terminal's own text color (the diagram text color in the png copy).",
+      "title": "표 본문 색",
+      "description": "표 본문 칸의 일반 텍스트 색으로 화면과 png 복사본에 적용됩니다. Hex, rgb(), ansi256() 또는 이름. 비우면 터미널 자체 텍스트 색(png 복사본에서는 도면 텍스트 색)을 유지합니다.",
       "default": ""
     },
     "numberColor": {
       "type": "string",
-      "title": "Numbers",
-      "description": "Color for versions, IDs and counts. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "숫자 색",
+      "description": "버전, ID, 개수의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "pathColor": {
       "type": "string",
-      "title": "Paths",
-      "description": "Color for file paths. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "경로 색",
+      "description": "파일 경로의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "linkColor": {
       "type": "string",
-      "title": "Links",
-      "description": "Color for links and URLs. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "링크 색",
+      "description": "링크와 URL의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "inlineCodeColor": {
       "type": "string",
-      "title": "Inline code",
-      "description": "Color for `inline code`. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "인라인 코드 색",
+      "description": "`inline code`의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "codeCommandColor": {
       "type": "string",
-      "title": "Code command",
-      "description": "Color for the command word in shell blocks. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "코드 명령 색",
+      "description": "셸 블록에서 명령 단어의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "codeFlagColor": {
       "type": "string",
-      "title": "Code flag",
-      "description": "Color for --flags in shell blocks. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "코드 플래그 색",
+      "description": "셸 블록에서 --flags의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "codeStringColor": {
       "type": "string",
-      "title": "Code string",
-      "description": "Color for quoted strings in shell blocks. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "코드 문자열 색",
+      "description": "셸 블록에서 따옴표로 묶인 문자열의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "strongColor": {
       "type": "string",
-      "title": "Bold text",
-      "description": "Color for **bold** text. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "굵은 글자 색",
+      "description": "**bold** 텍스트의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "quoteColor": {
       "type": "string",
-      "title": "Quote",
-      "description": "Color for block quotes. Hex (#a6e3a1), rgb(166,227,161), ansi256(114) or a name (green). Empty uses the theme.",
+      "title": "인용 색",
+      "description": "블록 인용의 색입니다. Hex(#a6e3a1), rgb(166,227,161), ansi256(114) 또는 이름(green). 비우면 테마를 사용합니다.",
       "default": ""
     },
     "mermaidAscii": {
       "type": "boolean",
-      "title": "Mermaid ASCII only",
-      "description": "Draw diagrams with + - | > instead of box-drawing characters, for fonts without them.",
+      "title": "Mermaid ASCII 전용",
+      "description": "박스 그리기 문자가 없는 글꼴을 위해 + - | >로 도표를 그립니다.",
       "default": false
     },
     "diagramColor": {
       "type": "string",
-      "title": "Diagram lines",
-      "description": "Color for diagram boxes and arrows. Hex, rgb(), ansi256() or a name. Empty uses the theme.",
+      "title": "도표 선 색",
+      "description": "도표 상자와 화살표의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마를 사용합니다.",
       "default": ""
     },
     "diagramTextColor": {
       "type": "string",
-      "title": "Diagram text",
-      "description": "Color for diagram labels and LaTeX formulas. Hex, rgb(), ansi256() or a name. Empty uses the theme.",
+      "title": "도표 글자 색",
+      "description": "도표 레이블과 LaTeX 수식의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마를 사용합니다.",
       "default": ""
     },
     "toolRows": {
       "type": "boolean",
-      "title": "Tool rows",
-      "description": "Draw tool calls as one compact line: Ran gh pr view 12, Read ~/src/app.ts, Edited README.md. Results still draw below as usual.",
+      "title": "도구 행",
+      "description": "도구 호출을 Ran gh pr view 12, Read ~/src/app.ts, Edited README.md처럼 한 줄로 압축해 그립니다. 결과는 평소대로 아래에 그려집니다.",
       "default": true
     },
     "emphasisColor": {
       "type": "string",
-      "title": "Italic text",
-      "description": "Color for *italic* text. Hex, rgb(), ansi256() or a name. Empty uses the theme.",
+      "title": "기울인 글자 색",
+      "description": "*italic* 텍스트의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마를 사용합니다.",
       "default": ""
     },
     "codeTextColor": {
       "type": "string",
-      "title": "Code text",
-      "description": "Color for code block text. Hex, rgb(), ansi256() or a name. Empty uses the theme.",
+      "title": "코드 글자 색",
+      "description": "코드 블록 텍스트의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마를 사용합니다.",
       "default": ""
     },
     "codeCommentColor": {
       "type": "string",
-      "title": "Code comment",
-      "description": "Color for # comments in shell blocks. Hex, rgb(), ansi256() or a name. Empty uses the theme.",
+      "title": "코드 주석 색",
+      "description": "셸 블록에서 # 주석의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마를 사용합니다.",
       "default": ""
     },
     "codeFillColor": {
       "type": "string",
-      "title": "Code block fill",
-      "description": "Background of code blocks with codeStyle filled or card. Hex, rgb(), ansi256() or a name. Empty uses a shade a step off the background.",
+      "title": "코드 블록 채움",
+      "description": "codeStyle이 filled나 card일 때 코드 블록의 배경입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 배경과 한 단계 다른 색을 사용합니다.",
       "default": ""
     },
     "codeBorderColor": {
       "type": "string",
-      "title": "Code block frame",
-      "description": "Frame of code blocks with codeStyle framed or card. Hex, rgb(), ansi256() or a name. Empty uses the rule color.",
+      "title": "코드 블록 테두리",
+      "description": "codeStyle이 framed나 card일 때 코드 블록의 테두리입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 선 색을 사용합니다.",
       "default": ""
     },
     "ruleColor": {
       "type": "string",
-      "title": "Rules",
-      "description": "Color for horizontal rules, diff card borders and chart gridlines. Hex, rgb(), ansi256() or a name. Empty uses the theme.",
+      "title": "구분선 색",
+      "description": "가로 구분선, diff 카드 테두리, 차트 눈금선의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마를 사용합니다.",
       "default": ""
     },
     "bulletColor": {
       "type": "string",
-      "title": "Bullets",
-      "description": "Color for list bullets and numbers. Hex, rgb(), ansi256() or a name. Empty uses the theme.",
+      "title": "글머리 기호 색",
+      "description": "목록 기호와 번호의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마를 사용합니다.",
       "default": ""
     },
     "diffAddedColor": {
       "type": "string",
-      "title": "Diff added",
-      "description": "Color for added diff lines: their + marks and count, and in hex the tint behind them, mixed into black or white so code text stays at 4.5:1. Hex, rgb(), ansi256() or a name. Empty uses the theme's green.",
+      "title": "diff 추가",
+      "description": "추가된 diff 줄의 + 표시와 개수, 그리고 hex일 때 그 뒤의 색조입니다. 코드 글자가 4.5:1을 유지하도록 검정이나 흰색에 섞습니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마의 초록을 사용합니다.",
       "default": ""
     },
     "diffRemovedColor": {
       "type": "string",
-      "title": "Diff removed",
-      "description": "Color for removed diff lines: their - marks and count, and in hex the tint behind them, mixed into black or white so code text stays at 4.5:1. Hex, rgb(), ansi256() or a name. Empty uses the theme's red.",
+      "title": "diff 삭제",
+      "description": "삭제된 diff 줄의 - 표시와 개수, 그리고 hex일 때 그 뒤의 색조입니다. 코드 글자가 4.5:1을 유지하도록 검정이나 흰색에 섞습니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마의 빨강을 사용합니다.",
       "default": ""
     },
     "promptFillColor": {
       "type": "string",
-      "title": "Your bubble fill",
-      "description": "Fill behind your prompts with promptStyle bubble. Hex, rgb(), ansi256() or a name. Empty uses a deep shade of the theme's green, a pale one in a light theme.",
+      "title": "사용자 말풍선 채움",
+      "description": "promptStyle이 bubble일 때 사용자 프롬프트 뒤의 채움입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마 초록의 짙은 색, 라이트 테마에서는 옅은 색을 사용합니다.",
       "default": ""
     },
     "promptBorderColor": {
       "type": "string",
-      "title": "Your bubble frame",
-      "description": "Frame and You ⬤ label of your prompts with promptStyle bubble or framed, and the hue of its default fill. Hex, rgb(), ansi256() or a name. Empty uses the theme's green (the diff added color).",
+      "title": "사용자 말풍선 테두리",
+      "description": "promptStyle이 bubble이나 framed일 때 사용자 프롬프트의 테두리와 You ⬤ 레이블, 기본 채움의 색상입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마 초록(diff 추가 색)을 사용합니다.",
       "default": ""
     },
     "promptTextColor": {
       "type": "string",
-      "title": "Your bubble text",
-      "description": "Text of your prompts with promptStyle bubble or framed. Hex, rgb(), ansi256() or a name. Empty uses the heading color, or the code text color where the heading color would not read on the fill.",
+      "title": "사용자 말풍선 글자",
+      "description": "promptStyle이 bubble이나 framed일 때 사용자 프롬프트 글자의 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 제목 색을 사용하고, 채움 위에서 제목 색이 잘 읽히지 않으면 코드 글자 색을 사용합니다.",
       "default": ""
     },
     "replyFillColor": {
       "type": "string",
-      "title": "Claude's bubble fill",
-      "description": "Fill behind Claude's replies with replyStyle bubble or solid. Hex, rgb(), ansi256() or a name. Empty uses a midnight blue a step off the theme's background, a pale one in a light theme.",
+      "title": "Claude 말풍선 채움",
+      "description": "replyStyle이 bubble이나 solid일 때 Claude 응답 뒤의 채움입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마 배경과 한 단계 다른 자정 남색, 라이트 테마에서는 옅은 색을 사용합니다.",
       "default": ""
     },
     "alertNoteColor": {
       "type": "string",
-      "title": "Note alert",
-      "description": "Box, bar and label of > [!NOTE] alerts. Hex, rgb(), ansi256() or a name. Empty uses the terminal's blue.",
+      "title": "노트 알림",
+      "description": "> [!NOTE] 알림의 상자, 막대, 레이블 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 터미널의 파랑을 사용합니다.",
       "default": ""
     },
     "alertTipColor": {
       "type": "string",
-      "title": "Tip alert",
-      "description": "Box, bar and label of > [!TIP] alerts. Hex, rgb(), ansi256() or a name. Empty uses the terminal's green.",
+      "title": "팁 알림",
+      "description": "> [!TIP] 알림의 상자, 막대, 레이블 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 터미널의 초록을 사용합니다.",
       "default": ""
     },
     "alertImportantColor": {
       "type": "string",
-      "title": "Important alert",
-      "description": "Box, bar and label of > [!IMPORTANT] alerts. Hex, rgb(), ansi256() or a name. Empty uses the terminal's magenta.",
+      "title": "중요 알림",
+      "description": "> [!IMPORTANT] 알림의 상자, 막대, 레이블 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 터미널의 자홍을 사용합니다.",
       "default": ""
     },
     "alertWarningColor": {
       "type": "string",
-      "title": "Warning alert",
-      "description": "Box, bar and label of > [!WARNING] alerts. Hex, rgb(), ansi256() or a name. Empty uses the terminal's yellow.",
+      "title": "경고 알림",
+      "description": "> [!WARNING] 알림의 상자, 막대, 레이블 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 터미널의 노랑을 사용합니다.",
       "default": ""
     },
     "alertCautionColor": {
       "type": "string",
-      "title": "Caution alert",
-      "description": "Box, bar and label of > [!CAUTION] alerts. Hex, rgb(), ansi256() or a name. Empty uses the terminal's red.",
+      "title": "주의 알림",
+      "description": "> [!CAUTION] 알림의 상자, 막대, 레이블 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 터미널의 빨강을 사용합니다.",
       "default": ""
     },
     "replyBorderColor": {
       "type": "string",
-      "title": "Claude's bubble frame",
-      "description": "Frame and ⬤ Claude label of Claude's replies with replyStyle bubble or framed. Hex, rgb(), ansi256() or a name. Empty uses Claude Code's own Claude orange.",
+      "title": "Claude 말풍선 테두리",
+      "description": "replyStyle이 bubble이나 framed일 때 Claude 응답의 테두리와 ⬤ Claude 레이블 색입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 Claude Code 자체 Claude 주황을 사용합니다.",
       "default": ""
     },
     "pngBackgroundColor": {
       "type": "string",
-      "title": "png copy background",
-      "description": "Background of the ▣ png copy of tables, diagrams and figures. Hex, rgb(), ansi256() or a name. Empty uses the theme's background, white when the theme has none. Set it to your terminal's background to paste what you see.",
+      "title": "png 복사 배경",
+      "description": "표, 도표, 그림의 ▣ png 복사본 배경입니다. Hex, rgb(), ansi256() 또는 이름. 비우면 테마 배경, 테마에 배경이 없으면 흰색을 사용합니다. 터미널 배경으로 설정하면 보이는 그대로 붙여넣을 수 있습니다.",
       "default": ""
     },
     "diffStyle": {
       "type": "string",
-      "title": "Diff style",
-      "description": "How edit and shell edit diffs draw. card: a rounded box with tinted lines. full: no box, each changed line tinted across the width. marks: no box and no tint, only the +/- marks in the theme's diff colors. bar: no box and no tint, a colored ▌ before each changed line. Every style highlights the code and marks the changed words.",
+      "title": "diff 스타일",
+      "description": "편집과 셸 편집 diff의 그리기 방식입니다. card: 둥근 상자에 색조가 있는 줄. full: 상자 없이 바뀐 줄 전체에 색조. marks: 상자와 색조 없이 +/- 표시만 테마 diff 색으로. bar: 상자와 색조 없이 바뀐 줄 앞에 색 ▌. 모든 스타일이 코드를 강조하고 바뀐 단어를 표시합니다.",
       "default": "card",
       "options": [
         "card",
@@ -589,8 +589,8 @@
     },
     "codeStyle": {
       "type": "string",
-      "title": "Code block style",
-      "description": "How code blocks draw in the terminal. plain: no frame, so a mouse selection copies only the code. framed: a rounded box. filled: a background, or the box in a theme with no colors to fill with. card: a rounded box on a background.",
+      "title": "코드 블록 스타일",
+      "description": "터미널에서 코드 블록을 그리는 방식입니다. plain: 테두리 없이 마우스 선택 시 코드만 복사됩니다. framed: 둥근 상자. filled: 배경, 또는 채울 색이 없는 테마에서는 상자. card: 배경 위의 둥근 상자.",
       "default": "plain",
       "options": [
         "plain",
@@ -601,8 +601,8 @@
     },
     "pieStyle": {
       "type": "string",
-      "title": "Pie style",
-      "description": "How mermaid pie charts draw. round: a circle with a legend, a smooth picture in kitty and Ghostty (not under tmux) and text elsewhere, falling back to bars in ascii mode, with more slices than the theme has distinct colors (mono always) or in a narrow terminal. bars: one bar per slice, largest first, with its share.",
+      "title": "원형 차트 스타일",
+      "description": "mermaid 원형 차트의 그리기 방식입니다. round: 범례가 있는 원으로, kitty와 Ghostty에서는(tmux 밖) 매끄러운 그림, 그 외에는 텍스트이며 ascii 모드에서는 막대로 대체됩니다. 조각 수가 테마의 구별 가능한 색보다 많을 때(mono는 항상)나 터미널이 좁을 때도 막대로 대체됩니다. bars: 조각마다 막대 하나를 비율과 함께 가장 큰 것부터 그립니다.",
       "default": "round",
       "options": [
         "round",
@@ -611,14 +611,14 @@
     },
     "mermaid": {
       "type": "boolean",
-      "title": "Mermaid diagrams",
-      "description": "Draw ```mermaid blocks as colored box art sized to the terminal. Off leaves the code as written.",
+      "title": "Mermaid 도표",
+      "description": "```mermaid 블록을 터미널 크기에 맞춘 컬러 박스 아트로 그립니다. 끄면 코드를 있는 그대로 둡니다.",
       "default": true
     },
     "folds": {
       "type": "string",
-      "title": "Long blocks",
-      "description": "How long code blocks, diff cards, new-file previews and pasted text in your prompts start. closed: folded to their first lines with a +N more lines button. open: drawn whole (up to each one's line ceiling) with a show less button. Drawing them whole costs more nodes and time on every redraw.",
+      "title": "긴 블록",
+      "description": "긴 코드 블록, diff 카드, 새 파일 미리보기, 프롬프트에 붙여넣은 텍스트가 처음에 어떻게 시작되는지입니다. closed: 첫 줄만并显示 +N more lines 버튼. open: 전체(각각의 줄 상한까지)를 show less 버튼과 함께 표시. 전체를 그리면 다시 그릴 때마다 노드와 시간이 더 소모됩니다.",
       "default": "closed",
       "options": [
         "closed",
@@ -627,14 +627,14 @@
     },
     "copyButtons": {
       "type": "boolean",
-      "title": "Copy buttons",
-      "description": "Put a copy button on code blocks, tables, diagrams, lists and quotes. Reach them with ctrl+x tab then Enter, or click where the terminal passes clicks through.",
+      "title": "복사 버튼",
+      "description": "코드 블록, 표, 도표, 목록, 인용에 복사 버튼을 둡니다. ctrl+x tab 다음 Enter로 접근하거나 터미널이 클릭을 전달하는 곳에서 클릭합니다.",
       "default": true
     },
     "copyButtonStyle": {
       "type": "string",
-      "title": "Copy button style",
-      "description": "dim: bare ⧉ labels beside or above each block, drawn dim and at full strength under the pointer or the focus. inline: the same buttons in the accent color. hover: each block shows a dim ⧉ beside its first row, and the reply one in its bottom-right corner; the pointer on a ⧉ draws its buttons over it, so they take no line; ctrl+x tab does not reach them, and the mobile app, which has no pointer, shows them inline. Needs copyButtons on.",
+      "title": "복사 버튼 스타일",
+      "description": "dim: 각 블록 옆이나 위에 흐린 ⧉ 레이블을 두고 포인터나 포커스가 있으면 원래 색으로 표시합니다. inline: 같은 버튼을 강조 색으로 표시. hover: 각 블록 첫 행 옆에 흐린 ⧉, 응답 블록에는 오른쪽 아래에 표시합니다. ⧉ 위에 포인터를 두면 버튼이 그 위에 그려져 줄을 차지하지 않습니다. ctrl+x tab으로는 접근할 수 없고, 포인터가 없는 모바일 앱에서는 inline으로 표시합니다. copyButtons가 켜져 있어야 합니다.",
       "default": "dim",
       "options": [
         "dim",
@@ -644,38 +644,38 @@
     },
     "textCopyButtons": {
       "type": "boolean",
-      "title": "Copy buttons on lists and quotes",
-      "description": "Put a copy button on lists, quotes and alerts. Off keeps the buttons on code blocks, tables, diagrams and whole replies. Needs copyButtons on.",
+      "title": "목록과 인용의 복사 버튼",
+      "description": "목록, 인용, 알림에 복사 버튼을 둡니다. 끄면 코드 블록, 표, 도표, 전체 응답에만 버튼이 남습니다. copyButtons가 켜져 있어야 합니다.",
       "default": true
     },
     "sectionCopyButtons": {
       "type": "boolean",
-      "title": "Copy buttons on headings",
-      "description": "Put a copy button on each heading that copies its section as markdown: every block under it up to the next heading of the same or a higher level. A heading whose section is empty, or is one block that has its own button, gets none. Needs copyButtons on.",
+      "title": "제목의 복사 버튼",
+      "description": "각 제목에 해당 섹션을 markdown으로 복사하는 버튼을 둡니다. 같은 수준 이상의 다음 제목까지 그 아래의 모든 블록이 포함됩니다. 섹션이 비어 있거나 자체 버튼이 있는 블록 하나뿐이면 버튼이 없습니다. copyButtons가 켜져 있어야 합니다.",
       "default": false
     },
     "issueHint": {
       "type": "boolean",
-      "title": "Issue hint",
-      "description": "On your first prompt and every tenth after it, tell the model it can offer, after asking you, to open a minimal repro issue on prismantis when you say something drew wrong. About 35 tokens each time.",
+      "title": "이슈 힌트",
+      "description": "첫 프롬프트와 그 이후 열 번째마다, 표시가 잘못되었을 때 사용자에게 물어본 뒤 prismantis에 최소 재현 이슈를 열 제안할 수 있다고 모델에 알립니다. 매번 약 35토큰.",
       "default": true
     },
     "keyPointHint": {
       "type": "boolean",
-      "title": "Key point hint",
-      "description": "Attach a short note, read by the model and never shown, to each prompt you type or another plugin sends, asking for each reply's key points in bold. Set strongColor too if bold looks close to the body text. About 80 tokens per prompt.",
+      "title": "핵심 요점 힌트",
+      "description": "사용자가 입력하거나 다른 플러그인이 보내는 각 프롬프트에 모델만 읽고 표시되지 않는 짧은 메모를 붙여 모든 응답의 핵심을 굵게 요구합니다. 굵게가 본문과 비슷하면 strongColor도 설정하세요. 프롬프트당 약 80토큰.",
       "default": false
     },
     "diagramHints": {
       "type": "boolean",
-      "title": "Diagram hints",
-      "description": "Attach a short note, read by the model and never shown, to each prompt you type or another plugin sends, saying tables, code, mermaid diagrams, charts and figures render here, and LaTeX formulas when the renderer runs. About 630 tokens per prompt (about 275 for the main part, about 360 for figures), about 80 more with LaTeX. Off when mermaid is off.",
+      "title": "도표 힌트",
+      "description": "사용자가 입력하거나 다른 플러그인이 보내는 각 프롬프트에 모델만 읽고 표시되지 않는 짧은 메모를 붙여, 표·코드·mermaid 도표·차트·그림이 여기에서 렌더링된다고 알립니다. 렌더러가 실행되면 LaTeX 수식도 표시됩니다. 프롬프트당 약 630토큰(본문 약 275, 그림 약 360), LaTeX 포함 시 약 80 추가. mermaid가 꺼지면 비활성화됩니다.",
       "default": true
     },
     "latex": {
       "type": "boolean",
-      "title": "LaTeX math",
-      "description": "Draw $$ and ```math formulas as typeset images in kitty and Ghostty (not under tmux) with RaTeX's renderer, installed as ratex-render on your PATH. Off runs nothing. Formulas that can't be drawn stay as text.",
+      "title": "LaTeX 수식",
+      "description": "kitty와 Ghostty에서(tmux 밖) PATH에 ratex-render로 설치된 RaTeX 렌더러로 $$ 및 ```math 수식을 조판된 이미지로 그립니다. 끄면 아무것도 실행하지 않고, 그릴 수 없는 수식은 텍스트로 남습니다.",
       "default": false
     }
   }

@@ -36,74 +36,74 @@
   "userConfig": {
     "pane_host": {
       "type": "string",
-      "title": "Pane opens in",
-      "description": "Where the council pane opens. claude-code draws it inside Claude Code; tmux leaves it to a tmux pane; ask asks once, the first time a run starts inside tmux, and remembers the answer (/council-pane ask forgets it). Outside tmux the pane opens here either way.",
+      "title": "패널 열기 위치",
+      "description": "카운슬 패널이 열리는 위치입니다. claude-code는 Claude Code 안에 그립니다. tmux는 tmux 패널에 맡깁니다. ask는 tmux 안에서 실행이 시작된 첫 번째 경우 한 번 묻고 답을 기억합니다(/council-pane ask forgets로 잊을 수 있습니다). tmux 밖에서는 어느 쪽이든 여기에 열립니다.",
       "default": "ask"
     },
     "collapse_when_done": {
       "type": "boolean",
-      "title": "Collapse status when done",
-      "description": "Open a finished run on its summary and the synthesis, with the seats folded below. Off keeps the live order: the seats, then the synthesis.",
+      "title": "완료 시 상태 접기",
+      "description": "완료된 실행을 요약과 종합을 펼친 상태로 열고 참석자들은 아래로 접습니다. 끄면 실시간 순서(참석자 다음 종합)를 유지합니다.",
       "default": true
     },
     "wake_on_async_done": {
       "type": "boolean",
-      "title": "Wake on async finish",
-      "description": "When a background council run (--async) finishes, submit a prompt so Claude fetches the result by itself. That starts a model turn and costs tokens; a failed run wakes nobody.",
+      "title": "비동기 완료 시 깨우기",
+      "description": "백그라운드 카운슬 실행(--async)이 끝나면 프롬프트를 제출해 Claude가 결과를 직접 가져오게 합니다. 모델 턴이 시작되고 토큰이 소모됩니다. 실패한 실행은 아무도 깨우지 않습니다.",
       "default": false
     },
     "council_tool": {
       "type": "boolean",
-      "title": "Council as a tool",
-      "description": "Let Claude call the council as a tool, not only through /claude-council:ask. Every call shows you the question and the providers and asks before anything is sent.",
+      "title": "도구로서의 카운슬",
+      "description": "Claude가 /claude-council:ask뿐 아니라 도구로도 카운슬을 호출하게 합니다. 모든 호출에서 질문과 공급자를 보여주고 전송 전에 확인합니다.",
       "default": true
     },
     "heads_up": {
       "type": "boolean",
-      "title": "Heads-up side-check",
-      "description": "Turn the heads-up side-check on in every project: while Claude works a long turn, one council seat, codex by default, rereads the last five turns, the last eight tool results and the text Claude wrote with Write or Edit, and may show one line above the prompt. Nothing asks before a send; that material leaves the machine on every check. A project's .claude/council-heads-up.json overrides this for that project and picks the seat and cadence.",
+      "title": "사이드 체크 알림",
+      "description": "모든 프로젝트에서 사이드 체크를 켭니다. Claude가 긴 턴을 진행하는 동안 기본값인 codex 참석자가 최근 다섯 턴, 최근 여덟 개 도구 결과, Claude가 Write나 Edit로 작성한 텍스트를 다시 읽고 프롬프트 위에 한 줄을 표시할 수 있습니다. 전송 전에 묻지 않으며, 매 검사마다 해당 자료가 컴퓨터를 떠납니다. 프로젝트의 .claude/council-heads-up.json이 해당 프로젝트에서 이를 재정의하고 참석자와 주기를 선택합니다.",
       "default": false
     },
     "gemini_api_key": {
       "type": "string",
-      "title": "Gemini API key",
-      "description": "The key the gemini seat uses, kept in Claude Code's secure storage. The council's mod sets GEMINI_API_KEY from it for every command in the session, over a shell export.",
+      "title": "Gemini API 키",
+      "description": "gemini 참석자가 사용하는 키로 Claude Code의 안전한 저장소에 보관됩니다. 카운슬 mod는 세션의 모든 명령에 대해 shell export보다 우선하여 이 키로 GEMINI_API_KEY를 설정합니다.",
       "sensitive": true
     },
     "openai_api_key": {
       "type": "string",
-      "title": "OpenAI API key",
-      "description": "The key the openai seat uses, kept in Claude Code's secure storage. The council's mod sets OPENAI_API_KEY from it for every command in the session, over a shell export.",
+      "title": "OpenAI API 키",
+      "description": "openai 참석자가 사용하는 키로 Claude Code의 안전한 저장소에 보관됩니다. 카운슬 mod는 세션의 모든 명령에 대해 shell export보다 우선하여 이 키로 OPENAI_API_KEY를 설정합니다.",
       "sensitive": true
     },
     "xai_api_key": {
       "type": "string",
-      "title": "xAI API key (Grok)",
-      "description": "The key the grok seat uses, kept in Claude Code's secure storage. The council's mod sets XAI_API_KEY from it for every command in the session, over a shell export.",
+      "title": "xAI API 키(Grok)",
+      "description": "grok 참석자가 사용하는 키로 Claude Code의 안전한 저장소에 보관됩니다. 카운슬 mod는 세션의 모든 명령에 대해 shell export보다 우선하여 이 키로 XAI_API_KEY를 설정합니다.",
       "sensitive": true
     },
     "perplexity_api_key": {
       "type": "string",
-      "title": "Perplexity API key",
-      "description": "The key the perplexity seat uses, kept in Claude Code's secure storage. The council's mod sets PERPLEXITY_API_KEY from it for every command in the session, over a shell export.",
+      "title": "Perplexity API 키",
+      "description": "perplexity 참석자가 사용하는 키로 Claude Code의 안전한 저장소에 보관됩니다. 카운슬 mod는 세션의 모든 명령에 대해 shell export보다 우선하여 이 키로 PERPLEXITY_API_KEY를 설정합니다.",
       "sensitive": true
     },
     "kimi_api_key": {
       "type": "string",
-      "title": "Kimi API key",
-      "description": "The key the kimi seat uses, kept in Claude Code's secure storage. The council's mod sets KIMI_API_KEY from it for every command in the session, over a shell export.",
+      "title": "Kimi API 키",
+      "description": "kimi 참석자가 사용하는 키로 Claude Code의 안전한 저장소에 보관됩니다. 카운슬 mod는 세션의 모든 명령에 대해 shell export보다 우선하여 이 키로 KIMI_API_KEY를 설정합니다.",
       "sensitive": true
     },
     "openrouter_api_key": {
       "type": "string",
-      "title": "OpenRouter API key",
-      "description": "The key every OpenRouter seat uses, kept in Claude Code's secure storage. The council's mod sets OPENROUTER_API_KEY from it for every command in the session, over a shell export.",
+      "title": "OpenRouter API 키",
+      "description": "모든 OpenRouter 참석자가 사용하는 키로 Claude Code의 안전한 저장소에 보관됩니다. 카운슬 mod는 세션의 모든 명령에 대해 shell export보다 우선하여 이 키로 OPENROUTER_API_KEY를 설정합니다.",
       "sensitive": true
     },
     "openrouter_models": {
       "type": "string",
-      "title": "OpenRouter models",
-      "description": "Model ids from openrouter.ai/models, separated by commas or spaces, such as deepseek/deepseek-v3.2,z-ai/glm-5.3. Each id becomes its own seat, openrouter-1, openrouter-2 and so on, all on the one OpenRouter key. The council's mod sets OPENROUTER_MODELS from it for every command in the session, over a shell export. Left empty, a shell export still applies; with neither, one openrouter seat runs the default model."
+      "title": "OpenRouter 모델",
+      "description": "openrouter.ai/models의 모델 id를 쉼표나 공백으로 구분해 적습니다(예: deepseek/deepseek-v3.2,z-ai/glm-5.3). 각 id는 openrouter-1, openrouter-2처럼 자체 참석자가 되며 모두 동일한 OpenRouter 키를 사용합니다. 카운슬 mod는 세션의 모든 명령에 대해 shell export보다 우선하여 이 값으로 OPENROUTER_MODELS를 설정합니다. 비워 두면 shell export가 적용되고, 둘 다 없으면 기본 모델을 사용하는 openrouter 참석자 하나가 실행됩니다."
     }
   }
 }

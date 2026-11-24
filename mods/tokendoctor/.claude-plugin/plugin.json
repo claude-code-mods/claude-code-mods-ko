@@ -20,14 +20,14 @@
   "userConfig": {
     "slide": {
       "type": "boolean",
-      "title": "Slide the window instead of compacting",
-      "description": "Where Claude Code would summarize the conversation, elide old tool outputs instead (they can be read again): no summary request, every prompt and answer kept word for word. /compact still summarizes.",
+      "title": "압축 대신 창 밀기",
+      "description": "Claude Code가 대화를 요약할 지점에서 오래된 도구 출력을(다시 읽을 수 있게) 생략합니다. 요약 요청이 없고 모든 프롬프트와 답변이 그대로 유지됩니다. /compact는 여전히 요약합니다.",
       "default": false
     },
     "slideTo": {
       "type": "number",
-      "title": "Slide down to (% of where Claude Code compacts)",
-      "description": "How far a slide frees the context, as a percent of the point where Claude Code compacts (20 to 90). Lower leaves less behind and more turns before the next slide.",
+      "title": "아래로 밀기 지점(Claude Code 압축 지점의 %)",
+      "description": "한 번의 밀기로 컨텍스트를 얼마나 비우는지, Claude Code가 압축하는 지점 대비 백분율로 표시합니다(20~90). 낮추면 남는 내용이 적고 다음 밀기까지 턴이 많아집니다.",
       "default": 25
     }
   }

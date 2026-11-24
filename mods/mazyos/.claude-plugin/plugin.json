@@ -33,20 +33,20 @@
   "userConfig": {
     "abrirPainel": {
       "type": "boolean",
-      "title": "Abrir o painel ao iniciar",
-      "description": "Abre o painel do MazyOS (memória, foco e atalhos) quando a sessão começa numa pasta do MazyOS e o terminal é largo o bastante. /mazyos abre a qualquer hora.",
+      "title": "시작 시 패널 열기",
+      "description": "MazyOS 폴더에서 세션이 시작되고 터미널이 충분히 넓으면 MazyOS 패널(메모리, 집중, 단축키)을 엽니다. /mazyos로 언제든 열 수 있습니다.",
       "default": true
     },
     "linhaDeStatus": {
       "type": "boolean",
-      "title": "Linha de status",
-      "description": "Mostra 'MazyOS · negócio · foco' embaixo do prompt enquanto você trabalha numa pasta do MazyOS.",
+      "title": "상태 줄",
+      "description": "MazyOS 폴더에서 작업하는 동안 프롬프트 아래에 'MazyOS · negócio · foco'를 표시합니다.",
       "default": true
     },
     "protegerGit": {
       "type": "boolean",
-      "title": "Freio no git",
-      "description": "Pede confirmação antes de git push --force, git reset --hard e outros comandos git que apagam trabalho, dentro de uma pasta do MazyOS.",
+      "title": "git 안전 브레이크",
+      "description": "MazyOS 폴더 안에서 git push --force, git reset --hard 및 작업을 삭제하는 다른 git 명령 전에 확인을 요청합니다.",
       "default": true
     }
   }

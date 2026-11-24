@@ -6,56 +6,56 @@
   "userConfig": {
     "apiKey": {
       "type": "string",
-      "title": "TypeSafe API key",
-      "description": "TypeSafe API key. Leave unset to use TYPESAFE_API_KEY.",
+      "title": "TypeSafe API 키",
+      "description": "TypeSafe API 키입니다. 비워 두면 TYPESAFE_API_KEY를 사용합니다.",
       "sensitive": true
     },
     "keepThreshold": {
       "type": "number",
-      "title": "Keep threshold",
-      "description": "Minimum Jev probability that a tool call or tool result is still needed; below it the item is removed.",
+      "title": "유지 임계값",
+      "description": "도구 호출이나 도구 결과가 여전히 필요하다고 판단하는 최소 Jev 확률입니다. 이 값 미만이면 항목이 제거됩니다.",
       "default": 0.5
     },
     "preserveRecentMessages": {
       "type": "number",
-      "title": "Recent messages to preserve",
-      "description": "Number of newest messages pinned from compaction.",
+      "title": "보존할 최근 메시지 수",
+      "description": "압축에서 고정할 가장 최근 메시지의 개수입니다.",
       "default": 6
     },
     "compactAtPercent": {
       "type": "number",
-      "title": "Compaction percentage",
-      "description": "Context percentage at which turn.complete requests compaction.",
+      "title": "압축 비율",
+      "description": "turn.complete가 압축을 요청하는 컨텍스트 비율입니다.",
       "default": 60
     },
     "minReductionRatio": {
       "type": "number",
-      "title": "Minimum reduction ratio",
-      "description": "Minimum estimated character reduction required to replace history.",
+      "title": "최소 감소 비율",
+      "description": "기록을 대체하기 위해 필요한 최소 예상 문자 감소량입니다.",
       "default": 0.25
     },
     "maxStateTokens": {
       "type": "number",
-      "title": "Maximum Jev state tokens",
-      "description": "Estimated token budget for the conversation state sent with every Jev request.",
+      "title": "최대 Jev 상태 토큰 수",
+      "description": "모든 Jev 요청과 함께 전송되는 대화 상태의 예상 토큰 예산입니다.",
       "default": 25000
     },
     "maxRequestTokens": {
       "type": "number",
-      "title": "Maximum Jev request tokens",
-      "description": "Estimated token budget for state plus questions in one Jev request.",
+      "title": "최대 Jev 요청 토큰 수",
+      "description": "한 번의 Jev 요청에서 상태와 질문을 합한 예상 토큰 예산입니다.",
       "default": 30000
     },
     "truncateHeadChars": {
       "type": "number",
-      "title": "Truncated tool result head",
-      "description": "Characters of a tool result kept when Jev decides its full output is no longer needed; 0 keeps only the note.",
+      "title": "잘린 도구 결과 앞부분",
+      "description": "Jev가 도구 결과의 전체 출력이 더 이상 필요 없다고 판단할 때 유지하는 문자 수입니다. 0이면 알림만 유지합니다.",
       "default": 300
     },
     "model": {
       "type": "string",
-      "title": "Jev model",
-      "description": "TypeSafe Jev model name.",
+      "title": "Jev 모델",
+      "description": "TypeSafe Jev 모델 이름입니다.",
       "default": "jev-latest"
     }
   }

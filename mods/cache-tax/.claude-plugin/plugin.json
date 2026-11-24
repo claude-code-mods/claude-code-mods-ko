@@ -21,8 +21,8 @@
   "userConfig": {
     "headless": {
       "type": "string",
-      "title": "Headless prompts",
-      "description": "guard (default): keep the cold-send guard for CLI and SDK prompts. send: allow non-interactive SDK prompts without asking, unless guard refuse is explicit. Remote human prompts keep the guard.",
+      "title": "헤드리스 프롬프트",
+      "description": "guard(기본값): CLI 및 SDK 프롬프트에 콜드 전송 가드를 유지합니다. send: guard refuse가 명시적으로 지정되지 않는 한, 확인 없이 비대화형 SDK 프롬프트를 허용합니다. 원격 사람 프롬프트는 항상 가드를 유지합니다.",
       "default": "guard",
       "options": [
         "guard",
@@ -31,8 +31,8 @@
     },
     "autoWarm": {
       "type": "string",
-      "title": "Auto keepwarm",
-      "description": "on: after you pay a cold cache write, keepwarm arms itself for three hours (the default). off: keepwarm only runs when you arm it with /keepwarm.",
+      "title": "자동 웜킵",
+      "description": "on: 콜드 캐시 쓰기에 비용을 지불한 후 3시간 동안 웜킵이 자동으로 무장됩니다(기본값). off: /keepwarm으로 직접 무장할 때만 웜킵이 실행됩니다.",
       "default": "on",
       "options": [
         "on",
@@ -41,14 +41,14 @@
     },
     "pingFloor": {
       "type": "number",
-      "title": "Ping floor",
-      "description": "Limit each idle break's ping spend to the estimated rewrite cost divided by this number, including the next estimated ping. 2 by default; 0 disables the limit. The first ping has no receipt to estimate from.",
+      "title": "핑 하한",
+      "description": "각 유휴 휴식의 핑 지출을 예상 재작성 비용을 이 숫자로 나눈 값으로 제한하며, 다음 예상 핑도 포함합니다. 기본값은 2이고 0은 제한을 해제합니다. 첫 핑은 추정할 영수증이 없습니다.",
       "default": 2,
       "min": 0
     },
     "display": {
-      "title": "Display",
-      "description": "Where cache-tax shows its state. band: the row above the prompt (the default). status: the status entry under the prompt instead, with no row.",
+      "title": "표시 위치",
+      "description": "cache-tax가 상태를 표시하는 위치입니다. band: 프롬프트 위 행(기본값). status: 행 없이 프롬프트 아래 상태 항목에 표시합니다.",
       "type": "string",
       "options": [
         "band",

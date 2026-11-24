@@ -24,14 +24,14 @@
   "userConfig": {
     "showPerTurn": {
       "type": "boolean",
-      "title": "CO2 of each answer",
-      "description": "Show the CO2 of each answer at the end of the turn duration line. Off: only the session total stays.",
+      "title": "각 응답의 CO2",
+      "description": "턴 소요 시간 행 끝에 각 응답의 CO2를 표시합니다. 끄면 세션 합계만 남습니다.",
       "default": true
     },
     "showSessionTotal": {
       "type": "boolean",
-      "title": "CO2 session total in the terminal",
-      "description": "Pin the session's CO2 total and its API-price cost under the prompt in a terminal. Turn it off when your status line already shows it, such as ccstatusline with the claude-carbon segment. The desktop app keeps it.",
+      "title": "터미널의 세션 CO2 합계",
+      "description": "터미널에서 세션의 CO2 합계와 API 요금 비용을 프롬프트 아래에 고정합니다. ccstatusline의 claude-carbon 세그먼트처럼 상태 줄에 이미 표시된다면 끄세요. 데스크톱 앱은 항상 유지합니다.",
       "default": true
     }
   }
