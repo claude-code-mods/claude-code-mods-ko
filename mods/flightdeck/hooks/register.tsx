@@ -952,7 +952,7 @@ export const register: Register = (on, options) => {
           {line([...totals, !isShort && w >= 80 && g.recent.some(c => c.inSubagent) ? { spans: [{ text: 'dim: in subagents', color: C.faint }] } : null], w - 4, 2)}
           {/* Below about 44 columns the three rows' buttons take two lines rather than run past the box. */}
           <Box columnGap={2} flexWrap="wrap">
-            {(['파일', 'shell', 'other'] as const).map((b: Bucket) => {
+            {(['file', 'shell', 'other'] as const).map((b: Bucket) => {
               const tl = g.totals[b]
               const n = tl.rule + tl.ask + tl.cleared + tl.deny
               return (
@@ -960,7 +960,7 @@ export const register: Register = (on, options) => {
                   key={`gate-${b}`}
                   plain
                   hotkey={b[0]}
-                  label={`${b} ${n}${open === b ? ' ▾' : ''}`}
+                  label={`${b === 'file' ? '파일' : b === 'shell' ? '셸' : '기타'} ${n}${open === b ? ' ▾' : ''}`}
                   dimColor={n === 0}
                   onPress={() => update($, view, x => ({ ...normalize(DEFAULT_VIEW, x), gateOpen: normalize(DEFAULT_VIEW, x).gateOpen === b ? null : b }))}
                 />

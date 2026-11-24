@@ -535,7 +535,7 @@ const ko: Messages = {
       `워크스페이스 노트: ${file} (기억 ${memory}개, 규칙 ${rules}개, 새 대화로 전달되는 규칙 ${injected}개)`,
     procedures: (n, inProject) => `워크스페이스 절차: ${n}개 (${inProject}개는 프로젝트 skill이나 문서에 이미 있음; 절차는 새 대화로 전달되지 않습니다)`,
     tiers: (full, titles, archived, days) =>
-      `전달되는 기억: 선호와 교정 ${full}개는全文, 사실과 위치 ${titles}개는 제목만, 보관 ${archived}개 (${days}일 이상 확인되지 않아 전달 안 함)`,
+      `전달되는 기억: 선호와 교정 ${full}개는 전문, 사실과 위치 ${titles}개는 제목만, 보관 ${archived}개 (${days}일 이상 확인되지 않아 전달 안 함)`,
   },
 
   idle: {

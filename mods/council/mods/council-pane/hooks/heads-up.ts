@@ -271,23 +271,24 @@ export function headsUpStatus(config: HeadsUpConfig, rowOn: boolean, fileText: s
     rows.push(['problem', config.problem])
   } else if (config.enabled) {
     state = file === true ? 'on for this project' : 'on for every project'
-    rows.push(['작성자', file === true ? `${CONFIG_FILE} (the /config row is ${row})` : `the /config row (${fileNote})`])
-    rows.push(['seat', seatLabel(config.seat, config.model)], ['전체', `${config.every} requests`])
+    rows.push(['by', file === true ? `${CONFIG_FILE} (the /config row is ${row})` : `the /config row (${fileNote})`])
+    rows.push(['seat', seatLabel(config.seat, config.model)], ['every', `${config.every}개 요청`])
   } else if (file === false) {
     state = 'off for this project'
-    rows.push(['작성자', `${CONFIG_FILE} (the /config row is ${row})`], ['turn on', `/${COMMAND} on [seat] turns it on here`])
+    rows.push(['by', `${CONFIG_FILE} (the /config row is ${row})`], ['turn on', `/${COMMAND} on [seat] turns it on here`])
   } else {
     state = '꺼짐'
-    rows.push(['작성자', `the /config row is off, ${fileNote}`], ['turn on', `/${COMMAND} on [seat] for this project, the /config row "Heads-up side-check" for every project`])
+    rows.push(['by', `the /config row is off, ${fileNote}`], ['turn on', `/${COMMAND} on [seat] for this project, the /config row "Heads-up side-check" for every project`])
   }
-  if (paused !== null) rows.push(['일시중지됨', `${paused.seat}: ${paused.detail} · /${COMMAND} on resumes this session`])
+  if (paused !== null) rows.push(['paused', `${paused.seat}: ${paused.detail} · /${COMMAND} on resumes this session`])
   rows.push(['checks', countsLine(counts)], ['tokens', tokensLine(tokens)], ['presses', pressesLine(counts)])
   return { state, rows }
 }
 
 export function statusText({ state, rows }: HeadsUpStatus): string {
-  const width = Math.max(...rows.map(([label]) => label.length))
-  return [`Heads-up side-check: ${state}`, ...rows.map(([label, value]) => `  ${label.padEnd(width)}  ${value}`)].join('\n')
+  const shown = (label: string) => label === 'by' ? '설정 위치' : label === 'every' ? '전체' : label === 'paused' ? '일시중지됨' : label
+  const width = Math.max(...rows.map(([label]) => shown(label).length))
+  return [`Heads-up side-check: ${state}`, ...rows.map(([label, value]) => `  ${shown(label).padEnd(width)}  ${value}`)].join('\n')
 }
 
 /**
@@ -297,8 +298,8 @@ export function statusText({ state, rows }: HeadsUpStatus): string {
  * ends, so the toast is what the person sees at once.
  */
 export function toastLine({ state, rows }: HeadsUpStatus): string {
-  const kept = new Set(['seat', '전체', 'paused', 'checks'])
-  const parts = rows.flatMap(([label, value]) => (kept.has(label) ? [label === '전체' ? `every ${value}` : value] : []))
+  const kept = new Set(['seat', 'every', 'paused', 'checks'])
+  const parts = rows.flatMap(([label, value]) => (kept.has(label) ? [label === 'every' ? `매 ${value}` : value] : []))
   return [`Heads-up side-check: ${state}`, ...parts].join(' \u00b7 ')
 }
 
