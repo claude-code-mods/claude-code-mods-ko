@@ -2837,8 +2837,8 @@ export const register: Register = on => {
             )}
           </Text>
         </Box>
-        {showsDemoNotices ? <Button key="hide-demo" label="Hide demo" onPress={() => void setDemo($, false)} /> : null}
-        <Button key="open-inbox" label="Open inbox" onPress={() => void openInbox($, isDemo)} />
+        {showsDemoNotices ? <Button key="hide-demo" label="데모 숨기기" onPress={() => void setDemo($, false)} /> : null}
+        <Button key="open-inbox" label="받은편지슬 열기" onPress={() => void openInbox($, isDemo)} />
       </Box>
     )
     if (!stop)
@@ -3426,18 +3426,18 @@ export const register: Register = on => {
     // Claude Code sends a key no Button binds to the prompt and gives it the keyboard, so the keys
     // stay bound when there is nothing to move to or close.
     const moveKeys: KeyAction[] = [
-      { key: 'next', label: 'Next', hotkey: 'j', kind: 'view', onPress: () => moveBy(1) },
-      { key: 'previous', label: 'Previous', hotkey: 'k', kind: 'view', onPress: () => moveBy(-1) },
+      { key: 'next', label: '다음', hotkey: 'j', kind: 'view', onPress: () => moveBy(1) },
+      { key: 'previous', label: '이전', hotkey: 'k', kind: 'view', onPress: () => moveBy(-1) },
       {
         key: 'collapse',
-        label: 'Collapse',
+        label: '접기',
         hotkey: COLLAPSE_KEY,
         kind: 'view',
         onPress: () => (isListShown && !isHelpShown ? toggleRow($, null) : undefined),
       },
       {
         key: 'fold-all',
-        label: 'Fold all',
+        label: '모두 접기',
         hotkey: FOLD_ALL_KEY,
         kind: 'view',
         onPress: () => !isHelpShown && foldAll($, null),
@@ -3506,7 +3506,7 @@ export const register: Register = on => {
         {showsDemoNotices ? (
           <Box flexDirection="column" paddingX={isInline ? 2 : 1} marginBottom={blankLine}>
             {banner(bannerOf('demo', DEMO_NOTICE), {
-              action: <Button key="hide-demo" label="Hide demo" onPress={() => void setDemo($, false)} />,
+              action: <Button key="hide-demo" label="데모 숨기기" onPress={() => void setDemo($, false)} />,
             })}
           </Box>
         ) : null}

@@ -376,7 +376,7 @@ export const register: Register = (on) => {
     await startNotes($).catch(() => undefined);
     await $.command.register({
       name: CALM_COMMAND,
-      description: "Toggle Firstmate's Calm transcript presentation and working ship.",
+      description: "Firstmate의 Calm 트랜스크립트 표시와 작업 선박을 켜거나 끕니다.",
     });
     return next(e);
   });
@@ -391,13 +391,13 @@ export const register: Register = (on) => {
       await $.fs.write(preferencePath ?? "", serializeCalmPreference(active));
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      $.ui.toast(`Calm unchanged: could not save ${preferencePath ?? "the preference"} (${reason})`);
+      $.ui.toast(`Calm 설정이 변경되지 않았습니다: ${preferencePath ?? "설정 파일"}을 저장할 수 없습니다 (${reason})`);
       return {};
     }
     calm = active;
     if (!calm) sites.clear();
     invalidateDrawings($);
-    $.ui.toast(active ? "Calm on" : "Calm off");
+    $.ui.toast(active ? "Calm 켜짐" : "Calm 꺼짐");
     // No `text`: the toggle leaves no output row in the transcript, as on Pi.
     return {};
   });

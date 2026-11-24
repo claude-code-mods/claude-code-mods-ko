@@ -81,7 +81,7 @@ export function demoView(now: number, agent: string): DemoCopy {
   return {
     ledger: {
       overview: {
-        head: { title: 'Pinch to dismiss', description: 'Adding a pinch that dismisses glances' },
+        head: { title: '꼬집어 닫기', description: '한눈에 보기를 닫는 꼬집기 동작 추가' },
         subjects: [
           subject('s1', 'working', 'Dismiss gesture', 'pinch fades the glance', now - 2 * MIN),
           subject('s2', 'working', 'Glasses pairing', 'needs this Mac paired', now - 12 * MIN),

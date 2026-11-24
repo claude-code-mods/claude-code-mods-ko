@@ -13,8 +13,8 @@ type DrawnTab = TabName & { hotkey: string }
 
 const TAB_NAMES: readonly TabName[] = [
   { id: 'overview', label: '상태', symbol: '\u{1F9ED}' },
-  { id: 'needsYou', label: 'Asks', symbol: '\u{1F64B}' },
-  { id: 'findings', label: 'Finds', symbol: '\u{1F50D}' },
+  { id: 'needsYou', label: '요청', symbol: '\u{1F64B}' },
+  { id: 'findings', label: '발견', symbol: '\u{1F50D}' },
   { id: 'prs', label: 'PRs', symbol: '\u{1F500}' },
 ]
 
@@ -29,7 +29,7 @@ export function shownTabs(): readonly DrawnTab[] {
 }
 
 /** The `/inbox` command's description: what the tabs show. */
-export const INBOX_COMMAND_TEXT = 'Show where this session stands and what waits on you'
+export const INBOX_COMMAND_TEXT = '현재 세션 상태와 사용자 확인 대기 항목을 표시합니다'
 
 /** How a look names its tabs: by their words, or by their symbols. */
 export type TabNaming = 'words' | 'symbols'

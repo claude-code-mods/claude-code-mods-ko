@@ -5,59 +5,59 @@ export type ShortcutGroup = { title: string; keys: ShortcutKey[] }
 
 const GROUPS: readonly ShortcutGroup[] = [
   {
-    title: 'Move',
+    title: '이동',
     keys: [
-      { key: 'j / k', label: 'down / up' },
-      { key: 'h / l', label: 'collapse or parent / expand' },
-      { key: 'o, Enter', label: 'open a file or toggle a folder' },
-      { key: 'z', label: 'jump to a folder' },
-      { key: 'Space', label: 'Quick Look on macOS', terminal: true },
+      { key: 'j / k', label: '아래 / 위' },
+      { key: 'h / l', label: '접기 또는 상위 / 펼치기' },
+      { key: 'o, Enter', label: '파일 열기 또는 폴더 전환' },
+      { key: 'z', label: '폴더로 이동' },
+      { key: 'Space', label: 'macOS 퀵 룩', terminal: true },
     ],
   },
   {
-    title: 'Search',
+    title: '검색',
     keys: [
-      { key: 's', label: 'focus search' },
-      { key: 'i', label: 'search in the folder under the cursor' },
-      { key: 'c / r', label: 'match case / regular expression' },
-      { key: 'q', label: 'search file contents instead of names' },
+      { key: 's', label: '검색창에 포커스' },
+      { key: 'i', label: '커서 아래 폴더에서 검색' },
+      { key: 'c / r', label: '대소문자 구분 / 정규식' },
+      { key: 'q', label: '파일명 대신 내용 검색' },
     ],
   },
   {
-    title: 'Files and actions',
+    title: '파일과 동작',
     keys: [
       { key: 'd', label: '차이' },
-      { key: 'click', label: 'select one row' },
-      { key: 'ctrl+click', label: 'add or drop a row; alt+click on macOS' },
-      { key: 'shift+click', label: 'select the range from the anchor' },
-      { key: 'shift+j / k', label: 'extend the selection down / up' },
-      { key: 'v / V', label: 'add or drop the row / clear the marks' },
-      { key: 'y / Y', label: 'copy relative / absolute path' },
-      { key: 'u', label: 'copy the name' },
-      { key: 't', label: 'shell in a tmux or herdr pane' },
-      { key: 'x', label: "guard from Claude's edits" },
-      { key: 'w', label: 'files written outside the repo' },
+      { key: 'click', label: '한 행 선택' },
+      { key: 'ctrl+click', label: '행 추가 또는 해제; macOS에서는 alt+click' },
+      { key: 'shift+click', label: '기준점부터 범위 선택' },
+      { key: 'shift+j / k', label: '선택 범위를 아래 / 위로 확장' },
+      { key: 'v / V', label: '행 추가 또는 해제 / 표시 지우기' },
+      { key: 'y / Y', label: '상대 / 절대 경로 복사' },
+      { key: 'u', label: '이름 복사' },
+      { key: 't', label: 'tmux 또는 herdr 패널에서 셸 열기' },
+      { key: 'x', label: "Claude의 편집으로부터 보호" },
+      { key: 'w', label: '저장소 밖에 기록된 파일' },
     ],
   },
   {
-    title: 'View',
+    title: '보기',
     keys: [
-      { key: 'p', label: 'preview or treemap', terminal: true },
-      { key: 'f / b', label: 'page the preview', terminal: true },
-      { key: '[ / ]', label: 'previous / next PDF or Word page', terminal: true },
-      { key: 'a', label: 'auto-collapse' },
-      { key: 'n / g / m', label: 'sort by name / git / value' },
+      { key: 'p', label: '미리보기 또는 트리맵', terminal: true },
+      { key: 'f / b', label: '미리보기 페이지 이동', terminal: true },
+      { key: '[ / ]', label: '이전 / 다음 PDF 또는 Word 페이지', terminal: true },
+      { key: 'a', label: '자동 접기' },
+      { key: 'n / g / m', label: '이름 / git / 값으로 정렬' },
     ],
   },
   {
-    title: 'Pane',
+    title: '패널',
     keys: [
-      { key: '?', label: 'show or hide this list', terminal: true },
-      { key: 'ctrl+x tab', label: 'give the pane the keyboard', terminal: true },
-      { key: 'alt+l', label: 'give the tree the keyboard', terminal: true },
-      { key: 'alt+h', label: 'back to the prompt', terminal: true },
-      { key: '/filetree keys', label: 'set up alt+l and alt+h', terminal: true },
-      { key: 'Esc', label: 'back to the prompt', terminal: true },
+      { key: '?', label: '이 목록 표시 또는 숨기기', terminal: true },
+      { key: 'ctrl+x tab', label: '패널에 키보드 포커스', terminal: true },
+      { key: 'alt+l', label: '트리에 키보드 포커스', terminal: true },
+      { key: 'alt+h', label: '프롬프트로 돌아가기', terminal: true },
+      { key: '/filetree keys', label: 'alt+l과 alt+h 설정', terminal: true },
+      { key: 'Esc', label: '프롬프트로 돌아가기', terminal: true },
     ],
   },
 ]
@@ -71,7 +71,7 @@ export function shortcutGroups(desktop: boolean): ShortcutGroup[] {
 export function shortcutRows(accent: string, muted: string): RowSpec[] {
   const groups = shortcutGroups(false)
   const width = Math.max(...groups.flatMap(g => g.keys.map(k => k.key.length))) + 2
-  const rows: RowSpec[] = [{ id: '', left: [{ t: ' Keyboard shortcuts', b: true, c: accent }], right: [{ t: '? closes ', c: muted }] }]
+  const rows: RowSpec[] = [{ id: '', left: [{ t: ' 키보드 단축키', b: true, c: accent }], right: [{ t: '? 닫기 ', c: muted }] }]
   for (const g of groups) {
     rows.push({ id: '', left: [{ t: ' ' }], right: [] })
     rows.push({ id: '', left: [{ t: ` ${g.title}`, b: true }], right: [] })

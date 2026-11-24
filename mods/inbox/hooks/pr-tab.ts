@@ -51,7 +51,7 @@ export function threadActions(pr: PrView, t: PrThread, presses: PressState): PrA
     },
     {
       press: { action: 'thread-open', ...on },
-      label: 'Open comment',
+      label: '댓글 열기',
       kind: 'local',
       emphasis: 'normal',
       icon: 'open',
@@ -236,7 +236,7 @@ export function prClearActions(prState: PrViews, links: PrLinks): PrAction[] {
   return [
     {
       press: { action: 'pr-clear-finished' },
-      label: 'Clear merged and closed',
+      label: '병합됨과 닫힘 지우기',
       kind: 'mark',
       emphasis: 'normal',
       hotkey: 'm',

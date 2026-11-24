@@ -99,7 +99,7 @@ const RESTORE_GOAL: StatusKey = {
 /** New: opens an empty goal field. Its words leave out "goal", since the buttons sit on the Goal heading. */
 const newGoal = (emphasis: StatusKey['emphasis']): StatusKey => ({
   press: { action: 'type-goal', text: '' },
-  label: 'New',
+  label: '새로 만들기',
   hotkey: 'n',
   kind: 'view',
   emphasis,

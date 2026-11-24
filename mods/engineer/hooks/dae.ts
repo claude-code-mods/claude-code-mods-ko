@@ -36,11 +36,11 @@ export function dispatchDeny(prompt: string, model: string | undefined, frontier
   if (!LOOP.test(prompt)) return undefined
   if (model !== undefined && frontier.test(model)) {
     return `DAE: frontier-class model "${model}" on a looping dispatch. ` +
-      'model-classes.md: "Never put `frontier` in an agentic harness." Use `inherit` (omit model) or `economy`.'
+      'model-classes.md: "에이전트 하네스에 `frontier`를 두지 마세요." `inherit`(모델 생략) 또는 `economy`를 사용하세요.'
   }
   if (!CAP.test(prompt)) {
-    return 'DAE: loop dispatch with no cap. A loop declares `max_rounds: <N>` and a no-progress stop ' +
-      '(gauntlet.md: "default 5, never unbounded"; coordinator.md "Loop caps"). Add it to the brief.'
+    return 'DAE: 상한 없이 루프를 디스패치했습니다. 루프는 `max_rounds: <N>`와 진행 정지 조건을 선언해야 합니다 ' +
+      '(gauntlet.md: "기본 5, 무한 루프 금지"; coordinator.md "Loop caps"). 브리프에 추가하세요.'
   }
   return undefined
 }
@@ -77,15 +77,14 @@ export const prMerges = (command: string): string[] =>
     const m = /\bgh\s+pr\s+merge\b(.*)$/.exec(part)
     if (!m) return []
     const isCurrent = m[1].trim().split(/\s+/).filter(Boolean).every(a => MERGE_FLAGS.test(a))
-    return [`PR merge${isCurrent ? ' (current branch)' : ''}`]
+    return [`PR 병합${isCurrent ? ' (현재 브랜치)' : ''}`]
   })
 
 export const EXTERNAL_RULE =
-  'handoff-dispatch.md, "External-write gate": merging a PR needs explicit human authorization every ' +
-  'time, regardless of autonomy.'
+  'handoff-dispatch.md, "External-write gate": PR 병합은 자율성 수준과 관계없이 매번 사람의 명시적 승인이 필요합니다.'
 
 export const VERIFIER_RULE =
-  'agents/verifier.md: the verifier must not modify code, tests or specs; the only file it writes is ' +
-  'the CP7 handoff (charter §6, Principle 7: verifier ≠ implementer).'
+  'agents/verifier.md: 검증자는 코드, 테스트, 명세를 수정할 수 없습니다. 유일하게 작성할 수 있는 파일은 ' +
+  'CP7 핸드오프입니다 (charter §6, 원칙 7: verifier ≠ implementer).'
 
 export const kTok = (n: number): string => (n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`)

@@ -80,7 +80,7 @@ const DOUBLE_MS = 450
 const FIND_LIMIT = 200
 const GREP_LIMIT = 200
 const MARK_LIMIT = 100
-const MARKS_FULL = `at most ${MARK_LIMIT} marks; press "${MARK_LIMIT} marked" in the footer to clear them`
+const MARKS_FULL = `표시는 최대 ${MARK_LIMIT}개입니다. 지우려면 하단의 "${MARK_LIMIT} marked"를 누르세요`
 const GREP_MS = 15_000
 const GREP_WAIT_MS = 150
 const GREP_TEXT = 300
@@ -126,7 +126,7 @@ const SIZE_WALK_LIMIT = 50_000
 const AGE_TICK_MS = 60_000
 const GUARDS = 'guards'
 const SHIMMER_KEY = /^filetree(@[^.]+)?\.shimmer$/
-const OUTSIDE = 'writes outside the repo'
+const OUTSIDE = '저장소 밖 쓰기'
 
 let blink: Timer | null = null
 let cached: FileTree | null = null
@@ -412,7 +412,7 @@ async function list($: EngineInterface, dir: string): Promise<FileNode[] | null>
     if (!(await exists($, dir))) return []
     if (!unreadable.has(dir)) {
       unreadable.add(dir)
-      $.ui.toast(`could not list ${shortPath(dir)}: ${err instanceof Error ? err.message : String(err)}`)
+      $.ui.toast(`${shortPath(dir)}의 목록을 가져올 수 없습니다: ${err instanceof Error ? err.message : String(err)}`)
     }
     return null
   }
@@ -1236,7 +1236,7 @@ async function applyStart($: EngineInterface): Promise<void> {
   }
   if (noDock || shown) return
   const t = await get($)
-  if (t.root) await $.ui.open({ id: PANE, title: `Files: ${t.root.split('/').pop() || t.root}` })
+  if (t.root) await $.ui.open({ id: PANE, title: `파일: ${t.root.split('/').pop() || t.root}` })
 }
 
 async function settleRoot($: EngineInterface): Promise<void> {
@@ -1280,7 +1280,7 @@ async function copyPaths($: EngineInterface, ids: string[], how: 'relative' | 'a
   const one = (id: string) => (how === 'name' ? id.slice(id.lastIndexOf('/') + 1) || id : how === 'relative' && id !== t.root && inside(t.root, id) ? id.slice(t.root.endsWith('/') ? t.root.length : t.root.length + 1) : id)
   const text = ids.map(one).join('\n')
   const done = await $.ui.copy({ text, ...(surface ? { surface } : {}) })
-  $.ui.toast(!done.isCopied ? `Could not copy the ${how === 'name' ? 'name' : 'path'}${ids.length > 1 ? 's' : ''}` : ids.length > 1 ? `Copied ${ids.length} ${how === 'name' ? 'names' : 'paths'}` : `Copied ${text}`)
+  $.ui.toast(!done.isCopied ? `${how === 'name' ? '이름' : '경로'}을(를) 복사할 수 없습니다` : ids.length > 1 ? `${ids.length}개 ${how === 'name' ? '이름' : '경로'}을(를) 복사했습니다` : `${text}을(를) 복사했습니다`)
 }
 
 function copyPath($: EngineInterface, id: string, absolute: boolean, surface?: RenderSurface): Promise<void> {
@@ -1668,7 +1668,7 @@ async function search($: EngineInterface, query: string): Promise<string[]> {
   const scope = t.searchScope ? `${t.searchScope.replace(/\/$/, '')}/` : ''
   for (let i = 0; i < index.rel.length && hits.length < SEARCH_REVEAL_LIMIT; i++) if ((!scope || (index.paths[i] ?? '').startsWith(scope)) && match(index.rel[i] ?? '')) hits.push(index.paths[i] ?? '')
   if ((await get($)).query !== query) return []
-  if (match.partial) void $.ui.toast(`regex search stopped after ${hits.length} match${hits.length === 1 ? '' : 'es'}; the pattern is too slow to check every path`)
+  if (match.partial) void $.ui.toast(`정규식 검색이 ${hits.length}개 일치 후 중지되었습니다. 모든 경로를 검사하기에 패턴이 너무 느립니다`)
   await revealPaths($, hits)
   const shown = await get($)
   const ids = new Set(shown.nodes.map(n => n.id))
@@ -2082,7 +2082,7 @@ function jumpOpen($: EngineInterface): void {
   zjump.sel = 0
   zjump.rows = []
   void jumpRefresh($)
-  $.clock.after(50, async () => focusPane($, (await get($)).root, 'jump'))
+  $.clock.after(50, async () => focusPane($, (await get($)).root, '이동'))
 }
 
 async function jumpInput($: EngineInterface, value: string): Promise<void> {
@@ -2149,10 +2149,10 @@ async function considerWork($: EngineInterface): Promise<void> {
     $.clock.after(0, async () => {
       try {
         await $.command.run({ command: 'cd', args: repo })
-        void $.ui.toast(`filetree moved to the cwd`)
+        void $.ui.toast(`filetree가 현재 작업 디렉터리로 이동했습니다`)
         $.clock.after(400, () => void (follow ? followCwd($) : reset($, repo)))
       } catch (error) {
-        void $.ui.toast(`could not move Claude to ${shortPath(repo)}: ${error instanceof Error ? error.message : String(error)}`)
+        void $.ui.toast(`Claude를 ${shortPath(repo)}(으)로 이동할 수 없습니다: ${error instanceof Error ? error.message : String(error)}`)
       }
     })
   } finally {
@@ -2167,7 +2167,7 @@ async function canCd($: EngineInterface): Promise<boolean> {
 async function jumpTo($: EngineInterface, dir: string): Promise<void> {
   if (!(await $.fs.exists(dir).catch(() => false))) {
     await forgetVisits($, [dir])
-    void $.ui.toast(`${shortPath(dir)} no longer exists`)
+    void $.ui.toast(`${shortPath(dir)}이(가) 더 이상 존재하지 않습니다`)
     void jumpRefresh($)
     return
   }
@@ -2180,7 +2180,7 @@ async function jumpTo($: EngineInterface, dir: string): Promise<void> {
     try {
       await $.command.run({ command: 'cd', args: dir })
     } catch (error) {
-      void $.ui.toast(`could not move Claude to ${dir}: ${error instanceof Error ? error.message : String(error)}`)
+      void $.ui.toast(`Claude를 ${dir}(으)로 이동할 수 없습니다: ${error instanceof Error ? error.message : String(error)}`)
     }
   })
 }
@@ -2312,13 +2312,13 @@ function previewWindow(text: string, line: number): { text: string; first: numbe
 }
 
 async function readPreview($: EngineInterface, path: string, page = 1, line?: number): Promise<Preview> {
-  if (path === OUTSIDE) return { path, text: outside.map(shortPath).join('\n'), note: `${outside.length} file${outside.length === 1 ? '' : 's'} Claude wrote outside the repo this session` }
+  if (path === OUTSIDE) return { path, text: outside.map(shortPath).join('\n'), note: `이 세션에서 Claude가 저장소 밖에 기록한 파일 ${outside.length}개` }
   let text = ''
   let note = ''
   try {
     const stat = await $.fs.stat(path)
     const kind = pictureKind(path)
-    if (stat.kind !== 'file') note = 'not a regular file'
+    if (stat.kind !== 'file') note = '일반 파일이 아닙니다'
     else if (kind === 'pdf' || kind === 'office') {
       text = await docText($, path, page)
       if (text === '\0encrypted') {
@@ -2326,7 +2326,7 @@ async function readPreview($: EngineInterface, path: string, page = 1, line?: nu
         note = '암호화됨'
       } else if (!text) note = kind === 'pdf' && docCounts.has(path) ? `no text on page ${page}` : `${path.split('/').pop()}, ${formatSize(stat.size)}`
     }
-    else if (stat.size > 4_000_000) note = `${formatSize(stat.size)}, too large to preview`
+    else if (stat.size > 4_000_000) note = `${formatSize(stat.size)}, 미리보기에는 너무 큼`
     else {
       text = await $.fs.read(path)
       if (text.slice(0, 8000).includes('\0')) {
@@ -2379,7 +2379,7 @@ async function diffFile($: EngineInterface, path: string): Promise<void> {
     const folder = t.nodes.find(n => n.id === path)?.kind === 'dir'
     if (t.preview === path && previewed?.path === path && previewed.diff) return folder ? closePreview($) : showPreview($, path)
     if (!(await loadDiff($, path, folder))) {
-      $.ui.toast(`no changes in ${shortPath(path)}`)
+      $.ui.toast(`${shortPath(path)}에 변경 사항이 없습니다`)
       return
     }
     await patch($, () => ({ preview: path, previewTop: 0, selected: path }))
@@ -2392,18 +2392,18 @@ async function diffFile($: EngineInterface, path: string): Promise<void> {
     if (host === 'herdr') return await openInHerdr($, diffWithSetting, path)
     if (host === 'tmux') {
       const run = await $.process.run(tmuxCommand(targetSetting, dirname(path), [...words(diffWithSetting), path]), { timeoutMs: 10_000 })
-      if (run.exitCode !== 0) $.ui.toast(`could not diff ${shortPath(path)} with ${diffWithSetting}: ${run.stderr.trim().split('\n')[0] || `exit ${run.exitCode}`}`)
+      if (run.exitCode !== 0) $.ui.toast(`${shortPath(path)}를 ${diffWithSetting}(으)로 비교할 수 없습니다: ${run.stderr.trim().split('\n')[0] || `종료 코드 ${run.exitCode}`}`)
       return
     }
     if (os === 'linux') {
       const argv = ['sh', '-c', LINUX_LAUNCH, 'sh', 'xdg-terminal-exec', 'sh', '-c', 'cd "$1" && shift && exec "$@"', 'sh', dirname(path), ...words(diffWithSetting), path]
       const run = await $.process.run(argv, { timeoutMs: 10_000 })
-      if (run.exitCode !== 0) $.ui.toast(`could not diff ${shortPath(path)} with ${diffWithSetting}: ${run.stderr.trim().split('\n')[0] || `exit ${run.exitCode}`}`)
+      if (run.exitCode !== 0) $.ui.toast(`${shortPath(path)}를 ${diffWithSetting}(으)로 비교할 수 없습니다: ${run.stderr.trim().split('\n')[0] || `종료 코드 ${run.exitCode}`}`)
       return
     }
-    $.ui.toast('Diff with: a terminal command needs tmux, herdr or Linux. Clear Diff with to see the diff in the pane.')
+    $.ui.toast('비교 대상: 터미널 명령에는 tmux, herdr 또는 Linux가 필요합니다. 비교 대상을 지우면 패널에서 차이를 볼 수 있습니다.')
   } catch {
-    $.ui.toast(`could not diff ${shortPath(path)} with ${diffWithSetting}`)
+    $.ui.toast(`${shortPath(path)}를 ${diffWithSetting}(으)로 비교할 수 없습니다`)
   }
 }
 
@@ -2414,7 +2414,7 @@ async function pngHeader($: EngineInterface, file: string): Promise<{ width: num
 
 async function makePicture($: EngineInterface, job: PictureJob): Promise<Picture> {
   try {
-    if ((await osName($)) === 'win32') return { state: 'failed', note: 'image preview needs Linux or macOS' }
+    if ((await osName($)) === 'win32') return { state: 'failed', note: '이미지 미리보기에는 Linux 또는 macOS가 필요합니다' }
     let file = job.path
     let size = job.kind === 'png' && job.size <= PNG_DIRECT_BYTES ? await pngHeader($, job.path) : null
     if (size && (size.width > PNG_DIRECT_PIXELS || size.height > PNG_DIRECT_PIXELS)) size = null
@@ -2425,7 +2425,7 @@ async function makePicture($: EngineInterface, job: PictureJob): Promise<Picture
       const made = doc ? await spawnRun($, job, argv) : await $.process.run(argv, { timeoutMs: 30_000 })
       if (!made) return { state: 'failed', note: '취소됨' }
       const why = made.stderr.trim().split('\n').filter(Boolean)[0] ?? ''
-      if (made.exitCode === EXIT_MISSING) return { state: 'failed', note: why || 'no decoder on PATH', missing: true }
+      if (made.exitCode === EXIT_MISSING) return { state: 'failed', note: why || 'PATH에 디코더가 없습니다', missing: true }
       if (made.exitCode === EXIT_LOCKED) return { state: 'failed', note: '암호화됨' }
       if (made.exitCode === EXIT_FAILED) return { state: 'failed', note: `could not decode${why ? `: ${why}` : ''}` }
       const [out = '', count = ''] = made.stdout.trim().split('\n')
@@ -2435,9 +2435,9 @@ async function makePicture($: EngineInterface, job: PictureJob): Promise<Picture
       sessionDir = dirname(file)
       size = await pngHeader($, file)
     }
-    return size ? { state: 'ready', file, generation: Math.floor(job.mtime) + job.page * 7 + job.px, ...size, ...(pages ? { pages } : {}) } : { state: 'failed', note: 'could not read the picture size' }
+    return size ? { state: 'ready', file, generation: Math.floor(job.mtime) + job.page * 7 + job.px, ...size, ...(pages ? { pages } : {}) } : { state: 'failed', note: '이미지 크기를 읽을 수 없습니다' }
   } catch (err) {
-    return { state: 'failed', note: messageOf(err).split('\n')[0] ?? 'could not decode' }
+    return { state: 'failed', note: messageOf(err).split('\n')[0] ?? '디코딩할 수 없습니다' }
   }
 }
 
@@ -2508,8 +2508,8 @@ async function picture($: EngineInterface, path: string, page = 0, px = 0): Prom
   const kind = pictureKind(path)
   if (!kind) return null
   const stat = await $.fs.stat(path).catch(() => null)
-  if (!stat) return { state: 'failed', note: 'could not read' }
-  if (stat.kind !== 'file') return { state: 'failed', note: 'not a regular file' }
+  if (!stat) return { state: 'failed', note: '읽을 수 없습니다' }
+  if (stat.kind !== 'file') return { state: 'failed', note: '일반 파일이 아닙니다' }
   const doc = kind === 'pdf' || kind === 'office'
   const at = doc ? Math.max(1, page) : 0
   const wide = doc ? Math.max(200, Math.min(1600, Math.round(px / 100) * 100)) : 0
@@ -2518,7 +2518,7 @@ async function picture($: EngineInterface, path: string, page = 0, px = 0): Prom
   const pdf = kind === 'office' ? cacheName(path, stat.mtimeMs, stat.size, 0, 0, 'pdf') : ''
   const known = pictures.get(key)
   const gone = known?.sig === sig && known.picture.state === 'ready' && known.picture.file !== path && !(await $.fs.stat(known.picture.file).then(f => f.kind === 'file', () => false))
-  if (gone && known.retried) known.picture = { state: 'failed', note: 'the preview cache was cleared' }
+  if (gone && known.retried) known.picture = { state: 'failed', note: '미리보기 캐시를 지웠습니다' }
   if (gone && !known.retried) pictures.delete(key)
   else if (known?.sig === sig) {
     pictures.delete(key)
@@ -2851,7 +2851,7 @@ async function openFile($: EngineInterface, path: string, how: { mode?: string; 
   const os = await osName($)
   const host = mode === 'editor' ? await editorHost($, os) : ''
   if (mode === 'editor' && !host) {
-    $.ui.toast('Open with: editor requires tmux or herdr on Linux or macOS. Clear Open with to use the default app, or set a custom command.')
+    $.ui.toast('열기: Linux 또는 macOS에서 편집기에는 tmux나 herdr가 필요합니다. 열기 설정을 지우면 기본 앱을 사용하거나 사용자 지정 명령을 설정할 수 있습니다.')
     return
   }
   const native = (p: string) => (os === 'win32' ? p.replace(/\//g, '\\') : p)
@@ -2861,9 +2861,9 @@ async function openFile($: EngineInterface, path: string, how: { mode?: string; 
     if (editor && host === 'herdr') return await openInHerdr($, editor, path, how.line)
     const { argv, init } = editor ? tmuxOpenCommand(editor, path, how.line, targetSetting) : custom ? { argv: os === 'linux' ? ['sh', '-c', LINUX_LAUNCH, 'sh', ...custom] : custom, init: { timeoutMs: 10_000 } } : openCommand(os, path)
     const run = await $.process.run(argv, init)
-    if (run.exitCode !== 0) $.ui.toast(`could not open ${path} with ${editor ?? custom?.[0] ?? argv[0]}: ${run.stderr.trim().split('\n')[0] || `exit ${run.exitCode}`}`)
+    if (run.exitCode !== 0) $.ui.toast(`${path}를 ${editor ?? custom?.[0] ?? argv[0]}(으)로 열 수 없습니다: ${run.stderr.trim().split('\n')[0] || `종료 코드 ${run.exitCode}`}`)
   } catch {
-    $.ui.toast(`could not open ${path} with ${editor ?? custom?.[0] ?? 'the default app'}`)
+    $.ui.toast(`${path}를 ${editor ?? custom?.[0] ?? '기본 앱'}(으)로 열 수 없습니다`)
   }
 }
 
@@ -2877,21 +2877,21 @@ async function openInHerdr($: EngineInterface, editor: string, path: string, lin
   const { split, run, init } = herdrOpenCommand((await $.env.get('HERDR_BIN_PATH')) || 'herdr', editor, path, line, targetSetting, (await $.env.get('HERDR_WORKSPACE_ID')) || '')
   const made = await $.process.run(split, init)
   const sent = made.exitCode === 0 ? await $.process.run(run(herdrPane(made.stdout)), init) : made
-  if (sent.exitCode !== 0) $.ui.toast(`could not open ${path} with ${editor}: ${herdrError(sent.stderr) || `exit ${sent.exitCode}`}`)
+  if (sent.exitCode !== 0) $.ui.toast(`${path}를 ${editor}(으)로 열 수 없습니다: ${herdrError(sent.stderr) || `종료 코드 ${sent.exitCode}`}`)
 }
 
 async function openTerminal($: EngineInterface, dir: string): Promise<void> {
   const host = await editorHost($, await osName($))
   if (!host) {
-    $.ui.toast('t opens a shell in a new tmux or herdr pane; run Claude Code inside tmux or herdr to use it')
+    $.ui.toast('t는 새 tmux 또는 herdr 패널에서 셸을 엽니다. 사용하려면 Claude Code를 tmux 또는 herdr 안에서 실행하세요')
     return
   }
   try {
     const argv = host === 'tmux' ? tmuxCommand(targetSetting, dir, [(await $.env.get('SHELL')) || 'sh']) : herdrSplit((await $.env.get('HERDR_BIN_PATH')) || 'herdr', dir, targetSetting, (await $.env.get('HERDR_WORKSPACE_ID')) || '')
     const run = await $.process.run(argv, { timeoutMs: 10_000 })
-    if (run.exitCode !== 0) $.ui.toast(`could not open a terminal in ${shortPath(dir)}: ${(host === 'herdr' ? herdrError(run.stderr) : run.stderr.trim().split('\n')[0]) || `exit ${run.exitCode}`}`)
+    if (run.exitCode !== 0) $.ui.toast(`${shortPath(dir)}에서 터미널을 열 수 없습니다: ${(host === 'herdr' ? herdrError(run.stderr) : run.stderr.trim().split('\n')[0]) || `종료 코드 ${run.exitCode}`}`)
   } catch (err) {
-    $.ui.toast(`could not open a terminal in ${shortPath(dir)}: ${messageOf(err).split('\n')[0]}`)
+    $.ui.toast(`${shortPath(dir)}에서 터미널을 열 수 없습니다: ${messageOf(err).split('\n')[0]}`)
   }
 }
 
@@ -3111,7 +3111,7 @@ async function pressHeader($: EngineInterface, id: string): Promise<void> {
     if (deny) {
       shimmerOn = !lit
       void $.ui.invalidate('ui.render')
-      $.ui.toast(`Activity shimmer stays ${shimmerOn ? 'on' : 'off'}: ${deny}`)
+      $.ui.toast(`활동 반짝임이 ${shimmerOn ? '켜짐' : '꺼짐'} 상태로 유지됩니다: ${deny}`)
     }
   }
   else if (id === 'outside') await showOutside($)
@@ -3149,7 +3149,7 @@ async function toggleGuard($: EngineInterface, path: string): Promise<void> {
   const t = await get($)
   const over = guardOver(allGuards(guards), path)
   if (over && over !== path) {
-    $.ui.toast(`${shortPath(path)} is already guarded by ${shortPath(over)}`)
+    $.ui.toast(`${shortPath(path)}은(는) 이미 ${shortPath(over)}(으)로 보호되고 있습니다`)
     return
   }
   const owner = over === path ? Object.keys(guards).find(k => guards[k]?.includes(path)) : undefined
@@ -3189,7 +3189,7 @@ async function noteOutside($: EngineInterface, file: string): Promise<void> {
   const abs = resolve(await cwdOf($), posix(file), home)
   if (!outsideOf(t.top || t.root, abs) || outside.includes(abs)) return
   outside = [...outside, abs]
-  if (outside.length === 1) $.ui.toast(`Claude wrote outside ${shortPath(t.top || t.root)}: ${shortPath(abs)}. w lists these writes.`)
+  if (outside.length === 1) $.ui.toast(`Claude가 ${shortPath(t.top || t.root)} 밖에 기록했습니다: ${shortPath(abs)}. w로 이러한 기록을 볼 수 있습니다.`)
   if (previewed?.path === OUTSIDE) previewed = null
   void $.ui.invalidate('ui.render')
 }
@@ -3251,8 +3251,8 @@ export const register: Register = (on, options) => {
     guardsLoaded = null
     void loadGuards($)
     cached ??= { ...emptyTree(''), ...(await $.state.get(TREE)).value }
-    await $.command.register({ name: 'filetree', description: 'Show or hide the file tree; args: [path | open | keys] (no path = cwd, open = never hide, keys = bind alt+l / alt+h to move the keys to and from the tree)', immediate: true })
-    if (palette.unknown.length) void $.ui.toast(`filetree palette: ignored ${palette.unknown.join(' ')}; use key=#hex with fg, bg, accent, muted, urgent, selection, hover, jump, added, modified, renamed, add or del`)
+    await $.command.register({ name: 'filetree', description: '파일 트리를 표시하거나 숨깁니다. 인자: [path | open | keys] (경로 없음 = 현재 디렉터리, open = 숨기지 않음, keys = alt+l / alt+h로 키를 트리로 이동)', immediate: true })
+    if (palette.unknown.length) void $.ui.toast(`filetree 팔레트: ${palette.unknown.join(' ')}을(를) 무시했습니다. key=#hex 형식에 fg, bg, accent, muted, urgent, selection, hover, jump, added, modified, renamed, add, del 키를 사용하세요`)
     const windows = (await $.env.get('OS')) === 'Windows_NT'
     useDrives(windows)
     inTmux = !windows && Boolean(await $.env.get('TMUX'))
@@ -3309,18 +3309,18 @@ export const register: Register = (on, options) => {
       noDock = true
       if (zjump.on) jumpClose($)
       await $.ui.close({ id: PANE }).catch(() => undefined)
-      return { text: 'File tree closed.' }
+      return { text: '파일 트리를 닫았습니다.' }
     }
-    const terminal = await $.session.surfaces().then(s => s.includes('terminal'), () => true)
-    if (terminal && !e.presentation.isFullscreen) return { text: 'filetree shows in the sidebar, which needs the fullscreen layout. Run /tui fullscreen, then /filetree.' }
-    if (terminal && e.presentation.columns < 110) return { text: 'filetree shows in the sidebar, which needs a terminal at least 110 columns wide. Widen it, then run /filetree.' }
+    const terminal = await $.session.surfaces().then(s => s.includes('터미널'), () => true)
+    if (terminal && !e.presentation.isFullscreen) return { text: 'filetree는 전체 화면 레이아웃이 필요한 사이드바에 표시됩니다. /tui fullscreen을 실행한 뒤 /filetree를 실행하세요.' }
+    if (terminal && e.presentation.columns < 110) return { text: 'filetree는 최소 110열 너비의 터미널이 필요한 사이드바에 표시됩니다. 창을 넓힌 뒤 /filetree를 실행하세요.' }
     noDock = false
     const arg = given === 'open' ? '' : given
     const cwd = await cwdOf($)
     follow = !arg
     const root = arg ? resolve(cwd, arg, home) : cwd
     await reset($, root, focusOnOpen || given !== '' || mine?.isPlaced === true)
-    return { text: `File tree on ${shortPath(root)}${follow ? ' (moves with the cwd)' : ''}.` }
+    return { text: `파일 트리: ${shortPath(root)}${follow ? ' (현재 작업 디렉터리를 따라 이동)' : ''}.` }
   })
 
   on('tool.call', async ($, e, next) => {
@@ -3389,13 +3389,13 @@ export const register: Register = (on, options) => {
       const path = resolve(cwd, posix(input), home)
       const hit = await guardFor($, path)
       if (!hit) return next(e)
-      return { decision: 'deny', reason: `${shortPath(hit)} is guarded in the file tree, so ${e.tool} on ${shortPath(path)} is refused. Leave it alone, or ask the user to unguard it with x in the tree.` }
+      return { decision: 'deny', reason: `${shortPath(hit)}이(가) 파일 트리에서 보호되고 있어 ${shortPath(path)}에 대한 ${e.tool}을(를) 거부합니다. 건드리지 않거나 트리에서 x로 보호를 해제하도록 사용자에게 요청하세요.` }
     }
     const hit = guardIn(input, list, cwd, home)
     if (!hit) return next(e)
     const verdict = await next(e)
     if (verdict.decision === 'deny') return verdict
-    return { decision: 'ask', decider: 'person', reason: `This command names ${shortPath(hit)}, which is guarded in the file tree. The check only reads the command text, so it can be a false alarm and can miss a path the command builds itself.` }
+    return { decision: 'ask', decider: 'person', reason: `이 명령은 파일 트리에서 보호된 ${shortPath(hit)}을(를) 지정합니다. 검사는 명령 텍스트만 읽으므로 오탐일 수 있고 명령이 직접 만드는 경로를 놓칠 수 있습니다.` }
   })
 
   on('tool.call', { tool: 'Read' }, async ($, e, next) => {
@@ -3637,9 +3637,9 @@ export const register: Register = (on, options) => {
   })
 
   on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
-    const narrow = e.component === 'AssistantMessage' && e.surface === 'terminal' ? narrowEmoji(e.props.text) : null
+    const narrow = e.component === 'AssistantMessage' && e.surface === '터미널' ? narrowEmoji(e.props.text) : null
     const drawn = await next(narrow !== null && e.component === 'AssistantMessage' && narrow !== e.props.text ? { ...e, props: { ...e.props, text: narrow } } : e)
-    if (e.component !== 'AssistantMessage' || e.props.isSummary || (e.surface !== 'terminal' && e.surface !== 'desktop') || !fileRefs(e.props.text).length) return drawn
+    if (e.component !== 'AssistantMessage' || e.props.isSummary || (e.surface !== '터미널' && e.surface !== 'desktop') || !fileRefs(e.props.text).length) return drawn
     const t = await get($)
     if (!t.root) return drawn
     const refs = await refsIn($, e.props.text, t.root, await cwdOf($))
@@ -3655,8 +3655,8 @@ export const register: Register = (on, options) => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e, next) => {
-    if (e.surface !== 'terminal' && e.surface !== 'desktop') return next(e)
-    if (e.surface === 'terminal' && e.props.placement === 'inline') {
+    if (e.surface !== '터미널' && e.surface !== 'desktop') return next(e)
+    if (e.surface === '터미널' && e.props.placement === 'inline') {
       if (e.viewport?.isFullscreen === false) {
         noDock = true
         void $.ui.close({ id: PANE }).catch(() => undefined)
@@ -3682,7 +3682,7 @@ export const register: Register = (on, options) => {
     const Image = 'Image' in elements ? elements.Image : undefined
     const t = await get($)
     const light = e.surface !== 'desktop' && lightTerminal
-    const theme: Theme = { ...(e.surface === 'terminal' && !light ? DARK_TERMINAL_THEME : DEFAULT_THEME), ...palette.theme }
+    const theme: Theme = { ...(e.surface === '터미널' && !light ? DARK_TERMINAL_THEME : DEFAULT_THEME), ...palette.theme }
     const tones = light ? LIGHT_TONES : TONES
     const mutedText = theme.muted ? { color: theme.muted } : { dimColor: true }
     const gitColors = { ...(desk ? DESK_GIT_TEXT : GIT_COLOR), ...palette.git }
@@ -3795,20 +3795,20 @@ export const register: Register = (on, options) => {
       previewLine = first + win.top + 1
       const name = t.preview !== t.root && inside(t.root, t.preview) ? relative(t.root, t.preview) : shortPath(t.preview)
       const listing = t.preview === OUTSIDE
-      const external = { id: 'external', label: glyphSetting === 'text' ? 'open' : unicode ? '↗' : '\u{eb14}', dim: true, hint: 'open in default app' }
+      const external = { id: 'external', label: glyphSetting === 'text' ? '열기' : unicode ? '↗' : '\u{eb14}', dim: true, hint: '기본 앱에서 열기' }
       if (desk && Svg) {
         const step = p?.diff ? (p.diff.some(l => l.kind === '@') ? 'file' : 'hunk') : ''
         const toTree = t.nodes.find(n => n.id === t.preview)?.kind === 'dir'
         const edits = !listing && (editWithSetting || inTmux || inHerdr)
         previewDesk = true
         const acts: { id: string; key: string; icon: IconName; hint: string; run: () => Promise<void> }[] = [
-          { id: 'pv-k', key: 'k', icon: 'arrow-up', hint: step ? `previous ${step}` : 'up a line', run: () => (step ? jumpDiff($, -1) : scrollPreview($, -1)) },
-          { id: 'pv-j', key: 'j', icon: 'arrow-down', hint: step ? `next ${step}` : 'down a line', run: () => (step ? jumpDiff($, 1) : scrollPreview($, 1)) },
-          { id: 'pv-b', key: 'b', icon: 'page-up', hint: 'page up', run: () => scrollPreview($, 2 - previewRows) },
-          { id: 'pv-f', key: 'f', icon: 'page-down', hint: 'page down', run: () => scrollPreview($, previewRows - 2) },
-          ...(listing ? [] : [{ id: 'pv-d', key: 'd', icon: (p?.diff ? (toTree ? 'folder' : 'file') : 'diff') as IconName, hint: p?.diff ? (toTree ? 'back to the tree' : 'back to the file') : 'diff against HEAD', run: () => diffFile($, t.preview) }]),
+          { id: 'pv-k', key: 'k', icon: 'arrow-up', hint: step ? `이전 ${step}` : '한 줄 위로', run: () => (step ? jumpDiff($, -1) : scrollPreview($, -1)) },
+          { id: 'pv-j', key: 'j', icon: 'arrow-down', hint: step ? `다음 ${step}` : '한 줄 아래로', run: () => (step ? jumpDiff($, 1) : scrollPreview($, 1)) },
+          { id: 'pv-b', key: 'b', icon: 'page-up', hint: '이전 페이지', run: () => scrollPreview($, 2 - previewRows) },
+          { id: 'pv-f', key: 'f', icon: 'page-down', hint: '다음 페이지', run: () => scrollPreview($, previewRows - 2) },
+          ...(listing ? [] : [{ id: 'pv-d', key: 'd', icon: (p?.diff ? (toTree ? 'folder' : 'file') : 'diff') as IconName, hint: p?.diff ? (toTree ? '트리로 돌아가기' : '파일로 돌아가기') : 'diff against HEAD', run: () => diffFile($, t.preview) }]),
           ...(edits ? [{ id: 'pv-e', key: 'e', icon: 'pencil' as const, hint: `edit at line ${previewLine}`, run: () => editPreview($, t.preview) }] : []),
-          ...(listing ? [] : [{ id: 'external', key: '', icon: 'external-link' as const, hint: 'open in default app', run: () => pressHeader($, 'external') }]),
+          ...(listing ? [] : [{ id: 'external', key: '', icon: 'external-link' as const, hint: '기본 앱에서 열기', run: () => pressHeader($, 'external') }]),
         ]
         previewActs = new Map(acts.map(a => [a.id, () => void a.run().then(() => (a.id === 'external' ? undefined : parkPreview($)))]))
         const tools = acts.map(a => ({ id: a.id, label: '', dim: true, hint: a.hint, icon: a.icon }))
@@ -3816,8 +3816,8 @@ export const register: Register = (on, options) => {
           <Box flexDirection="column" minHeight={Math.max(1, e.props.scroll?.bodyRows ?? 1)} backgroundColor={theme.bg || undefined}>
             <Box key="pv-head" flexDirection="row" alignItems="center">
               <Box key="pv-back" flexDirection="row" alignItems="center" flexShrink={0}>
-                <Svg key="pv-back-icon" source={rowSvg(0, null, 'chevron-left', mutedInk, DESK.muted, 0)} alt="back to files" width={STEP_PX * 2} height={ROW_PX} />
-                <Button key="back" plain dimColor hover={{ dimColor: false }} hotkey="h" autoFocus label="Files" onPress={() => void closePreview($)} />
+                <Svg key="pv-back-icon" source={rowSvg(0, null, 'chevron-left', mutedInk, DESK.muted, 0)} alt="파일로 돌아가기" width={STEP_PX * 2} height={ROW_PX} />
+                <Button key="back" plain dimColor hover={{ dimColor: false }} hotkey="h" autoFocus label="파일" onPress={() => void closePreview($)} />
               </Box>
               <Text {...mutedText}>{' / '}</Text>
               <Box flexShrink={1} flexGrow={1} overflow="hidden">
@@ -3838,7 +3838,7 @@ export const register: Register = (on, options) => {
                   const counts = p?.diff ? diffCounts(g.source) : [0, 0]
                   if (g.title.startsWith(GROUP)) return (
                     <Box key={`pv-seg-${i}`} flexDirection="row" alignItems="center" marginBottom={1}>
-                      <Svg key={`pv-group-icon-${i}`} source={rowSvg(0, null, 'folder', accentInk)} alt={`group ${g.title.slice(GROUP.length)}`} width={STEP_PX * 2 + GAP_PX} height={ROW_PX} />
+                      <Svg key={`pv-group-icon-${i}`} source={rowSvg(0, null, 'folder', accentInk)} alt={`그룹 ${g.title.slice(GROUP.length)}`} width={STEP_PX * 2 + GAP_PX} height={ROW_PX} />
                       <Text weight="semibold" color={accentText}>{g.title.slice(GROUP.length)}</Text>
                     </Box>
                   )
@@ -3884,7 +3884,7 @@ export const register: Register = (on, options) => {
       return (
         <Box flexDirection="column" minHeight={Math.max(1, e.props.scroll?.bodyRows ?? 1)} backgroundColor={theme.bg || undefined}>
           <Box flexDirection="row">
-            <Button key="back" plain hotkey="h" autoFocus={editWithSetting || inTmux || inHerdr ? undefined : true} label={unicode ? '← files' : '\u{ea9b} files'} onPress={() => void closePreview($)} />
+            <Button key="back" plain hotkey="h" autoFocus={editWithSetting || inTmux || inHerdr ? undefined : true} label={unicode ? '← 파일' : '\u{ea9b} 파일'} onPress={() => void closePreview($)} />
             <Text> </Text>
             <Box flexShrink={1} flexGrow={1}>
               <Text bold wrap="truncate-start">{name}</Text>
@@ -3899,7 +3899,7 @@ export const register: Register = (on, options) => {
               return <Button key={`pv-${k}`} plain dimColor hotkey={k} label={label} onPress={() => void (step ? jumpDiff($, by > 0 ? 1 : -1) : scrollPreview($, by)).then(() => parkPreview($))} />
             })}
             {listing ? null : <Button key="pv-d" plain dimColor hotkey="d" label={p?.diff ? (t.nodes.find(n => n.id === t.preview)?.kind === 'dir' ? 'tree' : '파일') : 'diff'} onPress={() => void diffFile($, t.preview)} />}
-            {!listing && (editWithSetting || inTmux || inHerdr) ? <Button key="edit" plain dimColor autoFocus hotkey="e" label={`${unicode ? 'edit' : '\u{ea73} edit'} :${previewLine}`} onPress={() => void editPreview($, t.preview)} /> : null}
+            {!listing && (editWithSetting || inTmux || inHerdr) ? <Button key="edit" plain dimColor autoFocus hotkey="e" label={`${unicode ? '편집' : '\u{ea73} edit'} :${previewLine}`} onPress={() => void editPreview($, t.preview)} /> : null}
           </Box>
           {p?.note ? <Text {...mutedText}>{p.note}</Text> : null}
           {nativeScroll ? directPreview(elements, { ...win, top: first + win.top }, t.preview, markdown, theme.accent) : (
@@ -3981,17 +3981,17 @@ export const register: Register = (on, options) => {
     }
     const rootCounts = t.top ? countSegs(t.counts[t.root]) : []
     const plainButtons = [
-      ...(outside.length ? [{ id: 'outside', label: `${unicode ? '⚠' : '\u{ea6c}'} ${outside.length}`, dim: false, hint: `${outside.length} file${outside.length === 1 ? '' : 's'} written outside the repo`, icon: 'warning' as const }] : []),
-      ...(picked.ids.length ? [{ id: 'unselect', label: unicode ? '⊘' : '\u{eabd}', dim: false, hint: 'clear selection', icon: 'ban' as const }] : []),
-      { id: 'up', label: unicode ? '↑' : '\u{f19f3}', dim: true, hint: 'parent folder', icon: 'folder-up-line' as const },
-      { id: 'cwd', label: unicode ? '⌂' : '\u{eb46}', dim: !follow, hint: 'go to cwd', icon: 'root-folder' as const },
-      { id: 'hidden', label: unicode ? (t.showHidden ? '⊙' : '○') : t.showHidden ? '\u{ea70}' : '\u{eae7}', dim: !t.showHidden, hint: t.showHidden ? 'hide hidden files' : 'show hidden files', icon: t.showHidden ? ('eye' as const) : ('eye-off' as const) },
-      { id: 'size', label: unicode ? '◫' : '\u{ea90}', dim: t.column === 'date', hint: t.column === 'date' ? 'show sizes' : t.column === 'size' ? 'show lines of code' : t.column === 'loc' ? 'show file counts' : 'show dates', icon: 'columns' as const },
-      { id: 'collapse', label: unicode ? '⊟' : '\u{eac5}', dim: true, hint: t.expanded.length ? 'collapse all' : 'expand all', icon: t.expanded.length ? 'square-minus' as const : 'square-plus' as const },
-      { id: 'autocollapse', label: unicode ? '◷' : '\u{ea82}', dim: !autoCollapseOn(t), hint: 'auto-collapse opened folders', icon: 'folder-minus' as const },
-      ...(nativeScroll ? [] : [{ id: 'split', label: unicode ? '⊡' : '\u{eb57}', dim: !t.split, hint: t.split ? 'hide preview' : 'show preview', icon: 'panel' as const }]),
-      ...(desk ? [{ id: 'shimmer', label: '', dim: !shimmerOn, hint: shimmerOn ? 'disable agent activity shimmer effect' : 'enable agent activity shimmer effect', icon: 'clawd' as const }] : []),
-      { id: 'refresh', label: unicode ? '↻' : '\u{eb37}', dim: !reloading, hint: 'reload tree and git', icon: 'refresh' as const },
+      ...(outside.length ? [{ id: 'outside', label: `${unicode ? '⚠' : '\u{ea6c}'} ${outside.length}`, dim: false, hint: `저장소 밖에 기록된 파일 ${outside.length}개`, icon: 'warning' as const }] : []),
+      ...(picked.ids.length ? [{ id: 'unselect', label: unicode ? '⊘' : '\u{eabd}', dim: false, hint: '선택 해제', icon: 'ban' as const }] : []),
+      { id: 'up', label: unicode ? '↑' : '\u{f19f3}', dim: true, hint: '상위 폴더', icon: 'folder-up-line' as const },
+      { id: 'cwd', label: unicode ? '⌂' : '\u{eb46}', dim: !follow, hint: '현재 작업 디렉터리로 이동', icon: 'root-folder' as const },
+      { id: 'hidden', label: unicode ? (t.showHidden ? '⊙' : '○') : t.showHidden ? '\u{ea70}' : '\u{eae7}', dim: !t.showHidden, hint: t.showHidden ? '숨김 파일 숨기기' : '숨김 파일 표시', icon: t.showHidden ? ('eye' as const) : ('eye-off' as const) },
+      { id: 'size', label: unicode ? '◫' : '\u{ea90}', dim: t.column === 'date', hint: t.column === 'date' ? '크기 표시' : t.column === 'size' ? '코드 줄 수 표시' : t.column === 'loc' ? '파일 수 표시' : '날짜 표시', icon: 'columns' as const },
+      { id: 'collapse', label: unicode ? '⊟' : '\u{eac5}', dim: true, hint: t.expanded.length ? '모두 접기' : '모두 펼치기', icon: t.expanded.length ? 'square-minus' as const : 'square-plus' as const },
+      { id: 'autocollapse', label: unicode ? '◷' : '\u{ea82}', dim: !autoCollapseOn(t), hint: '열린 폴더 자동 접기', icon: 'folder-minus' as const },
+      ...(nativeScroll ? [] : [{ id: 'split', label: unicode ? '⊡' : '\u{eb57}', dim: !t.split, hint: t.split ? '미리보기 숨기기' : '미리보기 표시', icon: 'panel' as const }]),
+      ...(desk ? [{ id: 'shimmer', label: '', dim: !shimmerOn, hint: shimmerOn ? '에이전트 활동 반짝임 효과 끄기' : '에이전트 활동 반짝임 효과 켜기', icon: 'clawd' as const }] : []),
+      { id: 'refresh', label: unicode ? '↻' : '\u{eb37}', dim: !reloading, hint: '트리와 git 다시 불러오기', icon: 'refresh' as const },
     ]
     const wordButtons = plainButtons.map(b => ({ ...b, label: b.id === 'outside' ? `outside ${outside.length}` : (WORDS[b.id] ?? b.label) }))
     const wordWidth = wordButtons.reduce((w, b) => w + b.label.length + 1, 1)
@@ -4128,7 +4128,7 @@ export const register: Register = (on, options) => {
         </Box>
       </Box>
     ) : (
-      <Button key="scope-chip" plain label={`in ${scopeName} × `} onPress={() => void scopeSearch($, '')}>
+      <Button key="scope-chip" plain label={`${scopeName}에서 × `} onPress={() => void scopeSearch($, '')}>
         <Text color={theme.accent}>{`in ${scopeName}`}</Text>
         <Text dimColor>{' × '}</Text>
       </Button>
@@ -4158,7 +4158,7 @@ export const register: Register = (on, options) => {
     const gitSpan = zjump.on ? 0 : GIT_COLS.reduce((w, c) => w + (widths[c] ? (widths[c] ?? 0) + 1 : 0), 0)
     const metricSpan = zjump.on ? (jumpDate ? jumpDate + 1 : 0) : widths.metric ? (widths.metric ?? 0) + 1 : 0
     const gitLabel = e.props.bodyColumns - Math.max(metricSpan, 11) - 20 >= 12 ? 'Git (LOC)' : 'Git'
-    const metricLabel = zjump.on ? 'Last accessed' : t.column === 'size' ? 'Size' : t.column === 'loc' ? 'LOC' : t.column === 'files' ? '# Files' : 'Modified'
+    const metricLabel = zjump.on ? '최근 접근' : t.column === 'size' ? '크기' : t.column === 'loc' ? 'LOC' : t.column === 'files' ? '파일 수' : '수정됨'
     const headCell = (col: 'name' | 'git' | 'metric', label: string) => (!zjump.on ? sortCell(col, label) : desk ? <Text key={`head-${col}`} color={mutedInk}>{label}</Text> : <Text key={`head-${col}`} dimColor>{label}</Text>)
     const headerRow = () => (
       <Box key="sort-header" flexDirection="row" alignItems="center" {...(desk ? {} : { width: e.props.bodyColumns, height: 1 })}>
@@ -4237,7 +4237,7 @@ export const register: Register = (on, options) => {
     if (nativeScroll) {
       let size = 0
       const cut = specs.findIndex(r => (size += JSON.stringify(r).length + 1) > ROWS_BUDGET)
-      if (cut >= 0) specs.splice(cut, specs.length - cut, note(`  … ${specs.length - cut} more rows, collapse folders or use search`))
+      if (cut >= 0) specs.splice(cut, specs.length - cut, note(`  … ${specs.length - cut}행 더, 폴더를 접거나 검색하세요`))
     }
     const deskParts: ReturnType<typeof rowParts>[] = []
     let deskStart = deskFrom
@@ -4341,9 +4341,9 @@ export const register: Register = (on, options) => {
       )
       const out: RenderElement[] = rows.length === 0 ? [<Text key="empty" {...mutedText}>empty</Text>] : []
       for (const p of deskParts) out.push(deskRow(p, deskShimmer))
-      if (deskStart > 0) out.unshift(<Text key="above" {...mutedText}>{`  … ${deskStart} rows above, collapse folders or use search`}</Text>)
+      if (deskStart > 0) out.unshift(<Text key="above" {...mutedText}>{`  … 위에 ${deskStart}행, 폴더를 접거나 검색하세요`}</Text>)
       const below = shown.length - deskStart - deskParts.length
-      if (below > 0) out.push(<Text key="more" {...mutedText}>{`  … ${below} more rows, collapse folders or use search`}</Text>)
+      if (below > 0) out.push(<Text key="more" {...mutedText}>{`  … 아래에 ${below}행 더, 폴더를 접거나 검색하세요`}</Text>)
       return <Box key="tree" flexDirection="column">{out}</Box>
     }
     const barSize = Math.max(1, Math.round((specs.length * shown.length) / Math.max(1, rows.length)))
@@ -4565,7 +4565,7 @@ export const register: Register = (on, options) => {
           const raw = await pngOf($, pic)
           const big = Math.floor(raw.length * 3 / 4) > IMAGE_BYTES
           const png = big ? '' : raw
-          content = big ? <Text {...mutedText}>{`${name}: too large to preview here`}</Text> : png ? <Image key="peek-image" source={{ png }} columns={fit.columns} rows={fit.rows} alt={name} /> : <Text {...mutedText}>{name}</Text>
+          content = big ? <Text {...mutedText}>{`${name}: 여기서 미리보기에는 너무 큼`}</Text> : png ? <Image key="peek-image" source={{ png }} columns={fit.columns} rows={fit.rows} alt={name} /> : <Text {...mutedText}>{name}</Text>
         } else content = <Text {...mutedText}>{pic.state === 'pending' ? 'decoding…' : pic.state === 'failed' ? pic.note : 'images show in the terminal'}</Text>
       } else {
         if (isDoc && (peeked?.path !== target || (docKind === 'pdf' && peeked.page !== page))) {
@@ -4584,7 +4584,7 @@ export const register: Register = (on, options) => {
               if (docReading === want) docReading = ''
             }))
           }
-          if (peeked?.path !== target) peeked = { path: target, text: '', note: 'reading…', page }
+          if (peeked?.path !== target) peeked = { path: target, text: '', note: '읽는 중…', page }
         } else if (peeked?.path !== target) {
           const at = peekAt?.path === target ? peekAt : null
           peeked = await readPreview($, target, 1, at?.line)
@@ -4605,13 +4605,13 @@ export const register: Register = (on, options) => {
         if (!peeked.text) overPeek = false
         content = peeked.text
           ? <Client key="peek" module="./rows.tsx" props={{ rows: [], active: '', ...rowColors, pointer, ...(bar ? { bar } : {}), preview: { text: win.text, path: target, startLine: first + win.top + 1, markdown, rows: peekRows } } satisfies RowsProps} />
-          : <Text {...mutedText}>{raw?.state === 'pending' ? 'converting…' : peeked.note || 'empty file'}</Text>
+          : <Text {...mutedText}>{raw?.state === 'pending' ? 'converting…' : peeked.note || '빈 파일'}</Text>
       }
       const title = (
         <Box key="peek-title" flexDirection="row" height={1} overflow="hidden">
           <Box flexShrink={1} flexGrow={1} overflow="hidden">
             {anchor && anchor !== t.root && !target ? (
-              <Button key="map-up" plain label={`${glyphSetting === 'text' ? 'up ' : unicode ? '↑ ' : '\u{eaa1} '}${name}`} onPress={() => void mapUp($, anchor)} />
+              <Button key="map-up" plain label={`${glyphSetting === 'text' ? '위 ' : unicode ? '↑ ' : '\u{eaa1} '}${name}`} onPress={() => void mapUp($, anchor)} />
             ) : (
               <Text bold wrap="truncate-start">{name}</Text>
             )}
@@ -4637,22 +4637,22 @@ export const register: Register = (on, options) => {
       { key: 'o', label: '열기', act: () => void navigate($, 'return') },
       { key: 'd', label: '차이', act: () => void navigate($, 'd') },
       { key: 's', label: '검색', act: () => void navigate($, 's', false, e.surface) },
-      { key: 'i', label: 'in folder', act: () => void navigate($, 'i', false, e.surface) },
-      { key: 'a', label: 'auto-collapse', act: () => void navigate($, 'a', false, e.surface).then(park) },
-      { key: 'z', label: 'jump', act: () => void navigate($, 'z', false, e.surface) },
-      { key: 'n', label: 'sort name', act: () => void navigate($, 'n', false, e.surface).then(park) },
-      { key: 'g', label: 'sort git', act: () => void navigate($, 'g', false, e.surface).then(park) },
-      { key: 'm', label: 'sort value', act: () => void navigate($, 'm', false, e.surface).then(park) },
-      ...(e.surface === 'desktop' ? [] : [{ key: 'p', label: 'preview', act: () => void navigate($, 'p', false, e.surface).then(park) }]),
-      { key: 'y', label: 'copy path', act: () => void navigate($, 'y', false, e.surface).then(park) },
-      { key: 'u', label: 'copy name', act: () => void navigate($, 'u', false, e.surface).then(park) },
-      { key: 'v', label: 'mark', act: () => void navigate($, 'v', false, e.surface).then(park) },
-      { key: 't', label: 'terminal', act: () => void navigate($, 't', false, e.surface) },
-      { key: 'x', label: 'guard', act: () => void navigate($, 'x', false, e.surface).then(park) },
-      ...(outside.length ? [{ key: 'w', label: 'outside writes', act: () => void navigate($, 'w', false, e.surface) }] : []),
-      { key: 'c', label: 'match case', act: () => void navigate($, 'c', false, e.surface).then(park) },
-      { key: 'r', label: 'regex', act: () => void navigate($, 'r', false, e.surface).then(park) },
-      { key: 'q', label: 'contents', act: () => void navigate($, 'q', false, e.surface).then(park) },
+      { key: 'i', label: '폴더에서', act: () => void navigate($, 'i', false, e.surface) },
+      { key: 'a', label: '자동 접기', act: () => void navigate($, 'a', false, e.surface).then(park) },
+      { key: 'z', label: '이동', act: () => void navigate($, 'z', false, e.surface) },
+      { key: 'n', label: '이름 정렬', act: () => void navigate($, 'n', false, e.surface).then(park) },
+      { key: 'g', label: 'git 정렬', act: () => void navigate($, 'g', false, e.surface).then(park) },
+      { key: 'm', label: '값 정렬', act: () => void navigate($, 'm', false, e.surface).then(park) },
+      ...(e.surface === 'desktop' ? [] : [{ key: 'p', label: '미리보기', act: () => void navigate($, 'p', false, e.surface).then(park) }]),
+      { key: 'y', label: '경로 복사', act: () => void navigate($, 'y', false, e.surface).then(park) },
+      { key: 'u', label: '이름 복사', act: () => void navigate($, 'u', false, e.surface).then(park) },
+      { key: 'v', label: '표시', act: () => void navigate($, 'v', false, e.surface).then(park) },
+      { key: 't', label: '터미널', act: () => void navigate($, 't', false, e.surface) },
+      { key: 'x', label: '보호', act: () => void navigate($, 'x', false, e.surface).then(park) },
+      ...(outside.length ? [{ key: 'w', label: '저장소 밖 쓰기', act: () => void navigate($, 'w', false, e.surface) }] : []),
+      { key: 'c', label: '대소문자 구분', act: () => void navigate($, 'c', false, e.surface).then(park) },
+      { key: 'r', label: '정규식', act: () => void navigate($, 'r', false, e.surface).then(park) },
+      { key: 'q', label: '내용', act: () => void navigate($, 'q', false, e.surface).then(park) },
       ...(paging ? [{ key: '[ ]', label: 'page', act: () => void (turnPage($, 1), park()) }] : []),
     ]
     const overlay = shortcutsShown && !zjump.on
@@ -4696,7 +4696,7 @@ export const register: Register = (on, options) => {
         {desk && Svg ? (
           <Box key="head" flexDirection="row" alignItems="center">
             <Box flexDirection="row" alignItems="center" flexShrink={1} overflow="hidden" position="relative">
-              <Svg key="root-icon" source={rowSvg(0, null, t.top === t.root ? 'folder-git' : 'folder-open', e.props.isFocused ? accentInk : mutedInk)} alt="root folder" width={STEP_PX * 2 + GAP_PX} height={ROW_PX} />
+              <Svg key="root-icon" source={rowSvg(0, null, t.top === t.root ? 'folder-git' : 'folder-open', e.props.isFocused ? accentInk : mutedInk)} alt="루트 폴더" width={STEP_PX * 2 + GAP_PX} height={ROW_PX} />
               {e.props.isFocused ? <Text bold color={accentText}>{header}</Text> : <Text {...mutedText}>{header}</Text>}
               <Box position="absolute" top={0} left={0} right={0} bottom={0}>
                 <Client key="hit:root" module="./hit.tsx" props={{ id: ROOT_PRESS, keys: false } satisfies HitProps} width="100%" height="100%" />
@@ -4724,7 +4724,7 @@ export const register: Register = (on, options) => {
         )}
         {splitAt === 'top' ? split : null}
         {branchRow()}
-        {!t.top && showHints && (!hintOn ? (desk && Svg ? <Svg key="git-hint" source={rowSvg(0, null, null, mutedInk)} alt="git status" width={STEP_PX * 2 + GAP_PX} height={ROW_PX} /> : <Text key="git-hint">{' '}</Text>) : desk && Svg ? (
+        {!t.top && showHints && (!hintOn ? (desk && Svg ? <Svg key="git-hint" source={rowSvg(0, null, null, mutedInk)} alt="git 상태" width={STEP_PX * 2 + GAP_PX} height={ROW_PX} /> : <Text key="git-hint">{' '}</Text>) : desk && Svg ? (
           <Box key="git-hint" flexDirection="row" alignItems="center">
             <Svg key="git-hint-icon" source={rowSvg(0, null, 'git-branch', mutedInk)} alt="no git repo" width={STEP_PX * 2 + GAP_PX} height={ROW_PX} />
             <Text {...mutedText}>not a Git repo</Text>
@@ -4740,11 +4740,11 @@ export const register: Register = (on, options) => {
             <Box flexGrow={1} flexShrink={1} marginLeft={1} flexDirection="column" width={Math.max(10, e.props.bodyColumns - (t.query ? 18 : 16))}>
               {zjump.on ? <>
                 <Box key="jump-up-box" height={0} overflow="hidden"><Button key="jump-up" plain label="up" onPress={() => void jumpKey($, 'up')} /></Box>
-                <Input key="jump" autoFocus placeholder="folder name…" value={zjump.query} onInput={(v: string) => void jumpInput($, v)} onSubmit={() => void jumpKey($, 'return')} />
+                <Input key="jump" autoFocus placeholder="폴더 이름…" value={zjump.query} onInput={(v: string) => void jumpInput($, v)} onSubmit={() => void jumpKey($, 'return')} />
                 <Box key="jump-down-box" height={0} overflow="hidden"><Button key="jump-down" plain label="down" onPress={() => void jumpKey($, 'down')} /></Box>
               </> : <Input
                 key="q"
-                placeholder={t.searchContent ? 'Search file contents...' : 'Search files...'}
+                placeholder={t.searchContent ? '파일 내용 검색...' : '파일 검색...'}
                 value={t.query}
                 onInput={onQuery}
                 onSubmit={(v: string) => void jump($, v, e.surface).then(() => $.clock.after(100, park))}
@@ -4754,7 +4754,7 @@ export const register: Register = (on, options) => {
             <Box flexShrink={0} flexDirection="row" gap={2} marginLeft={1} marginRight={1}>
               {toggle('case', 'Aa', Boolean(t.searchCase), false)}
               {toggle('regex', '.*', Boolean(t.searchRegex), badPattern(t.query, Boolean(t.searchRegex)))}
-              {toggle('content', 'contents', Boolean(t.searchContent), false)}
+              {toggle('content', '내용', Boolean(t.searchContent), false)}
             </Box>
           </Box>
         ) : (
@@ -4768,7 +4768,7 @@ export const register: Register = (on, options) => {
                 <Box key="jump-down-box" height={0} overflow="hidden"><Button key="jump-down" plain label="down" onPress={() => void jumpKey($, 'down')} /></Box>
               </> : <Input
                 key="q"
-                placeholder={t.searchContent ? 'search contents' : 'search'}
+                placeholder={t.searchContent ? '내용 검색' : '검색'}
                 submitLabel="go"
                 value={t.query}
                 onInput={onQuery}
@@ -4806,11 +4806,11 @@ export const register: Register = (on, options) => {
               desk && Svg ? (
                 <Box key="keys" flexShrink={0} flexDirection="row" alignItems="center">
                   <Svg key="keys-icon" source={rowSvg(0, null, 'keyboard', mutedInk)} alt="키보드 단축키" width={STEP_PX * 2 + GAP_PX} height={ROW_PX} />
-                  <Button key="nav-help" plain dimColor hover={{ dimColor: false }} label="Shortcuts" onPress={() => { toggleShortcuts($); park() }} />
+                  <Button key="nav-help" plain dimColor hover={{ dimColor: false }} label="단축키" onPress={() => { toggleShortcuts($); park() }} />
                 </Box>
               ) : (
                 <Box flexShrink={0}>
-                  <Button key="nav-help" plain dimColor label="?: shortcuts" onPress={() => { toggleShortcuts($); park() }}><Text color={theme.accent}>?</Text>: shortcuts</Button>
+                  <Button key="nav-help" plain dimColor label="?: 단축키" onPress={() => { toggleShortcuts($); park() }}><Text color={theme.accent}>?</Text>: 단축키</Button>
                 </Box>
               )
             ) : null}
@@ -4820,7 +4820,7 @@ export const register: Register = (on, options) => {
                 <Text {...tipProps} wrap="truncate-end">{tipText}</Text>
               </Box>
             ) : null}
-            {picked.marked && !tipText ? <Box key="marked" flexShrink={0} marginLeft={2}><Button key="marked-clear" plain label={`${picked.ids.length} marked`} onPress={() => { clearMarks($); park() }}><Text color={desk ? accentInk : theme.accent}>{`${picked.ids.length} marked`}</Text></Button></Box> : null}
+            {picked.marked && !tipText ? <Box key="marked" flexShrink={0} marginLeft={2}><Button key="marked-clear" plain label={`${picked.ids.length} 표시됨`} onPress={() => { clearMarks($); park() }}><Text color={desk ? accentInk : theme.accent}>{`${picked.ids.length} 표시됨`}</Text></Button></Box> : null}
             {footerName && (desk || !tipText) ? (
               <Box flexShrink={1} marginLeft={2}>
                 <Text {...mutedText} wrap="truncate-start">{footer && links.has(footer) ? footerName + linkNote(footerLink) : footerName}</Text>

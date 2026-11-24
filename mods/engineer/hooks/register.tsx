@@ -76,7 +76,7 @@ async function startSync($: $, dir: string, handoff: string): Promise<string> {
   const running = syncs.get(dir)
   if (running !== undefined) {
     running.isPending = true
-    return 'a progress sync is already running for this feature and re-runs when it ends'
+    return '이 기능의 진행 동기화가 이미 실행 중이며 종료 후 다시 실행됩니다'
   }
   const slug = slugOf(dir)
   syncs.set(dir, { isPending: false })
@@ -84,17 +84,17 @@ async function startSync($: $, dir: string, handoff: string): Promise<string> {
     description: `${SYNC}: ${slug}`,
     model: economy,
     prompt:
-      `Run the engineer:progress-log skill (Skill tool, skill "engineer:progress-log", args "${slug}") ` +
-      `for the DAE feature at ${dir}. A handoff was just written: ${handoff}. Project it into ` +
-      'progress.md and the tracker exactly as the skill says; edit nothing else. ' +
-      'Your final text is the return value: one line saying what changed, or that the sync failed and why.',
+      `DAE 기능 ${dir}에 대해 engineer:progress-log 스킬(Skill 도구, 스킬 "engineer:progress-log", 인자 "${slug}")을 ` +
+      `실행하세요. 방금 핸드오프가 작성되었습니다: ${handoff}. 스킬의 지시대로 ` +
+      'progress.md와 추적기에 반영하고 다른 파일은 수정하지 마세요. ' +
+      '최종 텍스트가 반환값입니다. 변경 내용 한 줄, 또는 동기화 실패와 그 이유를 적으세요.',
   })
   if (spawned.deny !== undefined || spawned.agentId === undefined) {
     syncs.delete(dir)
-    return `the progress sync could not start (${spawned.deny ?? 'no agent'}): dispatch an economy /engineer.progress-log ${slug} yourself`
+    return `진행 동기화를 시작할 수 없습니다 (${spawned.deny ?? '에이전트 없음'}): economy 모델로 /engineer.progress-log ${slug}를 직접 디스패치하세요`
   }
   syncs.set(dir, { agentId: spawned.agentId, isPending: false })
-  return `progress sync dispatched (agent ${spawned.agentId}); do not dispatch /engineer.progress-log yourself for this handoff`
+  return `진행 동기화 디스패치됨 (에이전트 ${spawned.agentId}); 이 핸드오프에 대해 /engineer.progress-log를 직접 디스패치하지 마세요`
 }
 
 async function onHandoff($: $, dir: string, path: string): Promise<string> {
@@ -103,11 +103,11 @@ async function onHandoff($: $, dir: string, path: string): Promise<string> {
     loadFeature($, dir),
   ])
   const verdict = check.stdout.trim().split('\n')[0] ?? ''
-  if (check.exitCode !== 0) alert($, `DAE ${slugOf(dir)}: handoff check failed: ${verdict}`)
-  if (f?.human_action_needed) alert($, `DAE ${f.slug}: a gate needs you (human_action_needed: yes)`)
+  if (check.exitCode !== 0) alert($, `DAE ${slugOf(dir)}: 핸드오프 검사 실패: ${verdict}`)
+  if (f?.human_action_needed) alert($, `DAE ${f.slug}: 게이트에 사용자 확인이 필요합니다 (human_action_needed: yes)`)
   await show($, f)
   const sync = await startSync($, dir, path)
-  return `engineer mod: dae_handoff.py ${check.exitCode === 0 ? 'passed' : `FAILED: ${verdict}`}; ${sync}.`
+  return `engineer 모드: dae_handoff.py ${check.exitCode === 0 ? '통과' : `실패: ${verdict}`}; ${sync}.`
 }
 
 /** The carve-out holds only for the feature's own PR: we are on its branch and its bar is green. */
@@ -144,11 +144,11 @@ async function anchorFor($: $, agentId: string | undefined): Promise<string | un
   if (target === null) return undefined
   const cp = row?.cp ?? target.cp
   return [
-    '[engineer re-anchor after compaction]',
-    `Role: ${row?.role ?? 'main session'} · Checkpoint: ${cp !== null ? `CP${cp}` : 'unknown'} · Autonomy: ${target.autonomy_level ?? 'unset'}`,
-    `Feature: ${target.dir}`,
-    `Latest handoff: ${target.last_handoff ?? 'none yet'}`,
-    'Keep this role. Re-read the latest handoff before acting; if the next action is unclear, run /engineer.reorient.',
+    '[engineer 압축 후 역할 재고정]',
+    `역할: ${row?.role ?? '메인 세션'} · 체크포인트: ${cp !== null ? `CP${cp}` : '알 수 없음'} · 자율성: ${target.autonomy_level ?? '미설정'}`,
+    `기능: ${target.dir}`,
+    `최신 핸드오프: ${target.last_handoff ?? '아직 없음'}`,
+    '이 역할을 유지하세요. 행동 전에 최신 핸드오프를 다시 읽으세요. 다음 행동이 불분명하면 /engineer.reorient를 실행하세요.',
   ].join('\n')
 }
 
@@ -161,12 +161,12 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     const [resolved] = await Promise.all([
       py($, 'dae_resolve.py', e.cwd).catch(() => undefined),
-      $.command.register({ name: PANE, description: 'DAE coordinator pane: running agents, segment, cost' }),
+      $.command.register({ name: PANE, description: 'DAE 코디네이터 패널: 실행 중인 에이전트, 세그먼트, 비용' }),
       $.tool.register({
         name: 'cost_ledger',
         description:
-          'DAE cost ledger: actual tokens and minutes per role × model class × shape, across sessions. ' +
-          'Use it in place of the priors when proposing a run shape (coordinator.md "Estimates").',
+          'DAE 비용 장부: 세션별 역할 × 모델 등급 × 형태에 따른 실제 토큰 수와 시간. ' +
+          '실행 형태를 제안할 때 사전 추정값 대신 이를 사용하세요 (coordinator.md "Estimates").',
       }),
     ])
     try {
@@ -180,14 +180,14 @@ export const register: Register = (on, options) => {
 
   on('command.run', { command: PANE }, async $ => {
     await $.ui.open({ id: PANE, title: 'DAE' })
-    return { text: 'DAE pane opened.' }
+    return { text: 'DAE 패널을 열었습니다.' }
   })
 
   on('tool.call', { tool: 'mcp__engineer__cost_ledger' }, async $ => {
     const rows = Object.values(await getLedger($)).map(r => ({
       ...r, avgTokens: Math.round(r.tokens / r.runs), avgMinutes: +(r.ms / r.runs / 60000).toFixed(1),
     }))
-    return { result: rows.length ? JSON.stringify(rows, null, 1) : 'No runs recorded yet: use the priors.' }
+    return { result: rows.length ? JSON.stringify(rows, null, 1) : '기록된 실행이 없습니다. 사전 추정값을 사용하세요.' }
   })
 
   // --- 1. handoff-write hook: validate, then sync deterministically ----------
@@ -219,17 +219,17 @@ export const register: Register = (on, options) => {
     if (actions.length === 0) return next(e)
     // The one carve-out: verify:auto may merge its own PR when the bar is green.
     if (actions.every(a => a.endsWith('(current branch)')) && (await mergeReady($))) return next(e)
-    return { decision: 'ask', reason: `DAE: ${actions.join(' + ')} needs an explicit OK. ${EXTERNAL_RULE}` }
-  }).catch(() => ({ decision: 'deny', reason: `DAE: the PR-merge guard failed. ${EXTERNAL_RULE}` }))
+    return { decision: 'ask', reason: `DAE: ${actions.join(' + ')}에 명시적인 승인이 필요합니다. ${EXTERNAL_RULE}` }
+  }).catch(() => ({ decision: 'deny', reason: `DAE: PR 병합 가드가 실패했습니다. ${EXTERNAL_RULE}` }))
 
   on('tool.call', { tool: ['Write', 'Edit', 'NotebookEdit'] }, async ($, e, next) => {
     if (e.agentId === undefined) return next(e)
     const row = (await read($, agents)).find(a => a.id === e.agentId)
     if (row === undefined || !isVerifier(row.role)) return next(e)
     const path = 'file_path' in e ? e.file_path : e.notebook_path
-    return scope.handoffFeature(path) !== undefined ? next(e) : { deny: `DAE: the verifier may not edit ${path}. ${VERIFIER_RULE}` }
+    return scope.handoffFeature(path) !== undefined ? next(e) : { deny: `DAE: 검증자는 ${path}를 수정할 수 없습니다. ${VERIFIER_RULE}` }
   }).catch(($, e, next) =>
-    next.called || e.agentId === undefined ? next(e) : { deny: `DAE: the verifier guard failed. ${VERIFIER_RULE}` })
+    next.called || e.agentId === undefined ? next(e) : { deny: `DAE: 검증자 가드가 실패했습니다. ${VERIFIER_RULE}` })
 
   on('agent.spawn', async ($, e, next) => {
     if (e.resume !== undefined) return next(e)
@@ -248,7 +248,7 @@ export const register: Register = (on, options) => {
     ticker ??= $.clock.every(5000, () => $.ui.invalidate('ui.render')) // elapsed time in the pane
     await updateStatus($)
     return ran
-  }).catch(($, e, next) => (next.called ? next(e) : { deny: 'DAE: the dispatch guard failed (model-classes.md, gauntlet.md).' }))
+  }).catch(($, e, next) => (next.called ? next(e) : { deny: 'DAE: 디스패치 가드가 실패했습니다 (model-classes.md, gauntlet.md).' }))
 
   // --- 4/5/6. agent ends: pane, toast + sound, cost ledger ---------------------
 
@@ -266,7 +266,7 @@ export const register: Register = (on, options) => {
       addToLedger($, row, tokens, e.durationMs),
     ])
     if (row.role !== 'progress-log' || isFailed) {
-      alert($, `DAE: ${row.role}${row.cp ? ` (CP${row.cp})` : ''} ${isFailed ? `failed: ${e.reason}` : 'finished'}`)
+      alert($, `DAE: ${row.role}${row.cp ? ` (CP${row.cp})` : ''} ${isFailed ? `실패: ${e.reason}` : '완료'}`)
     }
     if (!(await read($, agents)).some(a => a.status === 'running')) {
       ticker?.cancel()
@@ -278,13 +278,13 @@ export const register: Register = (on, options) => {
       const isPending = syncs.get(dir)?.isPending === true
       syncs.delete(dir)
       await show($, await loadFeature($, dir))
-      if (isPending) await startSync($, dir, 'the newest one under handoffs/')
+      if (isPending) await startSync($, dir, 'handoffs/ 아래의 가장 최근 핸드오프')
     }
     return next(e)
   })
 
   on('tool.call', { tool: 'AskUserQuestion' }, async ($, e, next) => {
-    if (e.agentId === undefined && shownDir !== undefined) alert($, 'DAE: a gate needs you')
+    if (e.agentId === undefined && shownDir !== undefined) alert($, 'DAE: 게이트에 사용자 확인이 필요합니다')
     return next(e)
   })
 
@@ -321,12 +321,12 @@ export const register: Register = (on, options) => {
     const room = Math.max(1, e.props.scroll.bodyRows - 2)
     return (
       <Box flexDirection="column">
-        <Text bold>{f ? `${f.slug}${f.segment ? ` · segment ${f.segment}` : ''}` : 'No DAE feature in scope'}</Text>
-        {rows.length === 0 && <Text dimColor>No DAE agents dispatched this session.</Text>}
+          <Text bold>{f ? `${f.slug}${f.segment ? ` · 세그먼트 ${f.segment}` : ''}` : '범위 내 DAE 기능 없음'}</Text>
+        {rows.length === 0 && <Text dimColor>이 세션에서 디스파치된 DAE 에이전트가 없습니다.</Text>}
         {rows.slice(-room).map(a => (
           <Text dimColor={a.status !== 'running'} color={a.status === 'failed' ? 'red' : undefined}>
             {ICON[a.status]} {a.role}
-            {a.cp ? ` CP${a.cp}` : ''} · {a.modelClass} · {Math.round(((a.endedAt ?? now) - a.startedAt) / 1000)}s · {kTok(a.tokens)} tok
+            {a.cp ? ` CP${a.cp}` : ''} · {a.modelClass} · {Math.round(((a.endedAt ?? now) - a.startedAt) / 1000)}초 · {kTok(a.tokens)} 토큰
           </Text>
         ))}
       </Box>

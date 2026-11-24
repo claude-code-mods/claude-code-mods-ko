@@ -247,7 +247,7 @@ export const fmtTimer = (ms: number) => {
 export const fmtClock = (ms: number) => (ms > 0 ? new Date(ms).toTimeString().slice(0, 8) : '--:--:--')
 
 /** `1 error`, `2 errors`. */
-export const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+export const plural = (n: number, word: string) => `${n} ${word === 'agent' ? '에이전트' : word === 'edit' ? '편집' : word === 'error' ? '오류' : word}`
 
 export const fmtUsd = (n: number) => (n >= 100 ? `$${Math.round(n)}` : `$${n.toFixed(2)}`)
 
@@ -259,7 +259,7 @@ export const fmtUsd = (n: number) => (n >= 100 ? `$${Math.round(n)}` : `$${n.toF
 export const stepSpeed = (sentAt: number, firstAt: number | null) => (firstAt === null ? null : { ttftMs: Math.max(0, firstAt - sentAt) })
 
 /** `ttft 0.8s`. */
-export const fmtSpeed = (s: { ttftMs: number }) => `ttft ${(s.ttftMs / 1000).toFixed(1)}s`
+export const fmtSpeed = (s: { ttftMs: number }) => `첫 응답 ${(s.ttftMs / 1000).toFixed(1)}초`
 
 /** The compaction window a context breakdown reports: its `rawMaxTokens` when auto-compaction is on and that is smaller than the model's `window`; else null. */
 export const compactWindowOf = (b: { rawMaxTokens: number; isAutoCompactEnabled: boolean } | null | undefined, window: number): number | null =>
@@ -657,9 +657,9 @@ export const titleLines = (title: string, first: number, rest: number): [string,
  */
 export const promptLine = (text: string): { who: string; text: string } => {
   const tag = /^\s*<([a-z][\w-]*)/i.exec(text)?.[1]
-  if (!tag) return { who: 'you', text: shorten(text, 70) }
+  if (!tag) return { who: '사용자', text: shorten(text, 70) }
   const from = /\bfrom="([^"]+)"/.exec(text)?.[1]
-  return { who: 'engine', text: shorten(`${tag.replace(/[-_]/g, ' ')}${from ? ` from ${from.slice(0, 8)}` : ''}`, 70) }
+  return { who: '엔진', text: shorten(`${tag.replace(/[-_]/g, ' ')}${from ? ` ${from.slice(0, 8)}에서` : ''}`, 70) }
 }
 
 /**

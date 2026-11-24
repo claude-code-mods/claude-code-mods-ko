@@ -102,7 +102,7 @@ export function replayOutcomeNotes(
   if (lines.length <= BRANCH_NOTES_REPLAY_LIMIT) return lines;
   const omitted = lines.length - BRANCH_NOTES_REPLAY_LIMIT;
   return [
-    `${BRANCH_NOTE_BOAT} ${omitted} earlier supervision ${omitted === 1 ? "note" : "notes"} not replayed; bin/fm-branch-outcome.sh list shows them`,
+    `${BRANCH_NOTE_BOAT} 이전 감독 기록 ${omitted}건을 재생하지 않았습니다. bin/fm-branch-outcome.sh list에서 확인할 수 있습니다`,
     ...lines.slice(-BRANCH_NOTES_REPLAY_LIMIT),
   ];
 }
@@ -121,7 +121,7 @@ export function newOutcomeNotes(rows: readonly OutcomeRow[], lastSeen: number): 
   const missed = (fresh[0]?.seq ?? lastSeen + 1) - lastSeen - 1;
   if (missed > 0) {
     lines.unshift(
-      `${BRANCH_NOTE_BOAT} ${missed} earlier supervision ${missed === 1 ? "outcome" : "outcomes"} not shown; bin/fm-branch-outcome.sh list shows them`,
+      `${BRANCH_NOTE_BOAT} 이전 감독 결과 ${missed}건을 표시하지 않았습니다. bin/fm-branch-outcome.sh list에서 확인할 수 있습니다`,
     );
   }
   return { lines, lastSeen: last };
@@ -159,8 +159,8 @@ export function hostHealthNote(previous: HostHealth | undefined, next: HostHealt
   if (next === undefined) return undefined;
   const wasCooling = previous !== undefined && previous.key === next.key && previous.cooling;
   if (next.cooling && !wasCooling) {
-    return `${BRANCH_NOTE_BOAT} Supervision session paused after repeated engine errors; main will handle wakes while it cools down.`;
+    return `${BRANCH_NOTE_BOAT} 엔진 오류가 반복되어 감독 세션이 일시 정지되었습니다. 쿨다운 동안 메인 세션이 깨움을 처리합니다.`;
   }
-  if (!next.cooling && wasCooling) return `${BRANCH_NOTE_BOAT} Supervision session recovered after a successful cooldown probe.`;
+  if (!next.cooling && wasCooling) return `${BRANCH_NOTE_BOAT} 쿨다운 점검 성공 후 감독 세션이 복구되었습니다.`;
   return undefined;
 }
