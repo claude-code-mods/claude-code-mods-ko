@@ -113,48 +113,48 @@ const TRANSIENT_JUDGE_KINDS: ReadonlySet<JudgeErrorKind> = new Set([
 ]);
 
 const JUDGE_KIND_CAUSE: Record<JudgeErrorKind, string> = {
-  timeout: "the request timed out",
-  network: "the request could not reach TypeSafe",
-  authentication: "TypeSafe rejected the API key",
-  billing: "TypeSafe requires payment (HTTP 402)",
-  "rate-limit": "TypeSafe rate-limited the request",
-  server: "TypeSafe returned a server error",
-  response: "TypeSafe's reply was not a usable judgment",
-  input: "this checkpoint is too large to send",
-  configuration: "TYPESAFE_BASE is not a valid https URL or loopback http URL",
+  timeout: "요청이 시간 초과되었습니다",
+  network: "TypeSafe에 연결할 수 없습니다",
+  authentication: "TypeSafe가 API 키를 거부했습니다",
+  billing: "TypeSafe에 결제가 필요합니다 (HTTP 402)",
+  "rate-limit": "TypeSafe가 요청을 제한했습니다",
+  server: "TypeSafe가 서버 오류를 반환했습니다",
+  response: "TypeSafe의 응답을 판단으로 사용할 수 없습니다",
+  input: "이 분기점이 너무 커서 전송할 수 없습니다",
+  configuration: "TYPESAFE_BASE가 유효한 https URL 또는 로컬 http URL이 아닙니다",
 };
 
 export function judgeErrorMessage(kind: JudgeErrorKind): string {
   const core =
-    `The compact adviser asked TypeSafe (Jev) but did not get a usable judgment (${JUDGE_KIND_CAUSE[kind]}). ` +
-    "Context was left unchanged on purpose so a compact or hint cannot come from a bad answer.";
+    `compact adviser가 TypeSafe(Jev)에 요청했지만 사용할 수 있는 판단을 받지 못했습니다 (${JUDGE_KIND_CAUSE[kind]}). ` +
+    "잘못된 응답으로 compact나 힌트가 생성되지 않도록 컨텍스트는 의도적으로 변경하지 않았습니다.";
   if (kind === "authentication") {
-    return `${core} Check the TypeSafe key configuration; this is not a temporary glitch.`;
+    return `${core} TypeSafe 키 설정을 확인하세요. 일시적인 오류가 아닙니다.`;
   }
   if (kind === "billing") {
-    return `${core} Check TypeSafe billing and credits; this is not a temporary glitch.`;
+    return `${core} TypeSafe 결제와 크레딧을 확인하세요. 일시적인 오류가 아닙니다.`;
   }
   if (kind === "configuration") {
-    return `${core} Fix or unset TYPESAFE_BASE; this is not a temporary glitch.`;
+    return `${core} TYPESAFE_BASE를 수정하거나 설정 해제하세요. 일시적인 오류가 아닙니다.`;
   }
   if (kind === "input") {
-    return `${core} This is a size limit, not a temporary glitch.`;
+    return `${core} 일시적인 오류가 아닌 크기 제한입니다.`;
   }
   if (TRANSIENT_JUDGE_KINDS.has(kind)) {
-    return `${core} This can be temporary; the adviser will try again later. No action needed unless it keeps repeating.`;
+    return `${core} 일시적인 오류일 수 있어 adviser가 나중에 다시 시도합니다. 반복되지 않으면 조치가 필요 없습니다.`;
   }
   return core;
 }
 
 export const JUDGE_UNAVAILABLE_MESSAGE =
-  "The compact adviser asked TypeSafe (Jev) but did not get a usable judgment. " +
-  "Context was left unchanged on purpose so a compact or hint cannot come from a bad answer. " +
-  "This can be temporary; the adviser will try again later. No action needed unless it keeps repeating.";
+  "compact adviser가 TypeSafe(Jev)에 요청했지만 사용할 수 있는 판단을 받지 못했습니다. " +
+  "잘못된 응답으로 compact나 힌트가 생성되지 않도록 컨텍스트는 의도적으로 변경하지 않았습니다. " +
+  "일시적인 오류일 수 있어 adviser가 나중에 다시 시도합니다. 반복되지 않으면 조치가 필요 없습니다.";
 
 export const JUDGE_DISABLED_NETWORK_MESSAGE =
-  "The compact adviser could not ask TypeSafe (Jev): Claude Code has nonessential network traffic disabled. " +
-  "Context was left unchanged on purpose so a compact or hint cannot run without a judgment. " +
-  "Enable nonessential network traffic if TypeSafe should run; this is a configuration setting, not a temporary glitch.";
+  "compact adviser가 TypeSafe(Jev)에 요청할 수 없습니다. Claude Code에서 필수가 아닌 네트워크 트래픽이 비활성화되었습니다. " +
+  "판단 없이는 compact나 힌트가 실행되지 않도록 컨텍스트는 의도적으로 변경하지 않았습니다. " +
+  "TypeSafe를 사용하려면 필수가 아닌 네트워크 트래픽을 켜세요. 일시적인 오류가 아닌 설정 문제입니다.";
 
 export class JudgeError extends Error {
   // A plain field assignment, not a constructor parameter property: the Codex adapter runs

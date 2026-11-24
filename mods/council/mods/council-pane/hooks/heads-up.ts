@@ -50,22 +50,22 @@ export function parseConfig(text: string | undefined, rowOn: boolean): HeadsUpCo
   try {
     raw = JSON.parse(text)
   } catch {
-    return off(' is not valid JSON')
+    return off(': 유효한 JSON이 아닙니다')
   }
-  if (!isRecord(raw)) return off(' must hold a JSON object')
-  if (raw.enabled !== undefined && typeof raw.enabled !== 'boolean') return off(': enabled must be true or false')
-  if (raw.seats !== undefined) return off(': seats is not a key; one seat goes under "seat"')
-  if (raw.models !== undefined) return off(': models is not a key; the seat\'s pick goes under "model"')
+  if (!isRecord(raw)) return off(': JSON 객체여야 합니다')
+  if (raw.enabled !== undefined && typeof raw.enabled !== 'boolean') return off(': enabled는 true 또는 false여야 합니다')
+  if (raw.seats !== undefined) return off(': seats는 키가 아닙니다. 자리는 "seat" 아래에 하나만 지정하세요')
+  if (raw.models !== undefined) return off(': models는 키가 아닙니다. 자리 선택은 "model" 아래에 지정하세요')
   const seat = raw.seat ?? DEFAULT_SEAT
-  if (typeof seat !== 'string' || !SEAT_SHAPE.test(seat)) return off(`: seat ${JSON.stringify(seat)} is not a plain lowercase word`)
+  if (typeof seat !== 'string' || !SEAT_SHAPE.test(seat)) return off(`: 자리 ${JSON.stringify(seat)}는 소문자 단어여야 합니다`)
   const every = raw.every ?? DEFAULT_EVERY
-  if (typeof every !== 'number' || !Number.isInteger(every) || every < 2) return off(`: every must be a whole number of at least 2, got ${JSON.stringify(every)}`)
+  if (typeof every !== 'number' || !Number.isInteger(every) || every < 2) return off(`: every는 2 이상의 정수여야 합니다. 입력값: ${JSON.stringify(every)}`)
   let model: SeatPick | undefined
   if (raw.model !== undefined) {
     const pick = raw.model
-    if (!isRecord(pick)) return off(': model must be an object of {model, effort}')
-    if (pick.model !== undefined && typeof pick.model !== 'string') return off(`: model for ${seat} must be a string, got ${JSON.stringify(pick.model)}`)
-    if (pick.effort !== undefined && (typeof pick.effort !== 'string' || !EFFORT_SHAPE.test(pick.effort))) return off(`: effort for ${seat} must be lowercase letters, got ${JSON.stringify(pick.effort)}`)
+    if (!isRecord(pick)) return off(': model은 {model, effort} 객체여야 합니다')
+    if (pick.model !== undefined && typeof pick.model !== 'string') return off(`: ${seat}의 model은 문자열이어야 합니다. 입력값: ${JSON.stringify(pick.model)}`)
+    if (pick.effort !== undefined && (typeof pick.effort !== 'string' || !EFFORT_SHAPE.test(pick.effort))) return off(`: ${seat}의 effort는 소문자여야 합니다. 입력값: ${JSON.stringify(pick.effort)}`)
     if (pick.model !== undefined || pick.effort !== undefined) model = { ...(pick.model === undefined ? {} : { model: pick.model }), ...(pick.effort === undefined ? {} : { effort: pick.effort }) }
   }
   if (raw.enabled === false || (raw.enabled === undefined && !rowOn)) return { enabled: false }
@@ -107,12 +107,12 @@ export function bumped(c: Counts, ...keys: (keyof Counts)[]): Counts {
 
 /** "checks 13 · none 8 · notes 2 · repeats 1 · failed 1 · out of credits 1": checks is the outcomes added up, so it cannot drift from them. */
 export function countsLine(c: Counts): string {
-  return `checks ${c.none + c.notes + c.repeats + c.failed + c.quota} · none ${c.none} · notes ${c.notes} · repeats ${c.repeats} · failed ${c.failed} · out of credits ${c.quota}`
+  return `검사 ${c.none + c.notes + c.repeats + c.failed + c.quota} · 없음 ${c.none} · 알림 ${c.notes} · 반복 ${c.repeats} · 실패 ${c.failed} · 크레딧 소진 ${c.quota}`
 }
 
 /** "learn 2 · tell 1 · knew 0 · understood 1 · dismiss 1 · turned off 0 · typed past 3" */
 export function pressesLine(c: Counts): string {
-  return `learn ${c.learn} · tell ${c.tell} · knew ${c.knew} · understood ${c.understood} · dismiss ${c.dismiss} · turned off ${c.turnOff} · typed past ${c.typedPast}`
+  return `배우기 ${c.learn} · 알리기 ${c.tell} · 이미 알음 ${c.knew} · 이해함 ${c.understood} · 닫기 ${c.dismiss} · 끔 ${c.turnOff} · 무시하고 진행 ${c.typedPast}`
 }
 
 /**
@@ -179,15 +179,15 @@ export function tokenCount(n: number): string {
  */
 export function tokensLine(t: Tokens): string {
   const counted = t.checks + t.unreported
-  if (counted === 0) return 'none since this version'
-  const checks = `${counted} ${counted === 1 ? 'check' : 'checks'}`
-  const parts = [t.unreported === 0 ? `${checks} since this version` : `${t.checks} of ${checks} reported since this version`]
+  if (counted === 0) return '이 버전 이후 검사 없음'
+  const checks = `검사 ${counted}회`
+  const parts = [t.unreported === 0 ? `이 버전 이후 ${checks}` : `이 버전 이후 ${checks} 중 ${t.checks}회 사용량 보고됨`]
   if (t.checks > 0) {
-    const split = (amount: number, gave: number, name: string) => (gave === 0 ? '' : `, ${tokenCount(amount)} ${name}${gave < t.checks ? ` on ${gave} of ${t.checks}` : ''}`)
+    const split = (amount: number, gave: number, name: string) => (gave === 0 ? '' : `, ${name} ${tokenCount(amount)}${gave < t.checks ? ` (${t.checks}회 중 ${gave}회)` : ''}`)
     parts.push(
-      `${tokenCount(t.input)} in${split(t.cached, t.cachedChecks, 'cached')}`,
-      `${tokenCount(t.output)} out${split(t.reasoning, t.reasoningChecks, 'reasoning')}`,
-      `${tokenCount(Math.round((t.input + t.output) / t.checks))} per check`,
+      `입력 ${tokenCount(t.input)}${split(t.cached, t.cachedChecks, '캐시됨')}`,
+      `출력 ${tokenCount(t.output)}${split(t.reasoning, t.reasoningChecks, '추론')}`,
+      `검사당 ${tokenCount(Math.round((t.input + t.output) / t.checks))}`,
     )
   }
   return parts.join(' \u00b7 ')
@@ -208,13 +208,13 @@ export type HeadsUpCommand =
 export function headsUpCommand(args: string): HeadsUpCommand {
   const [word = '', ...rest] = args.trim().toLowerCase().split(/[\s,]+/).filter(part => part !== '')
   if (word === '' || word === 'status') return { action: 'status' }
-  if (word === 'off') return rest.length === 0 ? { action: 'off' } : { action: 'unknown', why: 'off takes no words' }
-  if (word === 'setup') return rest.length === 0 ? { action: 'setup' } : { action: 'unknown', why: 'setup takes no words' }
-  if (word !== 'on') return { action: 'unknown', why: `unknown word ${JSON.stringify(word)}` }
-  if (rest.length > 1) return { action: 'unknown', why: `on takes one seat, got ${rest.length}: ${rest.join(', ')}` }
+  if (word === 'off') return rest.length === 0 ? { action: 'off' } : { action: 'unknown', why: 'off에는 인자를 붙일 수 없습니다' }
+  if (word === 'setup') return rest.length === 0 ? { action: 'setup' } : { action: 'unknown', why: 'setup에는 인자를 붙일 수 없습니다' }
+  if (word !== 'on') return { action: 'unknown', why: `알 수 없는 단어 ${JSON.stringify(word)}` }
+  if (rest.length > 1) return { action: 'unknown', why: `on에는 자리를 하나만 지정해야 합니다. 입력값 ${rest.length}개: ${rest.join(', ')}` }
   const [seat] = rest
   if (seat === undefined) return { action: 'on' }
-  if (!SEAT_SHAPE.test(seat)) return { action: 'unknown', why: `seat ${JSON.stringify(seat)} is not a plain lowercase word` }
+  if (!SEAT_SHAPE.test(seat)) return { action: 'unknown', why: `자리 ${JSON.stringify(seat)}는 소문자 단어여야 합니다` }
   return { action: 'on', seat }
 }
 
@@ -263,32 +263,32 @@ export type HeadsUpStatus = { state: string; rows: [string, string][] }
 export function headsUpStatus(config: HeadsUpConfig, rowOn: boolean, fileText: string | undefined, counts: Counts, tokens: Tokens, paused: Paused | null): HeadsUpStatus {
   const row = rowOn ? 'on' : 'off'
   const file = fileText === undefined ? undefined : fileEnabled(fileText)
-  const fileNote = fileText === undefined ? `no ${CONFIG_FILE} here` : `${CONFIG_FILE} leaves it to the row`
+  const fileNote = fileText === undefined ? `여기에 ${CONFIG_FILE} 없음` : `${CONFIG_FILE}가 /config 설정에 맡김`
   const rows: [string, string][] = []
   let state: string
   if (!config.enabled && config.problem !== undefined) {
     state = '꺼짐'
     rows.push(['problem', config.problem])
   } else if (config.enabled) {
-    state = file === true ? 'on for this project' : 'on for every project'
-    rows.push(['by', file === true ? `${CONFIG_FILE} (the /config row is ${row})` : `the /config row (${fileNote})`])
+    state = file === true ? '이 프로젝트에서 켜짐' : '모든 프로젝트에서 켜짐'
+    rows.push(['by', file === true ? `${CONFIG_FILE} (/config 설정: ${row})` : `/config 설정 (${fileNote})`])
     rows.push(['seat', seatLabel(config.seat, config.model)], ['every', `${config.every}개 요청`])
   } else if (file === false) {
-    state = 'off for this project'
-    rows.push(['by', `${CONFIG_FILE} (the /config row is ${row})`], ['turn on', `/${COMMAND} on [seat] turns it on here`])
+    state = '이 프로젝트에서 꺼짐'
+    rows.push(['by', `${CONFIG_FILE} (/config 설정: ${row})`], ['turn on', `/${COMMAND} on [seat]로 여기서 켤 수 있습니다`])
   } else {
     state = '꺼짐'
-    rows.push(['by', `the /config row is off, ${fileNote}`], ['turn on', `/${COMMAND} on [seat] for this project, the /config row "Heads-up side-check" for every project`])
+    rows.push(['by', `/config 설정이 꺼져 있습니다, ${fileNote}`], ['turn on', `이 프로젝트는 /${COMMAND} on [seat], 모든 프로젝트는 /config의 "Heads-up side-check" 설정에서 켤 수 있습니다`])
   }
-  if (paused !== null) rows.push(['paused', `${paused.seat}: ${paused.detail} · /${COMMAND} on resumes this session`])
+  if (paused !== null) rows.push(['paused', `${paused.seat}: ${paused.detail} · /${COMMAND} on으로 이 세션을 재개합니다`])
   rows.push(['checks', countsLine(counts)], ['tokens', tokensLine(tokens)], ['presses', pressesLine(counts)])
   return { state, rows }
 }
 
 export function statusText({ state, rows }: HeadsUpStatus): string {
-  const shown = (label: string) => label === 'by' ? '설정 위치' : label === 'every' ? '전체' : label === 'paused' ? '일시중지됨' : label
+  const shown = (label: string) => label === 'by' ? '설정 위치' : label === 'every' ? '전체' : label === 'paused' ? '일시중지됨' : label === 'checks' ? '검사' : label === 'tokens' ? '토큰' : label === 'presses' ? '누른 버튼' : label === 'problem' ? '문제' : label === 'seat' ? '자리' : label === 'turn on' ? '켜기' : label
   const width = Math.max(...rows.map(([label]) => shown(label).length))
-  return [`Heads-up side-check: ${state}`, ...rows.map(([label, value]) => `  ${shown(label).padEnd(width)}  ${value}`)].join('\n')
+  return [` heads-up 부가 검사: ${state}`, ...rows.map(([label, value]) => `  ${shown(label).padEnd(width)}  ${value}`)].join('\n')
 }
 
 /**
@@ -300,15 +300,15 @@ export function statusText({ state, rows }: HeadsUpStatus): string {
 export function toastLine({ state, rows }: HeadsUpStatus): string {
   const kept = new Set(['seat', 'every', 'paused', 'checks'])
   const parts = rows.flatMap(([label, value]) => (kept.has(label) ? [label === 'every' ? `매 ${value}` : value] : []))
-  return [`Heads-up side-check: ${state}`, ...parts].join(' \u00b7 ')
+  return [`heads-up 부가 검사: ${state}`, ...parts].join(' \u00b7 ')
 }
 
 /** The /heads-up setup dialogs: scope, seat, cadence. */
-export const SCOPE = { project: 'This project', all: 'Every project', off: 'Off for this project' } as const
-export const SCOPE_QUESTION = 'Where should the heads-up side-check run?'
-export const SEAT_QUESTION = 'Which seat should reread the turn?'
-export const EVERY_QUESTION = 'How often should a long turn be checked?'
-export const EVERY_LABELS = ['Every 3 requests', 'Every 6 requests', 'Every 9 requests'] as const
+export const SCOPE = { project: '이 프로젝트', all: '모든 프로젝트', off: '이 프로젝트에서 끄기' } as const
+export const SCOPE_QUESTION = 'heads-up 부가 검사를 어디에서 실행할까요?'
+export const SEAT_QUESTION = '어느 자리가 응답을 다시 읽을까요?'
+export const EVERY_QUESTION = '긴 응답을 얼마나 자주 검사할까요?'
+export const EVERY_LABELS = ['3회 요청마다', '6회 요청마다', '9회 요청마다'] as const
 
 /**
  * The seats discover_providers printed, the council's own test for what is set
@@ -330,7 +330,7 @@ export function seatOptions(available: readonly string[]): string[] {
 export function seatFromAnswer(answer: string): { seat: string } | { why: string } {
   const words = answer.toLowerCase().split(/[\s,]+/).filter(part => part !== '')
   const [seat] = words
-  if (seat === undefined) return { why: 'no seat named' }
+  if (seat === undefined) return { why: '자리가 지정되지 않았습니다' }
   if (words.length > 1) return { why: `one seat, got ${words.length}: ${words.join(', ')}` }
   return SEAT_SHAPE.test(seat) ? { seat } : { why: `seat ${JSON.stringify(seat)} is not a plain lowercase word` }
 }
@@ -341,10 +341,10 @@ export function everyFromAnswer(answer: string): { every: number } | { why: stri
   return Number.isInteger(every) && every >= 2 ? { every } : { why: `every must be a whole number of at least 2, got ${JSON.stringify(answer.trim())}` }
 }
 
-export const MODEL_QUESTION = (seat: string) => `Which model should ${seat} use?`
-export const EFFORT_QUESTION = 'How hard should codex think?'
-const KEEP = 'Keep '
-const TYPE_ONE = 'Type a model id under Other'
+export const MODEL_QUESTION = (seat: string) => `${seat}는 어떤 모델을 사용할까요?`
+export const EFFORT_QUESTION = 'codex는 얼마나 깊이 생각할까요?'
+const KEEP = '유지: '
+const TYPE_ONE = '기타 항목에 모델 ID 입력'
 
 /** The current model first; then the catalog's others, four in all; or a prompt to type one. */
 export function modelOptions(current: string, catalog: readonly string[] | undefined): string[] {
@@ -368,13 +368,13 @@ export function effortOptions(efforts: readonly string[], defaultEffort: string)
 /** The chosen effort, {} to keep codex's default, or why the answer is unusable. */
 export function effortFromAnswer(answer: string): { effort?: string } | { why: string } {
   const text = answer.trim()
-  if (text.endsWith(' (default)')) return {}
-  return EFFORT_SHAPE.test(text) ? { effort: text } : { why: `effort must be lowercase letters, got ${JSON.stringify(text)}` }
+  if (text.endsWith(' (기본값)')) return {}
+  return EFFORT_SHAPE.test(text) ? { effort: text } : { why: `effort는 소문자여야 합니다. 입력값: ${JSON.stringify(text)}` }
 }
 
 /** What a check that found nothing leaves on the prompt hint: "heads-up: gemini read 8.5 KB in 11 s, nothing to flag". */
 export function receiptLine(r: Extract<RunResult, { kind: 'none' }>): string {
-  return `heads-up: ${r.seats.map(seat => seat.seat).join(', ')} read ${kilobytes(r.payloadBytes)} in ${seconds(totalMs(r.seats))}, nothing to flag`
+  return `heads-up: ${r.seats.map(seat => seat.seat).join(', ')}가 ${seconds(totalMs(r.seats))} 동안 ${kilobytes(r.payloadBytes)}를 읽었지만 지적할 내용이 없습니다`
 }
 
 /** "codex (gpt-6.1-sol, high)", "gemini (gemini-2.5-pro)", or the bare name. */
@@ -580,7 +580,7 @@ export type RunResult =
 export function parseRunResult(checkId: string, text: string): RunResult {
   const unread: RunResult = {
     kind: 'failed', payloadBytes: 0,
-    seats: [{ seat: 'runner', outcome: 'error', elapsedMs: 0, detail: `result.json does not read as a run result: ${JSON.stringify(cut(text, UNREAD_CHARS))}` }],
+    seats: [{ seat: 'runner', outcome: 'error', elapsedMs: 0, detail: `result.json을 실행 결과로 읽을 수 없습니다: ${JSON.stringify(cut(text, UNREAD_CHARS))}` }],
   }
   let raw: unknown
   try {
@@ -751,13 +751,13 @@ const totalMs = (seats: readonly SeatOutcome[]) => seats.reduce((total, seat) =>
 
 /** One line per finished check, drawn or not: "heads-up: codex · none · 12.4 KB · 27 s". */
 export function checkLine(r: RunResult): string {
-  if (r.kind === 'note') return `heads-up: ${r.note.seat} · note · ${kilobytes(r.note.payloadBytes)} · ${seconds(r.note.elapsedMs)}`
-  if (r.kind === 'none') return `heads-up: ${r.seats.map(seat => seat.seat).join(', ')} · none · ${kilobytes(r.payloadBytes)} · ${seconds(totalMs(r.seats))}`
-  if (r.kind === 'skipped') return `heads-up: skipped · ${r.detail}`
-  if (r.kind === 'quota') return `heads-up: paused · ${r.seat} after ${seconds(totalMs(r.seats))}: ${r.detail} · /${COMMAND} on resumes`
-  if (r.kind === 'refused') return `heads-up: paused · ${r.seat}: ${r.detail} · /${COMMAND} on resumes`
-  const reasons = r.seats.map(seat => `${seat.seat} ${seat.outcome} after ${seconds(seat.elapsedMs)}${seat.detail ? `: ${seat.detail}` : ''}`)
-  return `heads-up: failed · ${kilobytes(r.payloadBytes)} · ${reasons.join('; ')}`
+  if (r.kind === 'note') return `heads-up: ${r.note.seat} · 알림 · ${kilobytes(r.note.payloadBytes)} · ${seconds(r.note.elapsedMs)}`
+  if (r.kind === 'none') return `heads-up: ${r.seats.map(seat => seat.seat).join(', ')} · 없음 · ${kilobytes(r.payloadBytes)} · ${seconds(totalMs(r.seats))}`
+  if (r.kind === 'skipped') return `heads-up: 건너뜀 · ${r.detail}`
+  if (r.kind === 'quota') return `heads-up: 일시정지 · ${r.seat} ${seconds(totalMs(r.seats))} 후: ${r.detail} · /${COMMAND} on으로 재개`
+  if (r.kind === 'refused') return `heads-up: 일시정지 · ${r.seat}: ${r.detail} · /${COMMAND} on으로 재개`
+  const reasons = r.seats.map(seat => `${seat.seat} ${seat.outcome} ${seconds(seat.elapsedMs)} 후${seat.detail ? `: ${seat.detail}` : ''}`)
+  return `heads-up: 실패 · ${kilobytes(r.payloadBytes)} · ${reasons.join('; ')}`
 }
 
 /**
@@ -768,11 +768,11 @@ export function checkLine(r: RunResult): string {
  * You should know is a fact to weigh against the plan.
  */
 export function tellClaudeDraft(n: Note): string {
-  const raised = `A side check by ${n.seat} (not you) flagged this: ${n.headline}`
+  const raised = `${n.seat}의 부가 검사(사용자가 아님)에서 다음을 지적했습니다: ${n.headline}`
   const more = [n.title, ...n.points.map(point => `- ${point}`)].filter(part => part !== '').join('\n')
   const close = n.tag === 'Heads up'
-    ? `Treat this as a claim, not a conclusion. Before continuing: verify it against the evidence, report what you find, and only then act on ${n.points.length === 0 ? 'it' : 'the last bullet'}.`
-    : 'Take this into account before continuing and say whether it changes your plan.'
+    ? `이것은 결론이 아닌 주장입니다. 계속하기 전에 근거를 확인하고 확인 결과를 보고한 뒤에만 ${n.points.length === 0 ? '그 주장' : '마지막 항목'}에 따라 행동하세요.`
+    : '계속하기 전에 이를 고려하고 계획이 바뀌는지 알려주세요.'
   return [raised, more, close].filter(part => part !== '').join('\n\n')
 }
 

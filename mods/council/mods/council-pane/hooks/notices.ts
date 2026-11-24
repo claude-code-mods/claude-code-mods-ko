@@ -10,9 +10,9 @@ export function finishNotice({ providers }: RunProgress, jobId = ''): string {
   const errors = count(providers, 'error')
   const cancelled = count(providers, 'cancelled')
   // The band draws the COUNCIL label ahead of this, so the text does not repeat the name.
-  const subject = jobId ? `job ${jobId} finished` : 'finished'
+  const subject = jobId ? `작업 ${jobId} 완료` : '완료'
   const answered = `${count(providers, ...ANSWERED_STATES)} of ${providers.length} answered`
-  return `${subject}: ${answered}${errors > 0 ? `, ${errors} error` : ''}${cancelled > 0 ? `, ${cancelled} cancelled` : ''}`
+  return `${subject}: ${answered}${errors > 0 ? `, 오류 ${errors}건` : ''}${cancelled > 0 ? `, 취소 ${cancelled}건` : ''}`
 }
 
 
@@ -46,7 +46,7 @@ export function progressBand(
 
 // A run whose process died without writing .done: what the band says instead.
 export function abandonedNotice({ providers }: RunProgress, jobId = ''): string {
-  const subject = jobId ? `job ${jobId} stopped` : 'stopped'
+  const subject = jobId ? `작업 ${jobId} 중지됨` : '중지됨'
   return `${subject} before it finished: ${count(providers, ...ANSWERED_STATES)} of ${providers.length} answered`
 }
 
@@ -63,8 +63,8 @@ export function wakePrompt(jobId: string): string | undefined {
 
 export function reopenReply(hasRun: boolean): string {
   return hasRun
-    ? 'Council pane reopened with the last run.'
-    : 'No council run in this session yet. Start one with /claude-council:ask.'
+    ? '마지막 실행 내용과 함께 카운슬 패널을 다시 열었습니다.'
+    : '이 세션에는 아직 카운슬 실행이 없습니다. /claude-council:ask로 시작하세요.'
 }
 
 export type FinishNotice = { text: string; untilMs: number; isFailure?: boolean }

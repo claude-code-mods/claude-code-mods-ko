@@ -149,8 +149,8 @@ async function readCatalog($: EngineInterface) {
 type SetupOutcome = { readonly text: string } | { readonly turnRowOn: boolean }
 
 async function setupHeadsUp($: EngineInterface, state: PaneState, settings: PaneOptions): Promise<SetupOutcome> {
-  const ask = (question: string, options: string[]) => $.ui.ask(question, { header: 'Heads-up', options }).catch(() => undefined)
-  const closed = { text: 'Setup closed; nothing changed.' }
+  const ask = (question: string, options: string[]) => $.ui.ask(question, { header: 'heads-up', options }).catch(() => undefined)
+  const closed = { text: '설정이 닫혔습니다. 변경된 내용이 없습니다.' }
   const scope = await ask(SCOPE_QUESTION, [SCOPE.project, SCOPE.all, SCOPE.off])
   if (scope === undefined) return closed
   const file = await headsUpFile($)
@@ -167,12 +167,12 @@ async function setupHeadsUp($: EngineInterface, state: PaneState, settings: Pane
   const everyAnswer = await ask(EVERY_QUESTION, [...EVERY_LABELS])
   if (everyAnswer === undefined) return closed
   const chosen = seatFromAnswer(seatAnswer)
-  if ('why' in chosen) return { text: `Setup closed: ${chosen.why}; nothing changed.` }
+  if ('why' in chosen) return { text: `설정이 닫혔습니다: ${chosen.why}; 변경된 내용이 없습니다.` }
   const { seat } = chosen
   const unknown = await notASeat($, seat)
   if (unknown !== undefined) return { text: `Setup closed: ${unknown}; nothing changed.` }
   const every = everyFromAnswer(everyAnswer)
-  if ('why' in every) return { text: `Setup closed: ${every.why}; nothing changed.` }
+  if ('why' in every) return { text: `설정이 닫혔습니다: ${every.why}; 변경된 내용이 없습니다.` }
   // The seat's model; codex also takes an effort, from its own catalog.
   const lookup = await seatInfo($, 'model', seat)
   if (lookup.exitCode !== 0) return { text: `Setup closed: reading ${seat}'s model exited ${lookup.exitCode}: ${lookup.stderr.trim()}; nothing changed.` }
@@ -188,7 +188,7 @@ async function setupHeadsUp($: EngineInterface, state: PaneState, settings: Pane
     const effortAnswer = await ask(EFFORT_QUESTION, effortOptions(entry?.efforts ?? [], entry?.defaultEffort ?? ''))
     if (effortAnswer === undefined) return closed
     const effort = effortFromAnswer(effortAnswer)
-    if ('why' in effort) return { text: `Setup closed: ${effort.why}; nothing changed.` }
+    if ('why' in effort) return { text: `설정이 닫혔습니다: ${effort.why}; 변경된 내용이 없습니다.` }
     if (effort.effort !== undefined) pick = { ...pick, effort: effort.effort }
   }
   // "Keep <current>" with no effort is no pick at all: the file's own model
@@ -355,7 +355,7 @@ async function paneHost($: EngineInterface, setting: HostSetting): Promise<PaneH
   if (decided !== 'ask') return decided
   let asked: PaneHost | undefined
   try {
-    asked = hostFrom(await $.ui.ask(HOST_QUESTION, { header: 'Council pane', options: [HOST_LABELS.mod, HOST_LABELS.tmux] }))
+    asked = hostFrom(await $.ui.ask(HOST_QUESTION, { header: '카운슬 패널', options: [HOST_LABELS.mod, HOST_LABELS.tmux] }))
   } catch {
     asked = undefined
   }
@@ -606,7 +606,7 @@ async function pollHeadsUp($: EngineInterface, state: PaneState, phase: Extract<
   let result: RunResult
   if (await $.fs.exists(`${runDir}/.done`)) result = parseRunResult(checkId, await readText(files($), `${runDir}/result.json`))
   else if (!(await $.fs.exists(runDir))) result = lost(`its run dir ${runDir} is gone`)
-  else if (await runHasDied($, state, runDir, now, 'headsUpCheckedAtMs')) result = lost('heads-up.sh stopped without writing a result')
+  else if (await runHasDied($, state, runDir, now, 'headsUpCheckedAtMs')) result = lost('heads-up.sh가 결과를 기록하지 않고 중지되었습니다')
   else return
   // settle reads memory only to spot a repeated note.
   const memory = result.kind === 'note' ? await loadMemory($) : EMPTY_MEMORY
@@ -701,17 +701,17 @@ function headsUpRow(
   turnOffArmed: boolean,
 ) {
   const { more } = band
-  const turnOff = <ui.Button key="heads-up:turn-off" hotkey="3" label={turnOffArmed ? 'Press again to turn off' : 'Turn off'} plain dimColor onPress={press['turn-off']} />
+  const turnOff = <ui.Button key="heads-up:turn-off" hotkey="3" label={turnOffArmed ? '한 번 더 누르면 끕니다' : '끄기'} plain dimColor onPress={press['turn-off']} />
   // Collapsed: Learn more, Knew this already, Dismiss. Expanded: Understood, Tell Claude, Close.
   const [first, second, last] = more === null
     ? [
-        <ui.Button key="heads-up:learn" hotkey="1" label="Learn more" plain onPress={press.learn} />,
-        <ui.Button key="heads-up:knew" hotkey="2" label="Knew this already" plain onPress={press.knew} />,
+        <ui.Button key="heads-up:learn" hotkey="1" label="자세히 보기" plain onPress={press.learn} />,
+        <ui.Button key="heads-up:knew" hotkey="2" label="이미 알고 있음" plain onPress={press.knew} />,
         <ui.Button key="heads-up:dismiss" hotkey="0" label="닫기" plain role="dismiss" onPress={press.dismiss} />,
       ]
     : [
-        <ui.Button key="heads-up:understood" hotkey="1" label="Understood" plain onPress={press.understood} />,
-        <ui.Button key="heads-up:tell" hotkey="2" label="Tell Claude" plain onPress={press.tell} />,
+        <ui.Button key="heads-up:understood" hotkey="1" label="이해함" plain onPress={press.understood} />,
+        <ui.Button key="heads-up:tell" hotkey="2" label="Claude에게 알리기" plain onPress={press.tell} />,
         <ui.Button key="heads-up:close" hotkey="0" label="닫기" plain role="dismiss" onPress={press.dismiss} />,
       ]
   return (
@@ -823,12 +823,12 @@ function retryRow(
         {/* No letters in the labels: r and s answer only once the band holds the focus. */}
         <ui.Button key="retry:accept" hotkey="r" label="재시도" onPress={press.accept} />
         <ui.Text>{' '}</ui.Text>
-        <ui.Button key="retry:skip" hotkey="s" label="skip" onPress={press.skip} />
+        <ui.Button key="retry:skip" hotkey="s" label="건너뛰기" onPress={press.skip} />
         <ui.Text color={COLOR.accent}>{`  ${offer.bar}`}</ui.Text>
         <ui.Text dimColor>{` ${offer.remaining}s`}</ui.Text>
       </ui.Box>
       <ui.Box flexShrink={1}>
-        <ui.Text dimColor wrap="truncate-end">{'  click, or ctrl+x tab then r / s'}</ui.Text>
+        <ui.Text dimColor wrap="truncate-end">{'  클릭하거나 ctrl+x tab 후 r / s'}</ui.Text>
       </ui.Box>
     </ui.Box>
   )
@@ -842,8 +842,8 @@ export const register: Register = (on, options) => {
 
   on('session.start', async ($, e, next) => {
     await applyStoredValues($, stored)
-    await $.command.register({ name: REOPEN_COMMAND, description: 'Reopen the council pane, or forget where it was told to open', argumentHint: '[ask]', immediate: true })
-    await $.command.register({ name: HEADS_UP_COMMAND, description: 'Heads-up side-check: set it up in a few questions, switch it on for this project naming the seat, or off, or show its state and counts', argumentHint: '[setup | on [seat] | off | status]', immediate: true })
+    await $.command.register({ name: REOPEN_COMMAND, description: '카운슬 패널을 다시 열거나 열 위치 설정을 잊습니다', argumentHint: '[ask]', immediate: true })
+    await $.command.register({ name: HEADS_UP_COMMAND, description: 'heads-up 부가 검사: 몇 가지 질문으로 설정하거나 자리를 지정해 이 프로젝트에서 켜고 끄거나, 상태와 횟수를 표시합니다', argumentHint: '[setup | on [seat] | off | status]', immediate: true })
     if (settings.offersTool) await $.tool.register({ name: TOOL_NAME, description: TOOL_DESCRIPTION, inputSchema: TOOL_SCHEMA })
     void logFailure($, state, () => introduceHeadsUp($, state, settings))
     // A reload drops the heads-up timer; a check still in flight needs it back.
@@ -928,7 +928,7 @@ export const register: Register = (on, options) => {
     const missing = missingChoices(input)
     if (missing.length > 0 || parsed.seats === undefined) {
       // A call that named its seats needs none listed: only its verbosity is asked.
-      if (seats.length === 0 && missing.includes('seats')) return { result: 'No council seat is available on this machine, so nothing was sent. /claude-council:status shows each provider.', isError: true }
+      if (seats.length === 0 && missing.includes('seats')) return { result: '이 컴퓨터에서 사용 가능한 카운슬 자리가 없어 아무것도 전송하지 않았습니다. /claude-council:status에서 각 제공자를 확인하세요.', isError: true }
       return { result: choiceRequest(seats, missing) }
     }
     // The question goes to third-party providers, so the user confirms every
@@ -945,13 +945,13 @@ export const register: Register = (on, options) => {
     await aimRun($, state, settings)
     const run = await $.process.run(['bash', script, ...parsed.args], { timeoutMs: RUN_TIMEOUT_MS })
     const saved = run.stdout.trim().split('\n').pop() ?? ''
-    if (run.exitCode !== 0 || !saved) return { result: run.stderr || 'council run failed', isError: true }
+    if (run.exitCode !== 0 || !saved) return { result: run.stderr || '카운슬 실행 실패', isError: true }
     return { result: councilResult(await $.fs.read(saved)) }
   })
 
   on('command.run', { command: HEADS_UP_COMMAND }, async ($, e) => {
     const command = headsUpCommand(e.args)
-    if (command.action === 'unknown') return { text: `${command.why}. Usage: /${HEADS_UP_COMMAND} [on [seat] | off | setup | status]; one seat, a provider name such as codex, gemini or grok-cli.` }
+    if (command.action === 'unknown') return { text: `${command.why}. 사용법: /${HEADS_UP_COMMAND} [on [seat] | off | setup | status]; 자리는 codex, gemini, grok-cliなどの 제공자 이름입니다.` }
     if (command.action === 'setup') {
       const outcome = await setupHeadsUp($, state, settings)
       if ('text' in outcome) return outcome
@@ -978,9 +978,9 @@ export const register: Register = (on, options) => {
     const command = paneCommand(e.args)
     if (command.action === 'forget') {
       await $.store.delete(HOST_STORE_KEY)
-      return { text: 'Forgotten. With the setting on ask, the next council run inside tmux asks where to open its pane.' }
+      return { text: '설정을 잊었습니다. 설정이 ask이면 tmux 안에서 다음 카운슬 실행 시 패널 위치를 묻습니다.' }
     }
-    if (command.action === 'unknown') return { text: 'Usage: /council-pane [ask]. Choose the pane in /config, row "Pane opens in".' }
+    if (command.action === 'unknown') return { text: '사용법: /council-pane [ask]. /config의 "Pane opens in" 항목에서 패널 위치를 선택하세요.' }
     if (state.view) await $.ui.open({ id: PANE_ID, title: '카운슬' })
     return { text: reopenReply(state.view !== undefined) }
   })
@@ -1014,7 +1014,7 @@ export const register: Register = (on, options) => {
           <ui.Box flexShrink={1}>
             <ui.Text bold wrap="truncate-end" {...(finished.isFailure ? { color: COLOR.danger } : {})}>{`  ${finished.text}  `}</ui.Text>
           </ui.Box>
-          <ui.Button key="finished:open" hotkey="o" label="open pane" onPress={() => { void $.ui.open({ id: PANE_ID, title: '카운슬' }) }} />
+          <ui.Button key="finished:open" hotkey="o" label="패널 열기" onPress={() => { void $.ui.open({ id: PANE_ID, title: '카운슬' }) }} />
           <ui.Text>{' '}</ui.Text>
           <ui.Button
             key="finished:dismiss"
@@ -1077,7 +1077,7 @@ export const register: Register = (on, options) => {
           </ui.Box>
         )}
         <ui.Box flexShrink={0}>
-          <ui.Button key="progress:open" hotkey="o" label="open pane" onPress={() => { void $.ui.open({ id: PANE_ID, title: '카운슬' }) }} />
+          <ui.Button key="progress:open" hotkey="o" label="패널 열기" onPress={() => { void $.ui.open({ id: PANE_ID, title: '카운슬' }) }} />
         </ui.Box>
       </ui.Box>
     )

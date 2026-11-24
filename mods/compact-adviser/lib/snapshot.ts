@@ -424,7 +424,7 @@ function bytes(text: string): number {
 }
 
 function truncatedMarker(omitted: number): string {
-  return `...[truncated ${omitted} bytes]...`;
+  return `...[${omitted}바이트 생략]...`;
 }
 
 /** Keep a head and tail slice so one long tool dump cannot hide its start or end. */
@@ -466,7 +466,7 @@ function redactOwnedSecretFields(value: unknown): { value: unknown; redacted: bo
       const out: Record<string, unknown> = {};
       for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
         if (isOwnedSecretField(key) && child !== "" && child != null) {
-          out[key] = "[REDACTED]";
+          out[key] = "[삭제됨]";
           redacted = true;
         } else out[key] = walk(child);
       }
@@ -502,7 +502,7 @@ export function scrubKnownSecrets(
   for (const secret of secrets) {
     const value = secret?.trim();
     if (!value || !clean.includes(value)) continue;
-    clean = clean.split(value).join("[REDACTED]");
+    clean = clean.split(value).join("[삭제됨]");
     redacted = true;
   }
   return { text: clean, redacted };
@@ -513,7 +513,7 @@ export function redact(text: string): { text: string; redacted: boolean } {
   const clean = fields.text
     .replace(
       /-----BEGIN [^-]*PRIVATE KEY-----[\s\S]*?(?:-----END [^-]*PRIVATE KEY-----|$)/g,
-      "[REDACTED PRIVATE KEY]",
+      "[개인 키 삭제됨]",
     )
     .replace(/\b(?:sk-[A-Za-z0-9_-]{12,}|gh[pousr]_[A-Za-z0-9_]{15,}|Bearer\s+\S+)/gi, "[REDACTED]")
     .replace(
@@ -636,7 +636,7 @@ export function snapshot(
         const path = toolPath(use);
         let excerpt: string;
         if (path && sensitivePath.test(path)) {
-          excerpt = "[Sensitive file content excluded]";
+          excerpt = "[민감한 파일 내용 제외됨]";
           redacted = true;
         } else {
           const r = sanitizeText(use.text ?? "", secrets);
@@ -675,7 +675,7 @@ export function snapshot(
     },
     compaction: {
       description:
-        "Lossy structured summary of older context (request, files, errors, pending tasks, current work, next step) plus a few recent messages. Exact tool output and long file contents are compressed away. Other compaction hooks may differ.",
+        "이전 컨텍스트(요청, 파일, 오류, 미완료 작업, 현재 작업, 다음 단계)의 손실 가능한 구조화 요약과 최근 메시지 몇 개입니다. 정확한 도구 출력과 긴 파일 내용은 압축됩니다. 다른 compact 훅은 다를 수 있습니다.",
     },
   };
   return {

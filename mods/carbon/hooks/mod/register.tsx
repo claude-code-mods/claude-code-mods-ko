@@ -1306,7 +1306,7 @@ export const register: Register = (on, options) => {
               label={fromLabel(lang)}
               placeholder={datePlaceholder(lang)}
               value={view.from !== undefined ? dayInputValue(view.from) : ""}
-              submitLabel="ok"
+              submitLabel="확인"
               onSubmit={(value: string) => setDay("from", value)}
             />
             <ui.Input
@@ -1314,7 +1314,7 @@ export const register: Register = (on, options) => {
               label={toLabel(lang)}
               placeholder={datePlaceholder(lang)}
               value={view.to !== undefined ? dayInputValue(view.to) : ""}
-              submitLabel="ok"
+              submitLabel="확인"
               onSubmit={(value: string) => setDay("to", value)}
             />
           </Box>

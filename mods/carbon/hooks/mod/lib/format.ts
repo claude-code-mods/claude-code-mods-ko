@@ -128,7 +128,7 @@ export function buildAnswerCo2(
   if (!isUnusual(turn.grams, history))
     return { main: amount, sub: null, isUnusual: false };
   const ratio = Math.round(turn.grams / median(history));
-  const main = `${amount} · ${ratio}× ${lang === "fr" ? "votre médiane" : "your median"}`;
+  const main = `${amount} · ${ratio}× ${lang === "fr" ? "중앙값" : "중앙값"}`;
   const share = turn.grams > 0 ? turn.subagentGrams / turn.grams : 0;
   if (turn.subagents === 0 || share < SUBAGENT_SHARE)
     return { main, sub: null, isUnusual: true };
@@ -136,8 +136,8 @@ export function buildAnswerCo2(
   const grams = formatGrams(turn.subagentGrams, lang);
   const sub =
     lang === "fr"
-      ? `dont ${n} sous-agent${n > 1 ? "s" : ""}${NBSP}: ${grams}`
-      : `incl. ${n} subagent${n > 1 ? "s" : ""}: ${grams}`;
+      ? `서브에이전트 ${n}개 포함${NBSP}: ${grams}`
+      : `서브에이전트 ${n}개 포함: ${grams}`;
   return { main, sub, isUnusual: true };
 }
 
@@ -168,7 +168,7 @@ export function sessionLine(
   ...after: (string | null)[]
 ): string {
   const fr = lang === "fr";
-  const head = fr ? `Cette session${NBSP}:` : "This session:";
+  const head = `이 세션${NBSP}:`;
   const total = `${head} ${formatGrams(sessionGrams, lang)}`;
   const cost = sessionUsd !== null && sessionUsd > 0 ? formatUsd(sessionUsd, lang) : null;
   return [total, cost, ...after].filter((part) => part !== null).join(" · ");
@@ -180,12 +180,11 @@ export function updateHint(version: string): string {
   return `⬆ ${version} ${UPDATE_COMMAND}`;
 }
 
-const MONTH_NAMES_FR = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-const MONTH_NAMES_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTH_NAMES_KO = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
 export function cardHint(month: number, grams: number, lang: Lang): string {
   const fr = lang === "fr";
-  const name = (fr ? MONTH_NAMES_FR : MONTH_NAMES_EN)[month] ?? "";
+  const name = MONTH_NAMES_KO[month] ?? "";
   return `📊 ${name}${fr ? `${NBSP}:` : ":"} ${formatGrams(grams, lang)} · /carbon-card`;
 }
 
@@ -229,8 +228,7 @@ export function quotaText(
   const rounded =
     used - floor === 0.5 ? (floor % 2 === 0 ? floor : floor + 1) : Math.round(used);
   const percent = Math.min(100, rounded);
-  const head =
-    (fr ? `Usage ${percent}${NBSP}%` : `Use ${percent}%`) + (weekly ? (fr ? " 7j" : " 7d") : "");
+  const head = `사용량 ${percent}${NBSP}%` + (weekly ? " 7일" : "");
   const reset = resetOf(window);
   if (Number.isNaN(reset)) return head;
   const d = new Date(reset);
@@ -244,8 +242,8 @@ export function quotaText(
 // Shown once per machine, the same on every surface.
 export function welcomeText(lang: Lang): string {
   return lang === "fr"
-    ? "Le CO₂ s'affiche maintenant pour chaque réponse."
-    : "CO₂ now shows for each answer.";
+    ? "이제 모든 응답에 CO₂가 표시됩니다."
+    : "이제 모든 응답에 CO₂가 표시됩니다.";
 }
 
 export function pushHistory(history: number[], grams: number): number[] {
@@ -270,22 +268,16 @@ export function paneTitle(_lang: Lang): string {
 }
 
 export function commandDescription(lang: Lang): string {
-  return lang === "fr"
-    ? "Votre molécule de CO₂ et l'historique de vos sessions"
-    : "Your CO₂ molecule and the history of your sessions";
+  return "CO₂ 분자와 세션 기록 보기";
 }
 
 // Shown once per machine to someone already welcomed before the pane existed.
 export function paneHint(lang: Lang): string {
-  return lang === "fr"
-    ? "Tapez /carbon-panel pour voir votre molécule et l'historique de vos sessions."
-    : "Type /carbon-panel to see your molecule and the history of your sessions.";
+  return "/carbon-panel을 입력하면 CO₂ 분자와 세션 기록을 볼 수 있습니다.";
 }
 
 export function paneUnplaced(lang: Lang): string {
-  return lang === "fr"
-    ? `Le panneau carbone ne peut pas s'ouvrir ici${NBSP}: élargissez la fenêtre ou mettez Claude Code à jour.`
-    : "The carbon pane cannot open here: widen the window or update Claude Code.";
+  return `여기서는 탄소 패널을 열 수 없습니다${NBSP}: 창을 넓히거나 Claude Code를 업데이트하세요.`;
 }
 
 // The molecule's line: the session so far, and its ratio to the median of past sessions.
@@ -295,57 +287,48 @@ export function currentLine(
   lang: Lang,
 ): string {
   const fr = lang === "fr";
-  const head = fr ? `Cette session${NBSP}:` : "This session:";
+  const head = `이 세션${NBSP}:`;
   const total = `${head} ${formatGrams(grams, lang)}`;
+  void fr;
   if (sessionMedian === null || !(sessionMedian > 0) || !(grams > 0)) return total;
   const r = grams / sessionMedian;
   const ratio =
     r >= 10 ? `${Math.round(r)}` : decimal(r, r >= 1 ? 1 : 2, lang);
-  return `${total} · ${ratio}×${NBSP}${fr ? "votre médiane" : "your median"}`;
+  return `${total} · ${ratio}×${NBSP}중앙값`;
 }
 
 // Before 10 past sessions the colour compares with a starting reference (0.5 kgCO₂),
 // said simply to someone who just arrived
 export function colorNote(pastSessions: number, lang: Lang): string {
-  return lang === "fr"
-    ? `Couleur provisoire${NBSP}: elle s'ajustera à vos habitudes après 10 sessions (${pastSessions} pour l'instant).`
-    : `Provisional colour: it adjusts to your habits after 10 sessions (${pastSessions} so far).`;
+  return `임시 색상${NBSP}: 10회의 세션 이후 사용 습관에 맞게 조정됩니다 (현재 ${pastSessions}회).`;
 }
 
 // No history file. `missing` names the tools the SessionStart hook found absent (jq,
 // sqlite3): without them no database is created.
 export function noHistoryText(lang: Lang, missing: string[] | null = null): string {
   if (missing !== null && missing.length > 0) {
-    const tools = missing.join(lang === "fr" ? " et " : " and ");
-    return lang === "fr"
-      ? `Pour enregistrer vos sessions, installez ${tools} puis relancez Claude Code (voir le README).`
-      : `To record your sessions, install ${tools} and restart Claude Code (see the README).`;
+    const tools = missing.join(" and ");
+    return `세션을 기록하려면 ${tools}를 설치한 뒤 Claude Code를 다시 시작하세요 (README 참조).`;
   }
-  return lang === "fr"
-    ? "Aucun historique pour l'instant (voir le README)."
-    : "No history yet (see the README).";
+  return "아직 기록이 없습니다 (README 참조).";
 }
 
 // Shown once, to someone whose database the SessionStart hook created by itself
 export function autoSetupText(lang: Lang): string {
-  return lang === "fr"
-    ? "Vos sessions sont maintenant enregistrées sur cette machine, y compris celles déjà sur le disque. Rien n'est envoyé."
-    : "Your sessions are now recorded on this machine, including those already on disk. Nothing is sent anywhere.";
+  return "이 컴퓨터에 이미 저장된 세션을 포함해 이제 모든 세션이 기록됩니다. 어디에도 전송되지 않습니다.";
 }
 
 export function emptyRangeText(lang: Lang): string {
-  return lang === "fr"
-    ? "Aucune session sur cette période."
-    : "No session in this period.";
+  return "이 기간에는 세션이 없습니다.";
 }
 
 
 const RANGE_LABELS: Record<string, [string, string]> = {
-  "7d": ["7 j", "7 d"],
-  "30d": ["30 j", "30 d"],
-  "1y": ["12 mois", "12 months"],
-  all: ["Tout", "All"],
-  custom: ["Personnalisée", "Custom"],
+  "7d": ["7일", "7일"],
+  "30d": ["30일", "30일"],
+  "1y": ["12개월", "12개월"],
+  all: ["전체", "전체"],
+  custom: ["사용자 지정", "사용자 지정"],
 };
 function pick(pair: [string, string] | undefined, lang: Lang): string {
   return pair === undefined ? "" : lang === "fr" ? pair[0] : pair[1];
@@ -358,46 +341,43 @@ export function rangeLabel(range: string, lang: Lang): string {
 
 function countOf(n: number, step: string, lang: Lang): string {
   const fr = lang === "fr";
-  if (step === "week") return fr ? `${n} semaine${n > 1 ? "s" : ""}` : `${n} week${n > 1 ? "s" : ""}`;
-  if (step === "month") return fr ? `${n} mois` : `${n} month${n > 1 ? "s" : ""}`;
-  return `${n} session${n > 1 ? "s" : ""}`;
+  void fr;
+  if (step === "week") return `주 ${n}개`;
+  if (step === "month") return `월 ${n}개`;
+  return `세션 ${n}개`;
 }
 
 // Under the stripes: what one stripe is, and the median their colours measure against
 const PER: Record<string, [string, string]> = {
-  day: ["jour", "day"],
-  week: ["semaine", "week"],
-  month: ["mois", "month"],
+  day: ["일", "일"],
+  week: ["주", "주"],
+  month: ["월", "월"],
 };
 // Before three periods with sessions in them there is nothing to colour: the stripes
 // wait, and say what they will show
 export function stripesWaitText(step: string, filled: number, lang: Lang): string {
   const fr = lang === "fr";
   const units: Record<string, [string, string]> = {
-    day: ["jours", "days"],
-    week: ["semaines", "weeks"],
-    month: ["mois", "months"],
+    day: ["일", "일"],
+    week: ["주", "주"],
+    month: ["월", "월"],
   };
   const unit = pick(units[step], lang);
-  return fr
-    ? `Vos bandes de couleur apparaissent après 3 ${unit} d'usage (${filled} pour l'instant)${NBSP}: une par période, du bleu au rouge selon son CO₂.`
-    : `Your colour stripes show after 3 ${unit} of use (${filled} so far): one per period, blue to red by its CO₂.`;
+  void fr;
+  return `색상 띠는 3${unit} 사용 후 나타납니다 (현재 ${filled}${unit}): 기간마다 하나씩 CO₂에 따라 파란색에서 빨간색으로 표시됩니다.`;
 }
 
 export function stripesCaption(step: string, stripeMedian: number | null, lang: Lang): string {
   const fr = lang === "fr";
   const unit = pick(PER[step], lang);
-  const one = fr ? `une bande par ${unit}` : `one stripe per ${unit}`;
+  const one = `${unit}당 띠 하나`;
   if (stripeMedian === null) return one;
-  const per = fr ? ` par ${unit}` : ` a ${unit}`;
-  return `${one} · ${fr ? "médiane" : "median"} ${formatGrams(stripeMedian, lang)}${per}`;
+  return `${one} · 중앙값 ${formatGrams(stripeMedian, lang)}`;
 }
 
 // The period's figure, the pane's main one
 export function periodHeadline(grams: number, lang: Lang): string {
-  return lang === "fr"
-    ? `${formatGrams(grams, lang)} sur la période`
-    : `${formatGrams(grams, lang)} over the period`;
+  return `${formatGrams(grams, lang)} · 해당 기간`;
 }
 
 export function sessionsCount(n: number, lang: Lang): string {
@@ -406,13 +386,11 @@ export function sessionsCount(n: number, lang: Lang): string {
 
 // The custom range's fields: a date typed day first, or as 2026-05-01
 export function datePlaceholder(lang: Lang): string {
-  return lang === "fr" ? "JJ/MM/AAAA" : "DD/MM/YYYY";
+  return "YYYY-MM-DD";
 }
 
 export function dateInvalid(lang: Lang): string {
-  return lang === "fr"
-    ? `Date non reconnue${NBSP}: tapez-la comme 01/05/2026.`
-    : "Date not recognised: type it as 01/05/2026.";
+  return `날짜를 인식할 수 없습니다${NBSP}: 2026-05-01 형식으로 입력하세요.`;
 }
 
 // A day key shown back in its field: "01/05/2026"
@@ -422,23 +400,20 @@ export function dayInputValue(key: string): string {
 }
 
 export function fromLabel(lang: Lang): string {
-  return lang === "fr" ? "Du" : "From";
+  return "시작";
 }
 
 export function toLabel(lang: Lang): string {
-  return lang === "fr" ? "au" : "to";
+  return "종료";
 }
 
 export function waitingText(lang: Lang): string {
-  return lang === "fr"
-    ? `Cette session${NBSP}: en attente de la première réponse`
-    : "This session: waiting for the first answer";
+  return `이 세션${NBSP}: 첫 응답을 기다리는 중`;
 }
 
 
 
-const MONTHS_FR = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
-const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS_KO = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
 // A day ("22 août", "Aug 22", with the year when asked), or a month for monthly
 // stripes ("août 2026", "Aug 2026").
@@ -449,12 +424,9 @@ export function dateLabel(
   withYear = false,
 ): string {
   const d = new Date(ms);
-  const month = (lang === "fr" ? MONTHS_FR : MONTHS_EN)[d.getMonth()] ?? "";
-  if (step === "month") return `${month}${NBSP}${d.getFullYear()}`;
-  const year = withYear ? `${NBSP}${d.getFullYear()}` : "";
-  return lang === "fr"
-    ? `${d.getDate()}${NBSP}${month}${year}`
-    : `${month}${NBSP}${d.getDate()}${withYear ? `,${NBSP}${d.getFullYear()}` : ""}`;
+  const month = MONTHS_KO[d.getMonth()] ?? "";
+  if (step === "month") return `${d.getFullYear()}년${NBSP}${month}`;
+  return `${month}${NBSP}${d.getDate()}일${withYear ? `${NBSP}${d.getFullYear()}년` : ""}`;
 }
 
 // A stripe's tooltip in the desktop app.
@@ -468,9 +440,10 @@ export function stripeTitle(
   const fr = lang === "fr";
   const when =
     step === "week"
-      ? `${fr ? "semaine du" : "week of"} ${dateLabel(start, "session", lang)}`
+      ? `${dateLabel(start, "session", lang)} 주`
       : dateLabel(start, step, lang);
-  const amount = grams > 0 ? formatGrams(grams, lang) : fr ? "aucune session" : "no session";
+  void fr;
+  const amount = grams > 0 ? formatGrams(grams, lang) : "세션 없음";
   return sessions === 0
     ? `${when} · ${amount}`
     : `${when} · ${amount} · ${countOf(sessions, "session", lang)}`;
@@ -479,10 +452,10 @@ export function stripeTitle(
 // Against the same length of time just before: "+12 % par rapport aux 30 jours
 // d'avant". Nothing when there is nothing before to compare with.
 const BEFORE: Record<string, [string, string]> = {
-  "7d": ["aux 7 jours d'avant", "the 7 days before"],
-  "30d": ["aux 30 jours d'avant", "the 30 days before"],
-  "1y": ["aux 12 mois d'avant", "the 12 months before"],
-  custom: ["à la période d'avant", "the period before"],
+  "7d": "이전 7일",
+  "30d": "이전 30일",
+  "1y": "이전 12개월",
+  custom: "이전 기간",
 };
 
 // The change against the period before, in whole percent; null when there is none
@@ -496,13 +469,12 @@ export function compareText(
   lang: Lang,
 ): string | null {
   const before = BEFORE[range];
+  void fr;
   const change = changePercent(grams, previous);
   if (before === undefined || change === null) return null;
   const sign = change > 0 ? "+" : change < 0 ? "-" : "";
   const amount = `${sign}${Math.abs(change)}${NBSP}%`;
-  return lang === "fr"
-    ? `${amount} par rapport ${before[0]}`
-    : `${amount} vs ${before[1]}`;
+  return `${amount} · ${before} 대비`;
 }
 
 // ── Model families, as the session block names them ─────
@@ -525,13 +497,11 @@ export function carTag(tag: string): string {
 
 // A subagent's molecule, on hover: "Sous-agent 2 · 12 gCO₂"
 export function subagentTitle(n: number, grams: number, lang: Lang): string {
-  return `${lang === "fr" ? "Sous-agent" : "Subagent"} ${n} · ${formatGrams(grams, lang)}`;
+  return `서브에이전트 ${n} · ${formatGrams(grams, lang)}`;
 }
 
 export function subagentsAlt(n: number, lang: Lang): string {
-  return lang === "fr"
-    ? `${n} sous-agent${n > 1 ? "s" : ""} de cette session, une petite molécule chacun, colorée selon son CO₂`
-    : `${n} subagent${n > 1 ? "s" : ""} of this session, a small molecule each, coloured by its CO₂`;
+  return `이 세션의 서브에이전트 ${n}개로, 각자의 CO₂에 따라 색이 지정된 작은 분자입니다`;
 }
 
 // More subagents than the row shows: "+4"
@@ -542,7 +512,7 @@ export function moreAgentsText(n: number): string {
 // The context window's fill: "Contexte 42 %"
 export function contextText(percentUsed: number, lang: Lang): string {
   const p = `${Math.round(percentUsed)}${NBSP}%`;
-  return lang === "fr" ? `Contexte ${p}` : `Context ${p}`;
+  return `컨텍스트 ${p}`;
 }
 
 // The running session, under its line: "12 réponses · 3 sous-agents · Opus"
@@ -554,8 +524,8 @@ export function sessionStatsText(
 ): string {
   const fr = lang === "fr";
   const parts = [
-    fr ? `${answers} réponse${answers > 1 ? "s" : ""}` : `${answers} answer${answers > 1 ? "s" : ""}`,
-    fr ? `${subagents} sous-agent${subagents > 1 ? "s" : ""}` : `${subagents} subagent${subagents > 1 ? "s" : ""}`,
+    `${answers}회 응답`,
+    `서브에이전트 ${subagents}개`,
   ];
   if (f !== null) parts.push(familyName(f));
   return parts.join(" · ");
@@ -573,38 +543,36 @@ export function teamUrl(lang: Lang): string {
 // The project's home: its README says what the tool does and leads to the methodology
 export const REPO_URL = "https://github.com/gwittebolle/claude-carbon";
 export function repoLabel(lang: Lang): string {
-  return lang === "fr" ? "En savoir plus sur claude-carbon" : "Learn more about claude-carbon";
+  return "claude-carbon 자세히 보기";
 }
 
 // A newer release, at the top of the foot: what to ask Claude, the plugin command
 // The one command for every install: the skill updates the plugin, the clone, or both
 export const UPDATE_COMMAND = "/carbon-update";
 export function updateText(version: string, lang: Lang): string {
-  return lang === "fr"
-    ? `Version ${version} disponible${NBSP}: tapez ${UPDATE_COMMAND}, puis redémarrez.`
-    : `Version ${version} is out: type ${UPDATE_COMMAND}, then restart.`;
+  return `버전 ${version}을 사용할 수 있습니다${NBSP}: ${UPDATE_COMMAND}를 입력한 뒤 다시 시작하세요.`;
 }
 
 // The foot's two credit lines, a label and a colon each, the link after it
 export function builtByLabel(lang: Lang): string {
-  return lang === "fr" ? `Développé par${NBSP}:` : "Built by:";
+  return `제작${NBSP}:`;
 }
 export function forTeamLabel(lang: Lang): string {
-  return lang === "fr" ? `Découvrez la version entreprise${NBSP}:` : "Discover the business version:";
+  return `비즈니스 버전 보기${NBSP}:`;
 }
 
 export function blockTitle(kind: "session" | "usage", lang: Lang): string {
-  if (kind === "session") return lang === "fr" ? "Cette session" : "This session";
-  return lang === "fr" ? "Mon usage" : "My usage";
+  if (kind === "session") return "이 세션";
+  return "내 사용량";
 }
 
 // The tiles at the top of the desktop pane: a label over a figure
 const TILE_LABELS: Record<string, [string, string]> = {
-  period: ["Sur la période", "Over the period"],
-  change: ["Par rapport à avant", "Against before"],
-  sessions: ["Sessions", "Sessions"],
-  cost: ["Valeur au prix API", "API-price value"],
-  car: ["En voiture", "By car"],
+  period: "해당 기간",
+  change: "이전 대비",
+  sessions: "세션",
+  cost: "API 가격 기준",
+  car: "자동차 주행",
 };
 export function tileLabel(kind: string, lang: Lang): string {
   return pick(TILE_LABELS[kind], lang);
@@ -618,15 +586,13 @@ export function changeValue(change: number): string {
 
 // "27 616 $", "$27,616", "12,30 $"
 export function moneyValue(usd: number, lang: Lang): string {
-  return costText(usd, lang).replace(lang === "fr" ? " au prix API" : " at API prices", "");
+  return costText(usd, lang).replace(" (API 가격)", "");
 }
 
 // Under the value tile, so it holds whoever pays: a subscription, an API key, extra
 // usage, or sessions of several kinds. Which session was billed how is not recorded.
 export function apiValueNote(lang: Lang): string {
-  return lang === "fr"
-    ? `Le prix de cet usage facturé à l'API${NBSP}; un abonnement Pro, Max ou Ultra en couvre tout ou partie.`
-    : "What this usage costs billed through the API; a Pro, Max or Ultra subscription covers some or all of it.";
+  return `API로 청구된 사용량의 비용입니다${NBSP}; Pro, Max 또는 Ultra 구독이 일부 또는 전부를 포함할 수 있습니다.`;
 }
 
 // "12,34 $ au prix API", "$12.34 at API prices"
@@ -638,7 +604,7 @@ export function costText(usd: number, lang: Lang): string {
         ? `${thousands(usd, lang)}${NBSP}$`
         : `$${thousands(usd, lang)}`
       : formatUsd(usd, lang);
-  return lang === "fr" ? `${money} au prix API` : `${money} at API prices`;
+  return `${money} (API 가격)`;
 }
 
 function thousands(n: number, lang: Lang): string {
@@ -671,11 +637,11 @@ export function carValue(
 // The blocks a person can show or hide in the pane, under the gear
 
 const BLOCK_LABELS: Record<string, [string, string]> = {
-  compare: ["Comparaison", "Comparison"],
-  cost: ["Coût API", "API cost"],
-  equivalence: ["Équivalence", "Equivalence"],
-  projects: ["Projets", "Projects"],
-  detail: ["Détail", "Detail"],
+  compare: "비교",
+  cost: "API 비용",
+  equivalence: "환산",
+  projects: "프로젝트",
+  detail: "상세",
 };
 export function blockLabel(block: string, lang: Lang): string {
   return pick(BLOCK_LABELS[block], lang);
@@ -683,10 +649,10 @@ export function blockLabel(block: string, lang: Lang): string {
 
 // ── The "Détail" block: a period's tokens, energy and CO2 by kind of token ──
 const KIND_LABELS: Record<string, [string, string]> = {
-  input: ["Entrée", "Input"],
-  cacheWrite: ["Cache écrit", "Cache write"],
-  cacheRead: ["Cache relu", "Cache read"],
-  output: ["Sortie", "Output"],
+  input: "입력",
+  cacheWrite: "캐시 기록",
+  cacheRead: "캐시 읽기",
+  output: "출력",
 };
 export function kindLabel(kind: string, lang: Lang): string {
   return pick(KIND_LABELS[kind], lang);
@@ -694,8 +660,8 @@ export function kindLabel(kind: string, lang: Lang): string {
 
 // Above each bar: what it splits
 export function detailBarLabel(bar: "tokens" | "co2", lang: Lang): string {
-  if (bar === "tokens") return "Tokens";
-  return lang === "fr" ? `${UNIT} et énergie` : `${UNIT} and energy`;
+  if (bar === "tokens") return "토큰";
+  return `${UNIT} 및 에너지`;
 }
 
 // 820, 12k, 371M, then billions with one decimal: 25,3 Md / 25.3B
@@ -741,7 +707,7 @@ export function detailTotalLine(
   lang: Lang,
 ): string {
   return (
-    `Total${lang === "fr" ? NBSP : ""}: ${formatTokens(total.tokens, lang)} tokens · ` +
+    `합계: ${formatTokens(total.tokens, lang)} 토큰 · ` +
     `${formatWh(total.wh, lang)} · ${formatGrams(total.grams, lang)}`
   );
 }
@@ -763,32 +729,26 @@ export function detailHover(
 export const METHODOLOGY_URL =
   "https://github.com/gwittebolle/claude-carbon/blob/main/METHODOLOGY.md#the-panes-detail-by-kind-of-token";
 export function methodologyLabel(lang: Lang): string {
-  return lang === "fr" ? "Lire la méthodologie" : "Read the methodology";
+  return "방법론 읽기";
 }
 
 // When some sessions of the period are left out: stored with older factors, or the
 // running one before its first answer
 export function detailCoverage(n: number, total: number, lang: Lang): string {
-  return lang === "fr"
-    ? `Sur ${n} des ${total} sessions de la période${NBSP}: les autres ont été enregistrées avec des facteurs plus anciens.`
-    : `Over ${n} of the period's ${total} sessions: the others were recorded with older factors.`;
+  return `해당 기간 세션 ${total}개 중 ${n}개 포함: 나머지는 이전 계수로 기록되었습니다.`;
 }
 
 // Before the hook has written the tokens by kind: after the next answer
 export function detailWaitText(lang: Lang): string {
-  return lang === "fr"
-    ? "Le détail s'affichera après la prochaine réponse."
-    : "The detail shows after the next answer.";
+  return "상세 내용은 다음 응답 후 표시됩니다.";
 }
 
 export function detailAlt(bar: "tokens" | "co2", lang: Lang): string {
-  return lang === "fr"
-    ? `Répartition ${bar === "tokens" ? "des tokens" : `du ${UNIT}`} entre entrée, cache écrit, cache relu et sortie`
-    : `Share of the ${bar === "tokens" ? "tokens" : UNIT} between input, cache write, cache read and output`;
+  return `${bar === "tokens" ? "토큰" : UNIT}의 입력, 캐시 기록, 캐시 읽기, 출력별 비율`;
 }
 
 export function showLabel(lang: Lang): string {
-  return lang === "fr" ? "Afficher" : "Show";
+  return "표시";
 }
 
 
@@ -796,28 +756,22 @@ export function showLabel(lang: Lang): string {
 // covers the calendar year so far (the one just ended, over the first days of January),
 // whatever range the pane shows: the label says which.
 export function cardButtonLabel(year: number, lang: Lang): string {
-  return lang === "fr" ? `Obtenir ma carte ${year}` : `Get my ${year} card`;
+  return `${year}년 탄소 카드 만들기`;
 }
 
 // After the button filled the prompt: what is there and what to do
 export function cardReadyText(lang: Lang): string {
-  return lang === "fr"
-    ? `/carbon-card est dans le prompt${NBSP}: appuyez sur Entrée pour créer la carte.`
-    : "/carbon-card is in the prompt: press Enter to make the card.";
+  return `프롬프트에 /carbon-card가 입력되었습니다${NBSP}: Enter를 눌러 카드를 만드세요.`;
 }
 
 // The prompt could not take it (a dialog is open, or no prompt box here)
 export function cardFillFailed(lang: Lang): string {
-  return lang === "fr"
-    ? `Le prompt n'a pas pu recevoir /carbon-card${NBSP}: tapez-le vous-même.`
-    : "The prompt could not take /carbon-card: type it yourself.";
+  return `프롬프트에 /carbon-card를 넣을 수 없습니다${NBSP}: 직접 입력하세요.`;
 }
 
 // When the prompt already holds a draft, the button leaves it alone and says why
 export function cardDraftBusy(lang: Lang): string {
-  return lang === "fr"
-    ? `Le prompt contient déjà un brouillon${NBSP}: videz-le pour obtenir la carte.`
-    : "The prompt already holds a draft: clear it to get the card.";
+  return `프롬프트에 이미 작성 중인 내용이 있습니다${NBSP}: 카드를 만들려면 비우세요.`;
 }
 
 
@@ -835,7 +789,7 @@ export function projectBarLine(
   share: number,
   lang: Lang,
 ): string {
-  const name = project === "" ? (lang === "fr" ? "sans projet" : "no project") : project;
+  const name = project === "" ? "프로젝트 없음" : project;
   const bar = "█".repeat(Math.max(1, Math.round(share * 16)));
   return `${bar} ${percent(share)} ${name} · ${formatGrams(grams, lang)}`;
 }
@@ -843,32 +797,24 @@ export function projectBarLine(
 // The rest after the projects listed
 export function otherProjectsLine(count: number, grams: number, share: number, lang: Lang): string {
   const fr = lang === "fr";
-  const label = fr
-    ? `${count} autre${count > 1 ? "s" : ""} projet${count > 1 ? "s" : ""}`
-    : `${count} other project${count > 1 ? "s" : ""}`;
+  void fr;
+  const label = `기타 프로젝트 ${count}개`;
   return `${label} · ${formatGrams(grams, lang)} · ${percent(share)}`;
 }
 
 export function mascotAlt(lang: Lang): string {
-  return lang === "fr"
-    ? "Molécule de CO₂ en pixels, colorée selon cette session par rapport à votre médiane, du bleu (en dessous) au rouge (au-dessus)"
-    : "Pixel CO₂ molecule, coloured by this session against your median, from blue (below) to red (above)";
+  return "중앙값 대비 이 세션의 CO₂에 따라 파란색(미만)에서 빨간색(초과)로 채색된 픽셀 CO₂ 분자";
 }
 
 // The scale under the molecule, read aloud: where this session sits on it
 export function scaleAlt(cls: number | null, lang: Lang): string {
   const fr = lang === "fr";
+  void fr;
   if (cls === null)
-    return fr
-      ? "Échelle des couleurs, du bleu (sous votre médiane) au rouge (au-dessus)"
-      : "Colour scale, from blue (under your median) to red (over it)";
-  return fr
-    ? `Échelle des couleurs, du bleu au rouge : cette session est en ${cls + 1}e position sur 8`
-    : `Colour scale, from blue to red: this session is ${cls + 1} of 8`;
+    return "중앙값 미만은 파란색, 초과는 빨간색으로 표시되는 색상 척도";
+  return `파란색에서 빨간색까지의 색상 척도에서 이 세션은 ${cls + 1}/8 위치`;
 }
 
 export function stripesAlt(lang: Lang): string {
-  return lang === "fr"
-    ? "Une bande par période, la plus ancienne à gauche, du bleu (sous la médiane) au rouge (au-dessus)"
-    : "One stripe per period, oldest on the left, from blue (below the median) to red (above)";
+  return "기간마다 하나의 띠이며 왼쪽부터 오래된 순서이고, 중앙값 미만은 파란색, 초과는 빨간색";
 }

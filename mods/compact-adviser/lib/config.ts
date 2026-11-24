@@ -51,7 +51,7 @@ export function parseMinimum(text: string): number {
   const value = text.trim();
   const number = Number(value);
   if (!/^\d+$/.test(value) || !Number.isSafeInteger(number) || number <= 0) {
-    throw new Error("Enter a positive whole number of tokens, for example 40000.");
+    throw new Error("양의 정수 토큰 수를 입력하세요. 예: 40000.");
   }
   return number;
 }
@@ -62,21 +62,21 @@ export function parseBudget(text: string): number {
   if (value === "off") return 0;
   const number = Number(value);
   if (!/^\d+$/.test(value) || !Number.isSafeInteger(number)) {
-    throw new Error("Enter a whole number of tokens, for example 450000, or off.");
+    throw new Error("토큰 수를 정수로 입력하거나 off를 입력하세요. 예: 450000.");
   }
   return number;
 }
 
 export function parseSavedApiKey(text: string): string {
   const value = text.trim();
-  if (!value) throw new Error("Enter a TypeSafe API key, or cancel to leave it unchanged.");
+  if (!value) throw new Error("TypeSafe API 키를 입력하거나 취소하여 변경하지 마세요.");
   if (value.length > MAX_SAVED_API_KEY_LENGTH) {
-    throw new Error("That value is too long to save as a TypeSafe API key.");
+    throw new Error("TypeSafe API 키로 저장하기에 값이 너무 깁니다.");
   }
   for (let i = 0; i < value.length; i++) {
     const code = value.charCodeAt(i);
     if (code < 32 || code === 127) {
-      throw new Error("The key cannot contain control characters.");
+      throw new Error("키에는 제어 문자가 포함될 수 없습니다.");
     }
   }
   return value;
@@ -101,7 +101,7 @@ export function parseConsent(value: unknown): Consent {
     typeof c.autoAcknowledged !== "boolean"
   ) {
     throw new SettingsError(
-      "Invalid compact-adviser consent record; run /compact-adviser auto to restore it.",
+      "compact-adviser 동의 기록이 잘못되었습니다. /compact-adviser auto를 실행해 복원하세요.",
     );
   }
   return { version: 1, autoAcknowledged: c.autoAcknowledged };
@@ -134,26 +134,26 @@ export function readConfig(
   const logRequests = row(LOG_KEY, "logRequests");
   const beforeCompactPrompt = row(BEFORE_COMPACT_PROMPT_KEY, "beforeCompactPrompt") ?? "";
   if (typeof mode !== "string" || !MODES.includes(mode as Mode)) {
-    throw new SettingsError("Cannot read the compact-adviser mode setting; no action is taken.");
+    throw new SettingsError("compact-adviser 모드 설정을 읽을 수 없습니다. 아무 작업도 수행되지 않습니다.");
   }
   if (typeof minimum !== "number" || !Number.isSafeInteger(minimum) || minimum <= 0) {
     throw new SettingsError(
-      "Cannot read the compact-adviser minimum context setting; no action is taken.",
+      "compact-adviser 최소 컨텍스트 설정을 읽을 수 없습니다. 아무 작업도 수행되지 않습니다.",
     );
   }
   if (typeof budget !== "number" || !Number.isSafeInteger(budget) || budget < 0) {
     throw new SettingsError(
-      "Cannot read the compact-adviser context budget setting; no action is taken.",
+      "compact-adviser 컨텍스트 예산 설정을 읽을 수 없습니다. 아무 작업도 수행되지 않습니다.",
     );
   }
   if (logRequests !== undefined && typeof logRequests !== "boolean") {
     throw new SettingsError(
-      "Cannot read the compact-adviser request-log setting; no action is taken.",
+      "compact-adviser 요청 로그 설정을 읽을 수 없습니다. 아무 작업도 수행되지 않습니다.",
     );
   }
   if (typeof beforeCompactPrompt !== "string") {
     throw new SettingsError(
-      "Cannot read the compact-adviser before-compact prompt; no action is taken.",
+      "compact-adviser의 compact 이전 프롬프트를 읽을 수 없습니다. 아무 작업도 수행되지 않습니다.",
     );
   }
   const profile = row(PROFILE_KEY, "profile");

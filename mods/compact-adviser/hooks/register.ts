@@ -82,10 +82,10 @@ import {
 
 const COMMAND = "compact-adviser";
 const PANE_ID = "compact-adviser";
-const HINT = "work appears completed or recorded. Run /compact to save tokens.";
+const HINT = "작업이 완료되거나 기록된 것 같습니다. 토큰을 절약하려면 /compact를 실행하세요.";
 const COMPACT_INSTRUCTIONS =
-  "The session reached a natural boundary; keep the current work, pending tasks, referenced files, and the next step exact.";
-const BEFORE_COMPACT_STATUS = "running the before-compact prompt…";
+  "세션이 자연스러운 분기점에 도달했습니다. 현재 작업, 미완료 작업, 참조한 파일, 다음 단계를 정확히 유지하세요.";
+const BEFORE_COMPACT_STATUS = "compact 이전 프롬프트 실행 중…";
 /** A before-compact turn that outlives this does not compact. */
 export const BEFORE_COMPACT_TIMEOUT_MS = 300_000;
 const BEFORE_COMPACT_RETRY_MS = 60_000;
@@ -93,7 +93,7 @@ const SLASH_COMMAND = /^\/([A-Za-z0-9_:-]{1,64})(?:\s+([\s\S]*))?$/;
 const PENDING_NOTICE_KEY = "pendingNotice";
 const LOOPBACK_ENDPOINT = /^http:\/\/127\.0\.0\.1:\d{1,5}\/[\x21-\x7e]*$/;
 const USAGE =
-  "Use /compact-adviser, auto, hint, off, status, threshold <tokens|default>, budget <tokens|off>, snooze or dismiss.";
+  "사용법: /compact-adviser, auto, hint, off, status, threshold <tokens|default>, budget <tokens|off>, snooze, dismiss.";
 
 // Per module environment (a hot reload starts fresh; see the header).
 let activation: Promise<boolean> | undefined;
@@ -348,7 +348,7 @@ async function submitBeforeCompact($: EngineInterface, text: string): Promise<vo
   if (trimmed.startsWith("/")) {
     const slash = slashInvocation(trimmed);
     if (!slash) {
-      throw new Error("before-compact prompt starts with / but is not a slash command");
+      throw new Error("compact 이전 프롬프트가 /로 시작하지만 슬래시 명령이 아닙니다");
     }
     await $.command.run(slash);
     return;
@@ -369,7 +369,7 @@ async function armBeforeCompact(
   $.ui.status(BEFORE_COMPACT_STATUS);
   $.clock.after(BEFORE_COMPACT_TIMEOUT_MS, () => {
     if (beforeCompact?.seq !== seq) return;
-    void abandonBeforeCompact($, "The before-compact prompt timed out. Context left unchanged.");
+    void abandonBeforeCompact($, "compact 이전 프롬프트가 시간 초과되었습니다. 컨텍스트는 변경되지 않았습니다.");
   });
   try {
     if (beforeCompact?.seq === seq) beforeCompact.dispatched = true;
@@ -377,7 +377,7 @@ async function armBeforeCompact(
   } catch {
     if (beforeCompact?.seq !== seq) return;
     beforeCompact.dispatched = false;
-    await abandonBeforeCompact($, "The before-compact prompt did not run. Context left unchanged.");
+    await abandonBeforeCompact($, "compact 이전 프롬프트가 실행되지 않았습니다. 컨텍스트는 변경되지 않았습니다.");
   }
 }
 
@@ -387,7 +387,7 @@ async function compactNow($: EngineInterface, key: string): Promise<void> {
   compacting = true;
   // A status line, not a toast: the host drops a toast within two seconds of the last,
   // which would swallow the completion notice of a quick compaction.
-  $.ui.status("compacting at a checkpoint (experimental auto)…");
+  $.ui.status("분기점에서 compact 실행 중 (실험적 자동)…");
   let failure: string | undefined;
   let tokens: { before?: number; after?: number } = {};
   try {
@@ -409,7 +409,7 @@ async function compactNow($: EngineInterface, key: string): Promise<void> {
     });
     notice(
       $,
-      "Compaction failed or was cancelled. No immediate retry; Claude Code remains in control.",
+      "compact에 실패했거나 취소되었습니다. 즉시 재시도하지 않으며 Claude Code가 계속 제어합니다.",
     );
     clearStatus($);
     return;
@@ -418,11 +418,11 @@ async function compactNow($: EngineInterface, key: string): Promise<void> {
   await $.store.set(key, initialState(true, after));
   const completed =
     tokens.before !== undefined && tokens.after !== undefined
-      ? `compaction completed: ${formatTokens(tokens.before)} to ${formatTokens(tokens.after)} tokens.`
-      : "compaction completed.";
+      ? `compact 완료: ${formatTokens(tokens.before)} → ${formatTokens(tokens.after)} 토큰.`
+      : "compact 완료.";
   // The dim transcript line (never sent to the model) records the automatic action even
   // when the host throttles the toast. Claude Code prefixes $.ui.log with the plugin name.
-  $.ui.log(`automatic ${completed}`);
+  $.ui.log(`자동 ${completed}`);
   $.ui.toast(completed);
   clearStatus($);
 }
@@ -551,14 +551,14 @@ async function settle($: EngineInterface): Promise<void> {
   try {
     config = await loadConfig($);
   } catch (error) {
-    notice($, error instanceof Error ? error.message : "Cannot read compact-adviser settings.");
+    notice($, error instanceof Error ? error.message : "compact-adviser 설정을 읽을 수 없습니다.");
     return;
   }
   if (judging || !(await eligible($, config, state, context.tokens, now))) return;
   const epoch = generation;
   $.clock.after(0, () => {
     void judgeCheckpoint($, epoch).catch(() =>
-      notice($, "Compact adviser could not inspect this checkpoint; context left unchanged."),
+      notice($, "compact adviser가 이 분기점을 검사할 수 없습니다. 컨텍스트는 변경되지 않았습니다."),
     );
   });
 }
@@ -576,7 +576,7 @@ async function saveRow(
   const result = await $.config.set({ key, value });
   if (result.deny !== undefined) {
     await $.store.delete(PENDING_NOTICE_KEY);
-    $.ui.toast(`Not saved: ${result.deny}`, { timeoutMs: 8000 });
+    $.ui.toast(`저장되지 않음: ${result.deny}`, { timeoutMs: 8000 });
     return false;
   }
   if (key === API_KEY_KEY && typeof value === "string") {
@@ -629,7 +629,7 @@ async function saveConsent($: EngineInterface, patch: Partial<Omit<Consent, "ver
 function openPane($: EngineInterface): Promise<void> {
   return $.ui.open({
     id: PANE_ID,
-    title: "Compact adviser (saved for all sessions)",
+    title: "Compact adviser (모든 세션에 저장됨)",
     focus: true,
     closeOnEscape: true,
     rows: 12,
@@ -670,17 +670,17 @@ async function placeRing($: EngineInterface, attempts = 10): Promise<void> {
 }
 
 const MODE_LABELS: Record<Mode, string> = {
-  hint: "Hints only (default)",
-  auto: "Automatic (experimental)",
-  off: "Off",
+  hint: "힌트만 (기본값)",
+  auto: "자동 (실험적)",
+  off: "꺼짐",
 };
 
 /** What the list row says about the key in effect: its source, never its value. */
 const KEY_SOURCE_LABELS: Record<TypesafeKeySource, string> = {
-  env: "from the environment",
-  saved: "saved",
-  ".env": "from .env",
-  missing: "missing",
+  env: "환경 변수에서",
+  saved: "저장됨",
+  ".env": ".env에서",
+  missing: "없음",
 };
 
 /** The key view's explanation: which key is in effect, and what the actions here change. */
@@ -688,14 +688,14 @@ function keyDetail(source: TypesafeKeySource, saved: boolean): string {
   switch (source) {
     case "env":
       return saved
-        ? "In effect: TYPESAFE_API_KEY from the launch environment, which wins over the key saved here."
-        : "In effect: TYPESAFE_API_KEY from the launch environment.";
+        ? "적용 중: 실행 환경의 TYPESAFE_API_KEY이며, 여기에 저장된 키보다 우선합니다."
+        : "적용 중: 실행 환경의 TYPESAFE_API_KEY.";
     case "saved":
-      return "In effect: the key saved here, for all sessions.";
+      return "적용 중: 여기에 저장된 키로, 모든 세션에 적용됩니다.";
     case ".env":
-      return "In effect: TYPESAFE_API_KEY from the .env file in the working directory.";
+      return "적용 중: 작업 디렉터리의 .env 파일에 있는 TYPESAFE_API_KEY.";
     default:
-      return "No key in effect. Save one here, or set TYPESAFE_API_KEY in the environment or a .env file.";
+      return "적용 중인 키가 없습니다. 여기서 저장하거나 환경 변수 또는 .env 파일에 TYPESAFE_API_KEY를 설정하세요.";
   }
 }
 
@@ -724,9 +724,9 @@ async function changeMode($: EngineInterface, mode: Mode, fromPane = false): Pro
     if (!(await loadConsent($)).autoAcknowledged) {
       const confirmed = await confirm(
         $,
-        "Automatic mode persists across all Claude Code sessions and projects. Compaction is lossy and timing accuracy is not proven. It only acts at eligible checkpoints; it does not compact immediately. Enable experimental automatic compaction?",
-        "Enable automatic mode",
-        "Auto mode",
+        "자동 모드는 모든 Claude Code 세션과 프로젝트에 적용됩니다. compact는 정보가 손실될 수 있고 시점 정확성이 검증되지 않았습니다. 적절한 분기점에서만 작동하며 즉시 compact하지 않습니다. 실험적 자동 compact를 켤까요?",
+        "자동 모드 켜기",
+        "자동 모드",
         fromPane,
       );
       if (!confirmed) return;
@@ -736,7 +736,7 @@ async function changeMode($: EngineInterface, mode: Mode, fromPane = false): Pro
       $,
       MODE_KEY,
       "auto",
-      "Automatic mode saved (all sessions). A TypeSafe key is still required.",
+      "자동 모드가 저장되었습니다 (모든 세션). TypeSafe 키가 여전히 필요합니다.",
     );
     return;
   }
@@ -744,7 +744,7 @@ async function changeMode($: EngineInterface, mode: Mode, fromPane = false): Pro
     $,
     MODE_KEY,
     mode,
-    `${mode === "hint" ? "Hints only" : "Off"} saved (all sessions). Claude Code's built-in compaction is unchanged.`,
+    `${mode === "hint" ? "힌트만" : "꺼짐"}이(가) 저장되었습니다 (모든 세션). Claude Code 기본 compact는 변경되지 않습니다.`,
   );
 }
 
@@ -756,8 +756,8 @@ async function changeBudget($: EngineInterface, text: string): Promise<boolean> 
     BUDGET_KEY,
     count,
     count > 0
-      ? `Context budget saved: ${formatTokens(count)} tokens (all sessions).`
-      : "Context budget off (all sessions): the hint floor follows Claude Code's own limit.",
+      ? `컨텍스트 예산이 저장되었습니다: ${formatTokens(count)} 토큰 (모든 세션).`
+      : "컨텍스트 예산이 꺼졌습니다 (모든 세션): 힌트 기준선은 Claude Code 자체 제한을 따릅니다.",
   );
 }
 
@@ -767,13 +767,13 @@ async function changeMinimum($: EngineInterface, text: string): Promise<boolean>
   const { context } = await $.session.usage();
   const warning =
     count >= context.window
-      ? ` Warning: this is at or above the active model's ${formatTokens(context.window)}-token window, so advice will not trigger before Claude Code's own compaction.`
+      ? ` 경고: 현재 모델의 ${formatTokens(context.window)} 토큰 창과 같거나 그 이상이므로 Claude Code 자체 compact 전에 조언이 표시되지 않습니다.`
       : "";
   return saveRow(
     $,
     MINIMUM_KEY,
     count,
-    `Minimum context saved: ${formatTokens(count)} tokens (all sessions).${warning}`,
+    `최소 컨텍스트가 저장되었습니다: ${formatTokens(count)} 토큰 (모든 세션).${warning}`,
   );
 }
 
@@ -783,8 +783,8 @@ async function changeLogRequests($: EngineInterface, enabled: boolean): Promise<
     LOG_KEY,
     enabled,
     enabled
-      ? `TypeSafe request logging on (all sessions). ${await sessionLogPath($)}`
-      : "TypeSafe request logging off (all sessions).",
+      ? `TypeSafe 요청 로깅이 켜졌습니다 (모든 세션). ${await sessionLogPath($)}`
+      : "TypeSafe 요청 로깅이 꺼졌습니다 (모든 세션).",
   );
 }
 
@@ -793,7 +793,7 @@ async function changeSavedApiKey($: EngineInterface, text: string): Promise<bool
     $,
     API_KEY_KEY,
     parseSavedApiKey(text),
-    "TypeSafe API key saved (all sessions). Status shows the source, never the value.",
+    "TypeSafe API 키가 저장되었습니다 (모든 세션). 상태에는 값이 아닌 출처만 표시됩니다.",
   );
 }
 
@@ -802,7 +802,7 @@ async function clearSavedApiKey($: EngineInterface): Promise<boolean> {
     $,
     API_KEY_KEY,
     "",
-    "Saved TypeSafe API key cleared (all sessions). Launch environment and .env still apply.",
+    "저장된 TypeSafe API 키가 삭제되었습니다 (모든 세션). 실행 환경과 .env는 계속 적용됩니다.",
   );
 }
 
@@ -816,16 +816,16 @@ async function statusText($: EngineInterface): Promise<string> {
     breakdown === undefined
       ? ""
       : breakdown.isAutoCompactEnabled && breakdown.autoCompactThreshold !== undefined
-        ? ` Claude Code auto-compacts at ${formatTokens(breakdown.autoCompactThreshold)} tokens.`
-        : " Claude Code auto-compact is off.";
+        ? ` Claude Code가 ${formatTokens(breakdown.autoCompactThreshold)} 토큰에서 자동 compact합니다.`
+        : " Claude Code 자동 compact가 꺼져 있습니다.";
   const cooldown =
     typeof tokens === "number"
       ? (cooldownReason(state, tokens, await $.clock.now()) ??
-        "No cooldown; semantic checks still apply.")
-      : "Waiting for fresh model usage.";
+        "대기 시간 없음; 의미 검사는 계속 적용됩니다.")
+      : "최신 모델 사용량을 기다리는 중.";
   const budget = config.contextBudgetTokens;
   const fraction = usageFraction(usage.context, budget);
-  return `Mode: ${config.mode}${config.mode === "auto" && !config.autoAcknowledged ? " (not confirmed)" : ""}. Minimum: ${formatTokens(config.minContextTokens)} tokens. Budget: ${budget > 0 ? `${formatTokens(budget)} tokens` : "off"}. Context: ${typeof tokens === "number" ? formatTokens(tokens) : "unknown"}${Number.isFinite(fraction) ? ` (${Math.round(fraction * 100)}% of the ${effectiveBudget(contextLimit(usage.context), budget) > 0 ? "budget" : "context limit"}; hint floor ${floorFor(fraction, parseProfile(config.profile)).toFixed(2)})` : ""}. ${formatKeyStatus((await resolvedKey($)).source)}. ${cooldown}${engine} Request log: ${config.logRequests ? await sessionLogPath($) : "off"}. Settings: /config (compact-adviser rows) and /compact-adviser.`;
+  return `모드: ${config.mode}${config.mode === "auto" && !config.autoAcknowledged ? " (확인되지 않음)" : ""}. 최소: ${formatTokens(config.minContextTokens)} 토큰. 예산: ${budget > 0 ? `${formatTokens(budget)} 토큰` : "꺼짐"}. 컨텍스트: ${typeof tokens === "number" ? formatTokens(tokens) : "알 수 없음"}${Number.isFinite(fraction) ? ` (${effectiveBudget(contextLimit(usage.context), budget) > 0 ? "예산" : "컨텍스트 한도"}의 ${Math.round(fraction * 100)}%; 힌트 기준선 ${floorFor(fraction, parseProfile(config.profile)).toFixed(2)})` : ""}. ${formatKeyStatus((await resolvedKey($)).source)}. ${cooldown}${engine} 요청 로그: ${config.logRequests ? await sessionLogPath($) : "꺼짐"}. 설정: /config (compact-adviser 항목) 및 /compact-adviser.`;
 }
 
 async function snoozeOrDismiss($: EngineInterface, command: "snooze" | "dismiss") {
@@ -839,12 +839,12 @@ async function snoozeOrDismiss($: EngineInterface, command: "snooze" | "dismiss"
     });
   }
   $.ui.toast(
-    command === "snooze" ? "Advice snoozed for three completed exchanges." : "Hint dismissed.",
+    command === "snooze" ? "조언이 세 번의 완료된 응답 동안 일시정지되었습니다." : "힌트를 닫았습니다.",
   );
 }
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Could not save settings.";
+  return error instanceof Error ? error.message : "설정을 저장할 수 없습니다.";
 }
 
 export const register: Register = (on, options) => {
@@ -863,7 +863,7 @@ export const register: Register = (on, options) => {
     foreignSubmitted = false;
     await $.command.register({
       name: COMMAND,
-      description: "Configure persistent compaction advice, experimental auto, and token minimum",
+      description: "compact 조언 영구 설정, 실험적 자동 및 최소 토큰 구성",
       argumentHint: "[auto|hint|off|status|threshold <tokens|default>|snooze|dismiss]",
     });
     try {
@@ -946,7 +946,7 @@ export const register: Register = (on, options) => {
           void compactNow($, key).catch(() =>
             notice(
               $,
-              "Compact adviser could not compact after the before-compact prompt; context left unchanged.",
+              "compact adviser가 compact 이전 프롬프트 후 compact를 실행할 수 없습니다. 컨텍스트는 변경되지 않았습니다.",
             ),
           );
         });
@@ -954,7 +954,7 @@ export const register: Register = (on, options) => {
       }
       clearStatus($);
       await deferRetry($, handoff.key);
-      notice($, "The before-compact turn did not finish cleanly. Context left unchanged.");
+      notice($, "compact 이전 응답이 정상적으로 끝나지 않았습니다. 컨텍스트는 변경되지 않았습니다.");
       return result;
     }
     if (e.agentId !== undefined || e.reason !== "answer" || e.isAborted || !e.answer.trim()) {
@@ -963,7 +963,7 @@ export const register: Register = (on, options) => {
     try {
       await settle($);
     } catch {
-      notice($, "Compact adviser could not inspect this checkpoint; context left unchanged.");
+      notice($, "compact adviser가 이 분기점을 검사할 수 없습니다. 컨텍스트는 변경되지 않았습니다.");
     }
     return result;
   });
@@ -989,7 +989,7 @@ export const register: Register = (on, options) => {
 
   on("command.run", { command: COMMAND }, async ($, e, next) => {
     if (!(await isActivated($))) return next(e);
-    if (!interactive) return { text: "compact-adviser acts only in interactive sessions." };
+    if (!interactive) return { text: "compact-adviser는 대화형 세션에서만 작동합니다." };
     const [command = "", ...rest] = e.args.trim().split(/\s+/);
     const value = rest.join(" ");
     try {
@@ -1054,11 +1054,11 @@ export const register: Register = (on, options) => {
         marginBottom: 1,
         children: [
           Text({ bold: true, children: "Compact adviser" }),
-          Text({ dimColor: true, children: crumb ? ` › ${crumb}` : "  saved for all sessions" }),
+          Text({ dimColor: true, children: crumb ? ` › ${crumb}` : "  모든 세션에 저장됨" }),
         ],
       });
     const hint = (leave: string) =>
-      Text({ dimColor: true, children: `↑↓ move · Enter select · Esc ${leave}` });
+      Text({ dimColor: true, children: `↑↓ 이동 · Enter 선택 · Esc ${leave}` });
     const closePane = () => void $.ui.close({ id: PANE_ID });
     const redraw = async () => {
       await $.ui.invalidate("ui.render");
@@ -1131,7 +1131,7 @@ export const register: Register = (on, options) => {
                 else pick(choice.value);
               },
             })),
-            { key: "back", label: "  Back", dim: true, onPress: back },
+            { key: "back", label: "  뒤로", dim: true, onPress: back },
           ],
           `${view}:${current}`,
         ),
@@ -1148,10 +1148,10 @@ export const register: Register = (on, options) => {
     }
     if (view === "logging") {
       return options(
-        "Log TypeSafe requests",
+        "TypeSafe 요청 로깅",
         config.logRequests ? "on" : "off",
         [
-          { value: "off", label: "Off (default)" },
+          { value: "off", label: "꺼짐 (기본값)" },
           { value: "on", label: "켬" },
         ],
         (value) => run(() => changeLogRequests($, value === "on")),
@@ -1159,10 +1159,10 @@ export const register: Register = (on, options) => {
     }
     if (view === "minimum") {
       return column([
-        heading("Minimum context"),
+        heading("최소 컨텍스트"),
         Input({
           key: "minimum",
-          label: "Tokens",
+          label: "토큰",
           value: minimumDraft?.text ?? String(config.minContextTokens),
           placeholder: String(DEFAULT_MINIMUM),
           submitLabel: "저장",
@@ -1182,7 +1182,7 @@ export const register: Register = (on, options) => {
           ? Text({ color: "error", children: minimumDraft.error })
           : Text({
               dimColor: true,
-              children: "A token count, not a percentage; no judgment below it.",
+              children: "백분율이 아닌 토큰 수입니다. 이 값 미만에서는 판단하지 않습니다.",
             }),
         list([{ key: "back", label: "뒤로", dim: true, onPress: back }], ""),
         hint("back"),
@@ -1190,13 +1190,13 @@ export const register: Register = (on, options) => {
     }
     if (view === "key") {
       return column([
-        heading("TypeSafe API key"),
+        heading("TypeSafe API 키"),
         Text({ dimColor: true, wrap: "wrap", children: keyDetail(key.source, savedKey) }),
         Input({
           key: "typesafeApiKey",
-          label: "Key",
+          label: "키",
           value: keyDraft?.text ?? "",
-          placeholder: savedKey ? "paste a key to replace the saved one" : "paste a key to save it",
+          placeholder: savedKey ? "저장된 키를 대체할 키를 붙여넣으세요" : "저장할 키를 붙여넣으세요",
           submitLabel: "저장",
           autoFocus: true,
           onSubmit: (text: string) => {
@@ -1217,7 +1217,7 @@ export const register: Register = (on, options) => {
               ? [
                   {
                     key: "clearKey",
-                    label: "Clear saved key",
+                    label: "저장된 키 삭제",
                     onPress: () => {
                       run(async () => {
                         if (await clearSavedApiKey($)) showMenu();
@@ -1235,7 +1235,7 @@ export const register: Register = (on, options) => {
     }
 
     const modeValue = `${MODE_LABELS[config.mode]}${
-      config.mode === "auto" && !config.autoAcknowledged ? ", not confirmed" : ""
+      config.mode === "auto" && !config.autoAcknowledged ? ", 확인되지 않음" : ""
     }`;
     const setting = (label: string, value: string) => `${label.padEnd(24)}${value}`;
     const open = (target: Exclude<PaneView, "menu">, row: string, focus: string) => () => {
@@ -1253,12 +1253,12 @@ export const register: Register = (on, options) => {
           },
           {
             key: "menu:minimum",
-            label: setting("Minimum context", `${formatTokens(config.minContextTokens)} tokens`),
+            label: setting("최소 컨텍스트", `${formatTokens(config.minContextTokens)} 토큰`),
             onPress: open("minimum", "menu:minimum", "minimum"),
           },
           {
             key: "menu:logRequests",
-            label: setting("Log TypeSafe requests", config.logRequests ? "켬" : "Off"),
+            label: setting("TypeSafe 요청 로깅", config.logRequests ? "켬" : "꺼짐"),
             onPress: open(
               "logging",
               "menu:logRequests",
@@ -1267,12 +1267,12 @@ export const register: Register = (on, options) => {
           },
           {
             key: "menu:typesafeApiKey",
-            label: setting("TypeSafe API key", KEY_SOURCE_LABELS[key.source]),
+            label: setting("TypeSafe API 키", KEY_SOURCE_LABELS[key.source]),
             onPress: open("key", "menu:typesafeApiKey", "typesafeApiKey"),
           },
           {
             key: "menu:reset",
-            label: `Reset minimum to ${formatTokens(DEFAULT_MINIMUM)}`,
+            label: `최소값을 ${formatTokens(DEFAULT_MINIMUM)}(으)로 재설정`,
             onPress: () => {
               menuRow = "menu:reset";
               run(() => changeMinimum($, "default"));

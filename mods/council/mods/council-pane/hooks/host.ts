@@ -5,7 +5,7 @@ export type PaneHost = 'mod' | 'tmux'
 
 export const HOST_STORE_KEY = 'pane_host'
 
-export const HOST_QUESTION = 'Where should the council pane open?'
+export const HOST_QUESTION = '카운슬 패널을 어디에서 열까요?'
 
 export const HOST_LABELS: Record<PaneHost, string> = {
   mod: 'Inside Claude Code',

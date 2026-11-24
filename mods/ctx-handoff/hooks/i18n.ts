@@ -571,7 +571,7 @@ const ko: Messages = {
   },
 
   start: {
-    description: 'ctx-handoff: status; panel / now / dry / distill / resume / continue / resend / away / guard / refresh',
+    description: 'ctx-handoff: 상태; panel / now / dry / distill / resume / continue / resend / away / guard / refresh',
     taken: err => `/handoff가 이미 사용 중입니다(${err}). /ctx-handoff를 사용하세요`,
     registerFailed: err => `명령을 등록할 수 없습니다: ${err}`,
     resumeFailed: err => `유휴 타이머를 복원할 수 없습니다: ${err}`,

@@ -194,7 +194,7 @@ export function paneSections(
   { collapsesWhenDone = true, nowMs = 0, frame = 0, fitText = (text: string) => text, closed = new Set<string>(), columns }: { collapsesWhenDone?: boolean; nowMs?: number; frame?: number; fitText?: (text: string) => string; closed?: ReadonlySet<string>; columns?: number } = {},
 ): Section[] {
   if (providers.length === 0) {
-    return [{ kind: 'note', text: isDone ? 'Council finished with no answers.' : 'Waiting for the council...' }]
+    return [{ kind: 'note', text: isDone ? '카운슬이 응답 없이 종료되었습니다.' : '카운슬을 기다리는 중...' }]
   }
   const shownState = (provider: ProviderStatus) => seatState(provider, { cancels, retries, retriable, isDone })
   // A querying provider's time runs from when the pane first saw it, in whole tenths.
@@ -220,7 +220,7 @@ export function paneSections(
       // pane's width before the budget is counted: a wide table becomes
       // records that repeat every header, which can lengthen it several times over.
       return () => [
-        ...(state === 'fallback' && error !== undefined ? [{ kind: 'reason' as const, text: noticeText(`${name} fell back: ${error}`) }] : []),
+        ...(state === 'fallback' && error !== undefined ? [{ kind: 'reason' as const, text: noticeText(`${name} 대체 경로 사용: ${error}`) }] : []),
         { kind: 'body', text: fitText(response) },
       ]
     }

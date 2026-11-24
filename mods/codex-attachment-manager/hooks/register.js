@@ -429,7 +429,7 @@ async function drawPane($, e) {
 
 export function register(on) {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'cam', description: 'Context assets: open the panel to choose which images go to the model (Context Attachment Manager)', immediate: true })
+    await $.command.register({ name: 'cam', description: '컨텍스트 자산: 모델에 보낼 이미지를 선택하는 패널을 엽니다 (Context Attachment Manager)', immediate: true })
     // Before the first request where possible: a resumed session's unchecked images must not go out with it. The
     // engine usually answers at once; one the plugin's MCP server is still starting gets a few seconds here, then the
     // rest of the wait goes on in the background.
