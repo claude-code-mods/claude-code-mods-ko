@@ -493,11 +493,11 @@ test('a pick belongs to its seat: naming another seat drops it, naming the same 
 test('the toast is the status on one line: state, seat, cadence and the checks, without the presses', () => {
   const counts = { ...EMPTY_COUNTS, none: 3, notes: 1, learn: 1 }
   expect(toastLine(headsUpStatus({ enabled: true, seat: 'codex', every: 3 }, false, '{"enabled": true}', counts, EMPTY_TOKENS, null)))
-    .toBe('Heads-up side-check: on for this project · codex · every 3 requests · checks 4 · none 3 · notes 1 · repeats 0 · failed 0 · out of credits 0')
+    .toBe('heads-up 부가 검사: 이 프로젝트에서 켜짐 · codex · 매 3개 요청 · 검사 4 · 없음 3 · 알림 1 · 반복 0 · 실패 0 · 크레딧 소진 0')
   expect(toastLine(headsUpStatus({ enabled: false, seat: 'codex', every: 3 }, false, undefined, EMPTY_COUNTS, EMPTY_TOKENS, null)))
-    .toBe('Heads-up side-check: off · checks 0 · none 0 · notes 0 · repeats 0 · failed 0 · out of credits 0')
+    .toBe('heads-up 부가 검사: 꺼짐 · 검사 0 · 없음 0 · 알림 0 · 반복 0 · 실패 0 · 크레딧 소진 0')
   expect(toastLine(headsUpStatus({ enabled: true, seat: 'codex', every: 3 }, false, '{"enabled": true}', { ...EMPTY_COUNTS, quota: 1 }, EMPTY_TOKENS, paused.paused)))
-    .toBe('Heads-up side-check: on for this project · codex · every 3 requests · codex: Your workspace is out of credits. Add credits to continue. · /heads-up on resumes this session · checks 1 · none 0 · notes 0 · repeats 0 · failed 0 · out of credits 1')
+    .toBe('heads-up 부가 검사: 이 프로젝트에서 켜짐 · codex · 매 3개 요청 · codex: Your workspace is out of credits. Add credits to continue. · /heads-up on으로 이 세션을 재개합니다 · 검사 1 · 없음 0 · 알림 0 · 반복 0 · 실패 0 · 크레딧 소진 1')
 })
 
 test('status names the effective state and which switch set it, then the counts, one aligned row per fact', () => {
@@ -552,7 +552,7 @@ test('status carries the tokens row after the checks row; the toast leaves it ou
     + '  checks   checks 1721 · none 1305 · notes 56 · repeats 0 · failed 29 · out of credits 331\n'
     + '  tokens   2 of 3 checks reported since this version · 39.0k in, 18.8k cached · 470 out, 314 reasoning on 1 of 2 · 19.7k per check\n'
     + '  presses  learn 0 · tell 0 · knew 0 · understood 0 · dismiss 0 · turned off 0 · typed past 0')
-  expect(toastLine(status)).toBe('Heads-up side-check: on for this project · codex · every 3 requests · checks 1721 · none 1305 · notes 56 · repeats 0 · failed 29 · out of credits 331')
+  expect(toastLine(status)).toBe('heads-up 부가 검사: 이 프로젝트에서 켜짐 · codex · 매 3개 요청 · 검사 1721 · 없음 1305 · 알림 56 · 반복 0 · 실패 29 · 크레딧 소진 331')
 })
 
 test('status says while the session is paused, dismissed or not, and what resumes it; off for the project it still says so', () => {
